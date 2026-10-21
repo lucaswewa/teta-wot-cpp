@@ -9,6 +9,9 @@ target_link_libraries(teta_wot_json
     PUBLIC nlohmann_json::nlohmann_json
     PRIVATE $<BUILD_INTERFACE:teta_wot_warnings>)
 target_compile_features(teta_wot_json PUBLIC cxx_std_20)
+# No implicit conversions out of JSON values: they make conversions to
+# `std::optional<Value>` ambiguous (with nlohmann-json 3.12), and hide types.
+target_compile_definitions(teta_wot_json PUBLIC JSON_USE_IMPLICIT_CONVERSIONS=0)
 
 # teta::wot: what applications link to; it grows with each phase.
 add_library(teta_wot INTERFACE)

@@ -250,7 +250,7 @@ TEST(CodecCorpus, EveryRustTypeHasTheSameDataSchema) {
     int checked = 0;
     while (std::getline(file, line)) {
         const auto entry = Value::parse(line);
-        const std::string type = entry["type"];
+        const auto type = entry["type"].get<std::string>();
         if (std::ranges::find(not_in_cpp, type) != not_in_cpp.end()) {
             continue;
         }
