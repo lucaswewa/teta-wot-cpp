@@ -7,6 +7,7 @@ How teta-wot-cpp is held to wire-level parity with [teta-wot v0.1.0](https://git
 | `reference-rs/` | The reference: a Rust crate depending on teta-wot at the `v0.1.0` tag, built with **teta-wot v0.1.0's `Cargo.lock`** and toolchain (1.98.1). `reference-server` serves the twin Things with teta-wot's command line; `json-corpus` writes `tests/json/serde_json_corpus.txt`. |
 | `scenarios/http/` | Scripted HTTP scenarios: a server configuration and a list of steps. |
 | `fixtures/http/` | The reference's answers to each scenario, normalised. Generated: never edit by hand. |
+| `reference-rs/src/bin/schema_corpus.rs` | `schema-corpus`: for 54 Rust types, schemars' JSON Schema and teta-wot's DataSchema, written to `tests/td/schema_corpus.jsonl` for the C++ conversion and codec tests. |
 | `run.py` | The harness: `capture`, `check` and `diff` (see its docstring). Python 3, standard library only. |
 
 ## The twins
@@ -43,4 +44,4 @@ python3 conformance/run.py check --server <a server>
 python3 conformance/run.py diff --server conformance/reference-rs/target/release/reference-server --server <a server>
 ```
 
-CI rebuilds the reference, re-captures every fixture and regenerates the serde_json corpus, and fails if anything changed.
+CI rebuilds the reference, re-captures every fixture and regenerates the serde_json and schema corpora, and fails if anything changed.
