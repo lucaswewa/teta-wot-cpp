@@ -30,8 +30,8 @@ std::vector<Entry> corpus() {
     std::string line;
     while (std::getline(file, line)) {
         const auto value = Value::parse(line);
-        entries.push_back(
-            {value["type"].get<std::string>(), value["json_schema"], value["data_schema"].get<std::string>()});
+        entries.push_back({value["type"].get<std::string>(), value["json_schema"],
+                           value["data_schema"].get<std::string>()});
     }
     return entries;
 }
