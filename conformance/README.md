@@ -13,9 +13,26 @@ How teta-wot-cpp is held to wire-level parity with [teta-wot v0.1.0](https://git
 
 Things served by both implementations under the same registry names, so one configuration file configures either. They are ported from the `wot` repository's twins as phases need them.
 
-| Name in configurations | Thing | Since |
+| Name in configurations | Thing | What it exercises |
 |---|---|---|
-| `twins.counter:TestThing` | The LabThings quickstart counter | Phase 0 |
+| `labthings_fastapi.example_things:MyThing` | `MyThing` | Properties, actions with many parameter shapes, no-argument and `**kwargs` actions |
+| `labthings_fastapi.example_things:ThingWithBrokenAffordances` | `ThingWithBrokenAffordances` | A failing property and action |
+| `labthings_fastapi.example_things:ThingThatCantStart` | `ThingThatCantStart` | A Thing whose start fails (command line) |
+| `twins.counter:TestThing` | `TestThing` | The LabThings quickstart counter |
+| `twins.types_probe:TypesThing` | `TypesThing` | DataSchema conversion: constraints, optionals, literals, nested models, lists, tuples, maps |
+| `twins.http_probe:HttpProbe` | `HttpProbe` | A falsy output, a cancellable action, an anticipated error, a writable property for the global lock |
+| `twins.settings_probe:SettingsProbe` | `SettingsProbe` | Settings of every kind |
+| `twins.ws_probe:ThingWithProperties` | `ThingWithProperties` | Observation: observable and functional properties, actions ending in each status |
+| `twins.blob_probe:BlobProbe` | `BlobProbe` | Blobs in and out, and an MJPEG stream |
+| `twins.ndarray_probe:NDArrayProbe` | `NDArrayProbe` | Arrays as properties and action inputs and outputs |
+
+They are ported from the `wot` repository's `conformance/twin-server` to teta-wot v0.1.0's API (the only changes are the crate paths). The C++ ports join phase by phase: Phase 1 describes all nine (their TDs); their behaviour follows from Phase 3 on.
+
+| Scenario | What it captures |
+|---|---|
+| `counter` | The counter over HTTP: TD, redirect, property read and refused write, an invocation, lists, 404, CORS preflight |
+| `tds` | Every twin's TD (`tetathing` profile) |
+| `tds-wot` | Every twin's TD in the `wot` profile |
 
 ## Running it
 

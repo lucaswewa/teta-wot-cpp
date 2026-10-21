@@ -9,9 +9,13 @@ publish = false
 # The reference is pinned to the teta-wot v0.1.0 tag (ADR-0001).
 [dependencies]
 anyhow = "1.0"
-serde = "1.0.229"
+indexmap = { version = "2.14", features = ["serde"] }
+schemars = { version = "1.2", features = ["preserve_order", "indexmap2"] }
+serde = { version = "1.0.229", features = ["derive"] }
+tempfile = "3.27"
+tracing = "0.1.41"
 serde_json = { version = "1.0.151", features = ["preserve_order"] }
-teta-wot = { git = "https://github.com/lucaswewa/teta-wot", tag = "v0.1.0" }
+teta-wot = { git = "https://github.com/lucaswewa/teta-wot", tag = "v0.1.0", features = ["ndarray"] }
 tokio = { version = "1.47", features = ["macros", "rt-multi-thread"] }
 
 [[bin]]

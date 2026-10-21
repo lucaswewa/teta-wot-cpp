@@ -1,0 +1,3948 @@
+{
+  "config": {
+    "things": {
+      "mything": "labthings_fastapi.example_things:MyThing",
+      "broken": "labthings_fastapi.example_things:ThingWithBrokenAffordances",
+      "counter": "twins.counter:TestThing",
+      "types": "twins.types_probe:TypesThing",
+      "http_probe": "twins.http_probe:HttpProbe",
+      "settings_probe": "twins.settings_probe:SettingsProbe",
+      "ws_probe": "twins.ws_probe:ThingWithProperties",
+      "blob_probe": "twins.blob_probe:BlobProbe",
+      "ndarray_probe": "twins.ndarray_probe:NDArrayProbe"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "td_mything",
+        "method": "GET",
+        "path": "/mything/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "MyThing",
+          "properties": {
+            "counter": {
+              "description": "A pointless counter",
+              "title": "A pointless counter",
+              "writeOnly": false,
+              "readOnly": true,
+              "default": 0,
+              "type": "integer",
+              "forms": [
+                {
+                  "href": "/mything/counter",
+                  "op": [
+                    "readproperty"
+                  ]
+                },
+                {
+                  "href": "/mything/counter",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/mything/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "foo": {
+              "description": "A pointless string for demo purposes.",
+              "title": "A pointless string for demo purposes.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": "Example",
+              "type": "string",
+              "forms": [
+                {
+                  "href": "/mything/foo",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/mything/foo",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/mything/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "action_with_only_kwargs": {
+              "description": ":param \\**kwargs: Keyword arguments.\n        ",
+              "title": "Do something that takes \\**kwargs.",
+              "forms": [
+                {
+                  "href": "/mything/action_with_only_kwargs",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that has no required parameters.\n\nThis may be either a dictionary or ``None``.",
+                "title": "action_with_only_kwargs_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object with no required keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": true
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "action_with_only_kwargs_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "action_without_arguments": {
+              "description": "Do something that takes no arguments.",
+              "title": "Do something that takes no arguments.",
+              "forms": [
+                {
+                  "href": "/mything/action_without_arguments",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "action_without_arguments_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "action_without_arguments_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "anaction": {
+              "description": "This action has lots of parameters and is designed to confuse my schema\ngenerator. I hope it doesn't!\n\nI might even use some Markdown here:\n\n* If this renders, it supports lists\n* With at least two items.\n\nThere is also a parameter and return block to satisfy docstring validators.\nThis may be preferable to annotations on the arguments.\n\n:param repeats: How many times to do it.\n:param undocumented: There's no description on this field's type hint.\n:param title: A human-readable title.\n:param attempts: A list of names of attempts.\n\n:return: A dictionary with strings as keys and values.",
+              "title": "Quite a complicated action.",
+              "forms": [
+                {
+                  "href": "/mything/anaction",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "anaction_input",
+                "type": "object",
+                "properties": {
+                  "repeats": {
+                    "description": "The number of times to try the action",
+                    "type": "integer"
+                  },
+                  "undocumented": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "description": "the title of the invocation",
+                    "default": "Untitled",
+                    "type": "string"
+                  },
+                  "attempts": {
+                    "description": "Names for each attempt - I suggest final, Final, FINAL.",
+                    "oneOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "repeats",
+                  "undocumented"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "anaction_output",
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "synchronous": false
+            },
+            "increment_counter": {
+              "description": "This action doesn't do very much - all it does, in fact,\nis increment the counter (which may be read using the\n`counter` property).",
+              "title": "Increment the counter property.",
+              "forms": [
+                {
+                  "href": "/mything/increment_counter",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "increment_counter_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "increment_counter_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "make_a_dict": {
+              "description": ":param extra_key: An additional key.\n:param extra_value: An additional value.\n:return: a dictionary.",
+              "title": "Do something that returns a dict.",
+              "forms": [
+                {
+                  "href": "/mything/make_a_dict",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "make_a_dict_input",
+                "type": "object",
+                "properties": {
+                  "extra_key": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "extra_value": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "make_a_dict_output",
+                "type": "object",
+                "additionalProperties": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "synchronous": false
+            },
+            "slowly_increase_counter": {
+              "description": ":param increments: how many times to increment.\n:param delay: the wait time between increments.",
+              "title": "Increment the counter slowly over a minute.",
+              "forms": [
+                {
+                  "href": "/mything/slowly_increase_counter",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "slowly_increase_counter_input",
+                "type": "object",
+                "properties": {
+                  "increments": {
+                    "default": 60,
+                    "type": "integer"
+                  },
+                  "delay": {
+                    "default": 1.0,
+                    "type": "number"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "slowly_increase_counter_output",
+                "type": "null"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "An example Thing with a few affordances.",
+          "forms": [
+            {
+              "href": "/mything/properties",
+              "op": [
+                "readallproperties",
+                "writemultipleproperties"
+              ]
+            },
+            {
+              "href": "/mything/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/mything/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"MyThing\",\"properties\":{\"counter\":{\"description\":\"A pointless counter\",\"title\":\"A pointless counter\",\"writeOnly\":false,\"readOnly\":true,\"default\":0,\"type\":\"integer\",\"forms\":[{\"href\":\"/mything/counter\",\"op\":[\"readproperty\"]},{\"href\":\"/mything/counter\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/mything/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"foo\":{\"description\":\"A pointless string for demo purposes.\",\"title\":\"A pointless string for demo purposes.\",\"writeOnly\":false,\"readOnly\":false,\"default\":\"Example\",\"type\":\"string\",\"forms\":[{\"href\":\"/mything/foo\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/mything/foo\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/mything/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"action_with_only_kwargs\":{\"description\":\":param \\\\**kwargs: Keyword arguments.\\n        \",\"title\":\"Do something that takes \\\\**kwargs.\",\"forms\":[{\"href\":\"/mything/action_with_only_kwargs\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that has no required parameters.\\n\\nThis may be either a dictionary or ``None``.\",\"title\":\"action_with_only_kwargs_input\",\"oneOf\":[{\"description\":\"A model representing an object with no required keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":true},{\"type\":\"null\"}]},\"output\":{\"title\":\"action_with_only_kwargs_output\",\"type\":\"null\"},\"synchronous\":false},\"action_without_arguments\":{\"description\":\"Do something that takes no arguments.\",\"title\":\"Do something that takes no arguments.\",\"forms\":[{\"href\":\"/mything/action_without_arguments\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"action_without_arguments_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"action_without_arguments_output\",\"type\":\"null\"},\"synchronous\":false},\"anaction\":{\"description\":\"This action has lots of parameters and is designed to confuse my schema\\ngenerator. I hope it doesn't!\\n\\nI might even use some Markdown here:\\n\\n* If this renders, it supports lists\\n* With at least two items.\\n\\nThere is also a parameter and return block to satisfy docstring validators.\\nThis may be preferable to annotations on the arguments.\\n\\n:param repeats: How many times to do it.\\n:param undocumented: There's no description on this field's type hint.\\n:param title: A human-readable title.\\n:param attempts: A list of names of attempts.\\n\\n:return: A dictionary with strings as keys and values.\",\"title\":\"Quite a complicated action.\",\"forms\":[{\"href\":\"/mything/anaction\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"anaction_input\",\"type\":\"object\",\"properties\":{\"repeats\":{\"description\":\"The number of times to try the action\",\"type\":\"integer\"},\"undocumented\":{\"type\":\"integer\"},\"title\":{\"description\":\"the title of the invocation\",\"default\":\"Untitled\",\"type\":\"string\"},\"attempts\":{\"description\":\"Names for each attempt - I suggest final, Final, FINAL.\",\"oneOf\":[{\"type\":\"array\",\"items\":{\"type\":\"string\"}},{\"type\":\"null\"}]}},\"required\":[\"repeats\",\"undocumented\"],\"additionalProperties\":false},\"output\":{\"title\":\"anaction_output\",\"type\":\"object\",\"additionalProperties\":{\"type\":\"string\"}},\"synchronous\":false},\"increment_counter\":{\"description\":\"This action doesn't do very much - all it does, in fact,\\nis increment the counter (which may be read using the\\n`counter` property).\",\"title\":\"Increment the counter property.\",\"forms\":[{\"href\":\"/mything/increment_counter\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"increment_counter_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"increment_counter_output\",\"type\":\"null\"},\"synchronous\":false},\"make_a_dict\":{\"description\":\":param extra_key: An additional key.\\n:param extra_value: An additional value.\\n:return: a dictionary.\",\"title\":\"Do something that returns a dict.\",\"forms\":[{\"href\":\"/mything/make_a_dict\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"make_a_dict_input\",\"type\":\"object\",\"properties\":{\"extra_key\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"extra_value\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"additionalProperties\":false},\"output\":{\"title\":\"make_a_dict_output\",\"type\":\"object\",\"additionalProperties\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"synchronous\":false},\"slowly_increase_counter\":{\"description\":\":param increments: how many times to increment.\\n:param delay: the wait time between increments.\",\"title\":\"Increment the counter slowly over a minute.\",\"forms\":[{\"href\":\"/mything/slowly_increase_counter\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"slowly_increase_counter_input\",\"type\":\"object\",\"properties\":{\"increments\":{\"default\":60,\"type\":\"integer\"},\"delay\":{\"default\":1.0,\"type\":\"number\"}},\"additionalProperties\":false},\"output\":{\"title\":\"slowly_increase_counter_output\",\"type\":\"null\"},\"synchronous\":false}},\"description\":\"An example Thing with a few affordances.\",\"forms\":[{\"href\":\"/mything/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/mything/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/mything/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "td_broken",
+        "method": "GET",
+        "path": "/broken/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:1>",
+          "title": "ThingWithBrokenAffordances",
+          "properties": {
+            "broken_property": {
+              "description": ":raise RuntimeError: every time.\n        ",
+              "title": "Raise an exception when the property is accessed.",
+              "writeOnly": false,
+              "readOnly": true,
+              "type": "null",
+              "forms": [
+                {
+                  "href": "/broken/broken_property",
+                  "op": [
+                    "readproperty"
+                  ]
+                }
+              ]
+            }
+          },
+          "actions": {
+            "broken_action": {
+              "description": ":raise RuntimeError: every time.\n        ",
+              "title": "Do something that raises an exception.",
+              "forms": [
+                {
+                  "href": "/broken/broken_action",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "broken_action_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "broken_action_output",
+                "type": "null"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A Thing that raises exceptions in actions/properties.",
+          "forms": [
+            {
+              "href": "/broken/properties",
+              "op": [
+                "readallproperties"
+              ]
+            },
+            {
+              "href": "/broken/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:1>\",\"title\":\"ThingWithBrokenAffordances\",\"properties\":{\"broken_property\":{\"description\":\":raise RuntimeError: every time.\\n        \",\"title\":\"Raise an exception when the property is accessed.\",\"writeOnly\":false,\"readOnly\":true,\"type\":\"null\",\"forms\":[{\"href\":\"/broken/broken_property\",\"op\":[\"readproperty\"]}]}},\"actions\":{\"broken_action\":{\"description\":\":raise RuntimeError: every time.\\n        \",\"title\":\"Do something that raises an exception.\",\"forms\":[{\"href\":\"/broken/broken_action\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"broken_action_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"broken_action_output\",\"type\":\"null\"},\"synchronous\":false}},\"description\":\"A Thing that raises exceptions in actions/properties.\",\"forms\":[{\"href\":\"/broken/properties\",\"op\":[\"readallproperties\"]},{\"href\":\"/broken/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "td_counter",
+        "method": "GET",
+        "path": "/counter/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:2>",
+          "title": "TestThing",
+          "properties": {
+            "counter": {
+              "description": "A pointless counter.",
+              "title": "A pointless counter.",
+              "writeOnly": false,
+              "readOnly": true,
+              "default": 0,
+              "type": "integer",
+              "forms": [
+                {
+                  "href": "/counter/counter",
+                  "op": [
+                    "readproperty"
+                  ]
+                },
+                {
+                  "href": "/counter/counter",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/counter/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "increment_counter": {
+              "description": "This action doesn't do very much - all it does, in fact,\nis increment the counter (which may be read using the\n`counter` property).",
+              "title": "Increment the counter property.",
+              "forms": [
+                {
+                  "href": "/counter/increment_counter",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "increment_counter_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "increment_counter_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "slowly_increase_counter": {
+              "description": "Increment the counter slowly over a minute.",
+              "title": "Increment the counter slowly over a minute.",
+              "forms": [
+                {
+                  "href": "/counter/slowly_increase_counter",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "slowly_increase_counter_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "slowly_increase_counter_output",
+                "type": "null"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A test thing with a counter property and a couple of actions.",
+          "forms": [
+            {
+              "href": "/counter/properties",
+              "op": [
+                "readallproperties"
+              ]
+            },
+            {
+              "href": "/counter/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/counter/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:2>\",\"title\":\"TestThing\",\"properties\":{\"counter\":{\"description\":\"A pointless counter.\",\"title\":\"A pointless counter.\",\"writeOnly\":false,\"readOnly\":true,\"default\":0,\"type\":\"integer\",\"forms\":[{\"href\":\"/counter/counter\",\"op\":[\"readproperty\"]},{\"href\":\"/counter/counter\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/counter/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"increment_counter\":{\"description\":\"This action doesn't do very much - all it does, in fact,\\nis increment the counter (which may be read using the\\n`counter` property).\",\"title\":\"Increment the counter property.\",\"forms\":[{\"href\":\"/counter/increment_counter\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"increment_counter_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"increment_counter_output\",\"type\":\"null\"},\"synchronous\":false},\"slowly_increase_counter\":{\"description\":\"Increment the counter slowly over a minute.\",\"title\":\"Increment the counter slowly over a minute.\",\"forms\":[{\"href\":\"/counter/slowly_increase_counter\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"slowly_increase_counter_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"slowly_increase_counter_output\",\"type\":\"null\"},\"synchronous\":false}},\"description\":\"A test thing with a counter property and a couple of actions.\",\"forms\":[{\"href\":\"/counter/properties\",\"op\":[\"readallproperties\"]},{\"href\":\"/counter/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/counter/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "td_types",
+        "method": "GET",
+        "path": "/types/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:3>",
+          "title": "TypesThing",
+          "properties": {
+            "bounded_int": {
+              "description": "An integer between 1 and 10.",
+              "title": "An integer between 1 and 10.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": 5,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "forms": [
+                {
+                  "href": "/types/bounded_int",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/types/bounded_int",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/types/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "lookup": {
+              "description": "A lookup table from names to numbers.",
+              "title": "A lookup table from names to numbers.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": {},
+              "type": "object",
+              "forms": [
+                {
+                  "href": "/types/lookup",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/types/lookup",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/types/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true,
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "maybe_int": {
+              "description": "An integer that may be missing.",
+              "title": "An integer that may be missing.",
+              "writeOnly": false,
+              "readOnly": false,
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "forms": [
+                {
+                  "href": "/types/maybe_int",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/types/maybe_int",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/types/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "mode": {
+              "description": "The speed mode.",
+              "title": "The speed mode.",
+              "writeOnly": false,
+              "readOnly": false,
+              "enum": [
+                "fast",
+                "slow"
+              ],
+              "default": "fast",
+              "type": "string",
+              "forms": [
+                {
+                  "href": "/types/mode",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/types/mode",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/types/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "open_interval": {
+              "description": "A number strictly between 0 and 1.",
+              "title": "A number strictly between 0 and 1.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": 0.5,
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "exclusiveMaximum": 1,
+              "forms": [
+                {
+                  "href": "/types/open_interval",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/types/open_interval",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/types/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "pair": {
+              "description": "A pair of an integer and a string.",
+              "title": "A pair of an integer and a string.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": [
+                1,
+                "a"
+              ],
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "maxItems": 2,
+              "minItems": 2,
+              "forms": [
+                {
+                  "href": "/types/pair",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/types/pair",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/types/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "position": {
+              "description": "The current position.",
+              "title": "The current position.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": {
+                "x": 1,
+                "y": 2,
+                "z": 0
+              },
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "integer"
+                },
+                "y": {
+                  "type": "integer"
+                },
+                "z": {
+                  "default": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "x",
+                "y"
+              ],
+              "forms": [
+                {
+                  "href": "/types/position",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/types/position",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/types/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "step": {
+              "description": "A multiple of five.",
+              "title": "A multiple of five.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": 10,
+              "type": "integer",
+              "multipleOf": 5,
+              "forms": [
+                {
+                  "href": "/types/step",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/types/step",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/types/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "tags": {
+              "description": "Up to three tags.",
+              "title": "Up to three tags.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 3,
+              "forms": [
+                {
+                  "href": "/types/tags",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/types/tags",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/types/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "word": {
+              "description": "A short lower-case word.",
+              "title": "A short lower-case word.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": "abc",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8,
+              "pattern": "^[a-z]+$",
+              "forms": [
+                {
+                  "href": "/types/word",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/types/word",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/types/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "move": {
+              "description": ":param target: Where to move to.\n:param speed: How fast to move, or the default speed.\n:return: The final position.",
+              "title": "Move to a target position.",
+              "forms": [
+                {
+                  "href": "/types/move",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "move_input",
+                "type": "object",
+                "properties": {
+                  "target": {
+                    "description": "A position in three dimensions.",
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "type": "integer"
+                      },
+                      "y": {
+                        "type": "integer"
+                      },
+                      "z": {
+                        "default": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "x",
+                      "y"
+                    ]
+                  },
+                  "speed": {
+                    "oneOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "target"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "description": "A position in three dimensions.",
+                "title": "move_output",
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "integer"
+                  },
+                  "y": {
+                    "type": "integer"
+                  },
+                  "z": {
+                    "default": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "x",
+                  "y"
+                ]
+              },
+              "synchronous": false
+            },
+            "plan_route": {
+              "description": ":param waypoints: The waypoints to visit, in order.\n:param mode: The speed mode to use.\n:return: The position of each waypoint, by name.",
+              "title": "Plan a route through some waypoints.",
+              "forms": [
+                {
+                  "href": "/types/plan_route",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "plan_route_input",
+                "type": "object",
+                "properties": {
+                  "waypoints": {
+                    "type": "array",
+                    "items": {
+                      "description": "A named position, optionally with a fallback.",
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "position": {
+                          "description": "A position in three dimensions.",
+                          "type": "object",
+                          "properties": {
+                            "x": {
+                              "type": "integer"
+                            },
+                            "y": {
+                              "type": "integer"
+                            },
+                            "z": {
+                              "default": 0,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "x",
+                            "y"
+                          ]
+                        },
+                        "fallback": {
+                          "oneOf": [
+                            {
+                              "description": "A position in three dimensions.",
+                              "type": "object",
+                              "properties": {
+                                "x": {
+                                  "type": "integer"
+                                },
+                                "y": {
+                                  "type": "integer"
+                                },
+                                "z": {
+                                  "default": 0,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "x",
+                                "y"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "position"
+                      ]
+                    }
+                  },
+                  "mode": {
+                    "enum": [
+                      "fast",
+                      "slow"
+                    ],
+                    "default": "fast",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "waypoints"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "plan_route_output",
+                "type": "object",
+                "additionalProperties": {
+                  "description": "A position in three dimensions.",
+                  "properties": {
+                    "x": {
+                      "type": "integer"
+                    },
+                    "y": {
+                      "type": "integer"
+                    },
+                    "z": {
+                      "default": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "x",
+                    "y"
+                  ],
+                  "type": "object"
+                }
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A Thing whose affordances use many different data types.\n\n    It is used to check how data types are described in the Thing Description.\n    ",
+          "forms": [
+            {
+              "href": "/types/properties",
+              "op": [
+                "readallproperties",
+                "writemultipleproperties"
+              ]
+            },
+            {
+              "href": "/types/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/types/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:3>\",\"title\":\"TypesThing\",\"properties\":{\"bounded_int\":{\"description\":\"An integer between 1 and 10.\",\"title\":\"An integer between 1 and 10.\",\"writeOnly\":false,\"readOnly\":false,\"default\":5,\"type\":\"integer\",\"minimum\":1,\"maximum\":10,\"forms\":[{\"href\":\"/types/bounded_int\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/types/bounded_int\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/types/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"lookup\":{\"description\":\"A lookup table from names to numbers.\",\"title\":\"A lookup table from names to numbers.\",\"writeOnly\":false,\"readOnly\":false,\"default\":{},\"type\":\"object\",\"forms\":[{\"href\":\"/types/lookup\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/types/lookup\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/types/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true,\"additionalProperties\":{\"type\":\"number\"}},\"maybe_int\":{\"description\":\"An integer that may be missing.\",\"title\":\"An integer that may be missing.\",\"writeOnly\":false,\"readOnly\":false,\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"null\"}],\"forms\":[{\"href\":\"/types/maybe_int\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/types/maybe_int\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/types/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"mode\":{\"description\":\"The speed mode.\",\"title\":\"The speed mode.\",\"writeOnly\":false,\"readOnly\":false,\"enum\":[\"fast\",\"slow\"],\"default\":\"fast\",\"type\":\"string\",\"forms\":[{\"href\":\"/types/mode\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/types/mode\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/types/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"open_interval\":{\"description\":\"A number strictly between 0 and 1.\",\"title\":\"A number strictly between 0 and 1.\",\"writeOnly\":false,\"readOnly\":false,\"default\":0.5,\"type\":\"number\",\"exclusiveMinimum\":0,\"exclusiveMaximum\":1,\"forms\":[{\"href\":\"/types/open_interval\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/types/open_interval\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/types/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"pair\":{\"description\":\"A pair of an integer and a string.\",\"title\":\"A pair of an integer and a string.\",\"writeOnly\":false,\"readOnly\":false,\"default\":[1,\"a\"],\"type\":\"array\",\"items\":[{\"type\":\"integer\"},{\"type\":\"string\"}],\"maxItems\":2,\"minItems\":2,\"forms\":[{\"href\":\"/types/pair\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/types/pair\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/types/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"position\":{\"description\":\"The current position.\",\"title\":\"The current position.\",\"writeOnly\":false,\"readOnly\":false,\"default\":{\"x\":1,\"y\":2,\"z\":0},\"type\":\"object\",\"properties\":{\"x\":{\"type\":\"integer\"},\"y\":{\"type\":\"integer\"},\"z\":{\"default\":0,\"type\":\"integer\"}},\"required\":[\"x\",\"y\"],\"forms\":[{\"href\":\"/types/position\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/types/position\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/types/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"step\":{\"description\":\"A multiple of five.\",\"title\":\"A multiple of five.\",\"writeOnly\":false,\"readOnly\":false,\"default\":10,\"type\":\"integer\",\"multipleOf\":5,\"forms\":[{\"href\":\"/types/step\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/types/step\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/types/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"tags\":{\"description\":\"Up to three tags.\",\"title\":\"Up to three tags.\",\"writeOnly\":false,\"readOnly\":false,\"default\":[],\"type\":\"array\",\"items\":{\"type\":\"string\"},\"maxItems\":3,\"forms\":[{\"href\":\"/types/tags\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/types/tags\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/types/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"word\":{\"description\":\"A short lower-case word.\",\"title\":\"A short lower-case word.\",\"writeOnly\":false,\"readOnly\":false,\"default\":\"abc\",\"type\":\"string\",\"minLength\":1,\"maxLength\":8,\"pattern\":\"^[a-z]+$\",\"forms\":[{\"href\":\"/types/word\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/types/word\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/types/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"move\":{\"description\":\":param target: Where to move to.\\n:param speed: How fast to move, or the default speed.\\n:return: The final position.\",\"title\":\"Move to a target position.\",\"forms\":[{\"href\":\"/types/move\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"move_input\",\"type\":\"object\",\"properties\":{\"target\":{\"description\":\"A position in three dimensions.\",\"type\":\"object\",\"properties\":{\"x\":{\"type\":\"integer\"},\"y\":{\"type\":\"integer\"},\"z\":{\"default\":0,\"type\":\"integer\"}},\"required\":[\"x\",\"y\"]},\"speed\":{\"oneOf\":[{\"type\":\"number\"},{\"type\":\"null\"}]}},\"required\":[\"target\"],\"additionalProperties\":false},\"output\":{\"description\":\"A position in three dimensions.\",\"title\":\"move_output\",\"type\":\"object\",\"properties\":{\"x\":{\"type\":\"integer\"},\"y\":{\"type\":\"integer\"},\"z\":{\"default\":0,\"type\":\"integer\"}},\"required\":[\"x\",\"y\"]},\"synchronous\":false},\"plan_route\":{\"description\":\":param waypoints: The waypoints to visit, in order.\\n:param mode: The speed mode to use.\\n:return: The position of each waypoint, by name.\",\"title\":\"Plan a route through some waypoints.\",\"forms\":[{\"href\":\"/types/plan_route\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"plan_route_input\",\"type\":\"object\",\"properties\":{\"waypoints\":{\"type\":\"array\",\"items\":{\"description\":\"A named position, optionally with a fallback.\",\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"position\":{\"description\":\"A position in three dimensions.\",\"type\":\"object\",\"properties\":{\"x\":{\"type\":\"integer\"},\"y\":{\"type\":\"integer\"},\"z\":{\"default\":0,\"type\":\"integer\"}},\"required\":[\"x\",\"y\"]},\"fallback\":{\"oneOf\":[{\"description\":\"A position in three dimensions.\",\"type\":\"object\",\"properties\":{\"x\":{\"type\":\"integer\"},\"y\":{\"type\":\"integer\"},\"z\":{\"default\":0,\"type\":\"integer\"}},\"required\":[\"x\",\"y\"]},{\"type\":\"null\"}]}},\"required\":[\"name\",\"position\"]}},\"mode\":{\"enum\":[\"fast\",\"slow\"],\"default\":\"fast\",\"type\":\"string\"}},\"required\":[\"waypoints\"],\"additionalProperties\":false},\"output\":{\"title\":\"plan_route_output\",\"type\":\"object\",\"additionalProperties\":{\"description\":\"A position in three dimensions.\",\"properties\":{\"x\":{\"type\":\"integer\"},\"y\":{\"type\":\"integer\"},\"z\":{\"default\":0,\"type\":\"integer\"}},\"required\":[\"x\",\"y\"],\"type\":\"object\"}},\"synchronous\":false}},\"description\":\"A Thing whose affordances use many different data types.\\n\\n    It is used to check how data types are described in the Thing Description.\\n    \",\"forms\":[{\"href\":\"/types/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/types/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/types/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "td_http_probe",
+        "method": "GET",
+        "path": "/http_probe/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:4>",
+          "title": "HttpProbe",
+          "properties": {
+            "value": {
+              "description": "A writable integer.",
+              "title": "A writable integer.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": 0,
+              "type": "integer",
+              "forms": [
+                {
+                  "href": "/http_probe/value",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/http_probe/value",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/http_probe/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "refuse": {
+              "description": "Fail in an anticipated way.",
+              "title": "Fail in an anticipated way.",
+              "forms": [
+                {
+                  "href": "/http_probe/refuse",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "refuse_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "refuse_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "slow": {
+              "description": ":param seconds: How long to sleep.\n:return: \"done\".",
+              "title": "Sleep, unless cancelled.",
+              "forms": [
+                {
+                  "href": "/http_probe/slow",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "slow_input",
+                "type": "object",
+                "properties": {
+                  "seconds": {
+                    "default": 10.0,
+                    "type": "number"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "slow_output",
+                "type": "string"
+              },
+              "synchronous": false
+            },
+            "zero": {
+              "description": "Return zero.",
+              "title": "Return zero.",
+              "forms": [
+                {
+                  "href": "/http_probe/zero",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "zero_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "zero_output",
+                "type": "integer"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A Thing for probing the HTTP binding.",
+          "forms": [
+            {
+              "href": "/http_probe/properties",
+              "op": [
+                "readallproperties",
+                "writemultipleproperties"
+              ]
+            },
+            {
+              "href": "/http_probe/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/http_probe/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:4>\",\"title\":\"HttpProbe\",\"properties\":{\"value\":{\"description\":\"A writable integer.\",\"title\":\"A writable integer.\",\"writeOnly\":false,\"readOnly\":false,\"default\":0,\"type\":\"integer\",\"forms\":[{\"href\":\"/http_probe/value\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/http_probe/value\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/http_probe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"refuse\":{\"description\":\"Fail in an anticipated way.\",\"title\":\"Fail in an anticipated way.\",\"forms\":[{\"href\":\"/http_probe/refuse\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"refuse_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"refuse_output\",\"type\":\"null\"},\"synchronous\":false},\"slow\":{\"description\":\":param seconds: How long to sleep.\\n:return: \\\"done\\\".\",\"title\":\"Sleep, unless cancelled.\",\"forms\":[{\"href\":\"/http_probe/slow\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"slow_input\",\"type\":\"object\",\"properties\":{\"seconds\":{\"default\":10.0,\"type\":\"number\"}},\"additionalProperties\":false},\"output\":{\"title\":\"slow_output\",\"type\":\"string\"},\"synchronous\":false},\"zero\":{\"description\":\"Return zero.\",\"title\":\"Return zero.\",\"forms\":[{\"href\":\"/http_probe/zero\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"zero_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"zero_output\",\"type\":\"integer\"},\"synchronous\":false}},\"description\":\"A Thing for probing the HTTP binding.\",\"forms\":[{\"href\":\"/http_probe/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/http_probe/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/http_probe/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "td_settings_probe",
+        "method": "GET",
+        "path": "/settings_probe/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:5>",
+          "title": "SettingsProbe",
+          "properties": {
+            "calibration": {
+              "description": "The calibration.",
+              "title": "The calibration.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": {
+                "offset": 0.0,
+                "gain": 1.0
+              },
+              "type": "object",
+              "properties": {
+                "offset": {
+                  "type": "number"
+                },
+                "gain": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "offset",
+                "gain"
+              ],
+              "forms": [
+                {
+                  "href": "/settings_probe/calibration",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/settings_probe/calibration",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/settings_probe/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "count": {
+              "description": "A non-negative integer.",
+              "title": "A non-negative integer.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "forms": [
+                {
+                  "href": "/settings_probe/count",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/settings_probe/count",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/settings_probe/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "enabled": {
+              "description": "A flag.",
+              "title": "A flag.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": false,
+              "type": "boolean",
+              "forms": [
+                {
+                  "href": "/settings_probe/enabled",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/settings_probe/enabled",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/settings_probe/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "exposure": {
+              "description": "The exposure time, in milliseconds.",
+              "title": "The exposure time, in milliseconds.",
+              "writeOnly": false,
+              "readOnly": false,
+              "type": "number",
+              "forms": [
+                {
+                  "href": "/settings_probe/exposure",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                }
+              ]
+            },
+            "label": {
+              "description": "A label.",
+              "title": "A label.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": "probe",
+              "type": "string",
+              "forms": [
+                {
+                  "href": "/settings_probe/label",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/settings_probe/label",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/settings_probe/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "limits": {
+              "description": "Named limits.",
+              "title": "Named limits.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": {},
+              "type": "object",
+              "forms": [
+                {
+                  "href": "/settings_probe/limits",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/settings_probe/limits",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/settings_probe/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true,
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "maybe": {
+              "description": "An integer that may be missing.",
+              "title": "An integer that may be missing.",
+              "writeOnly": false,
+              "readOnly": false,
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "forms": [
+                {
+                  "href": "/settings_probe/maybe",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/settings_probe/maybe",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/settings_probe/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "ratio": {
+              "description": "A number.",
+              "title": "A number.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": 0.5,
+              "type": "number",
+              "forms": [
+                {
+                  "href": "/settings_probe/ratio",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/settings_probe/ratio",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/settings_probe/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "tags": {
+              "description": "Some tags.",
+              "title": "Some tags.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "forms": [
+                {
+                  "href": "/settings_probe/tags",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/settings_probe/tags",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/settings_probe/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {},
+          "description": "A Thing whose settings are saved to disk.",
+          "forms": [
+            {
+              "href": "/settings_probe/properties",
+              "op": [
+                "readallproperties",
+                "writemultipleproperties"
+              ]
+            },
+            {
+              "href": "/settings_probe/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:5>\",\"title\":\"SettingsProbe\",\"properties\":{\"calibration\":{\"description\":\"The calibration.\",\"title\":\"The calibration.\",\"writeOnly\":false,\"readOnly\":false,\"default\":{\"offset\":0.0,\"gain\":1.0},\"type\":\"object\",\"properties\":{\"offset\":{\"type\":\"number\"},\"gain\":{\"type\":\"number\"}},\"required\":[\"offset\",\"gain\"],\"forms\":[{\"href\":\"/settings_probe/calibration\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/settings_probe/calibration\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/settings_probe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"count\":{\"description\":\"A non-negative integer.\",\"title\":\"A non-negative integer.\",\"writeOnly\":false,\"readOnly\":false,\"default\":0,\"type\":\"integer\",\"minimum\":0,\"forms\":[{\"href\":\"/settings_probe/count\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/settings_probe/count\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/settings_probe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"enabled\":{\"description\":\"A flag.\",\"title\":\"A flag.\",\"writeOnly\":false,\"readOnly\":false,\"default\":false,\"type\":\"boolean\",\"forms\":[{\"href\":\"/settings_probe/enabled\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/settings_probe/enabled\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/settings_probe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"exposure\":{\"description\":\"The exposure time, in milliseconds.\",\"title\":\"The exposure time, in milliseconds.\",\"writeOnly\":false,\"readOnly\":false,\"type\":\"number\",\"forms\":[{\"href\":\"/settings_probe/exposure\",\"op\":[\"readproperty\",\"writeproperty\"]}]},\"label\":{\"description\":\"A label.\",\"title\":\"A label.\",\"writeOnly\":false,\"readOnly\":false,\"default\":\"probe\",\"type\":\"string\",\"forms\":[{\"href\":\"/settings_probe/label\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/settings_probe/label\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/settings_probe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"limits\":{\"description\":\"Named limits.\",\"title\":\"Named limits.\",\"writeOnly\":false,\"readOnly\":false,\"default\":{},\"type\":\"object\",\"forms\":[{\"href\":\"/settings_probe/limits\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/settings_probe/limits\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/settings_probe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true,\"additionalProperties\":{\"type\":\"number\"}},\"maybe\":{\"description\":\"An integer that may be missing.\",\"title\":\"An integer that may be missing.\",\"writeOnly\":false,\"readOnly\":false,\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"null\"}],\"forms\":[{\"href\":\"/settings_probe/maybe\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/settings_probe/maybe\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/settings_probe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"ratio\":{\"description\":\"A number.\",\"title\":\"A number.\",\"writeOnly\":false,\"readOnly\":false,\"default\":0.5,\"type\":\"number\",\"forms\":[{\"href\":\"/settings_probe/ratio\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/settings_probe/ratio\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/settings_probe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"tags\":{\"description\":\"Some tags.\",\"title\":\"Some tags.\",\"writeOnly\":false,\"readOnly\":false,\"default\":[],\"type\":\"array\",\"items\":{\"type\":\"string\"},\"forms\":[{\"href\":\"/settings_probe/tags\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/settings_probe/tags\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/settings_probe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{},\"description\":\"A Thing whose settings are saved to disk.\",\"forms\":[{\"href\":\"/settings_probe/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/settings_probe/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "td_ws_probe",
+        "method": "GET",
+        "path": "/ws_probe/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:6>",
+          "title": "ThingWithProperties",
+          "properties": {
+            "dataprop": {
+              "title": "dataprop",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": 0,
+              "type": "integer",
+              "forms": [
+                {
+                  "href": "/ws_probe/dataprop",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/ws_probe/dataprop",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/ws_probe/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "funcprop": {
+              "title": "funcprop",
+              "writeOnly": false,
+              "readOnly": false,
+              "type": "integer",
+              "forms": [
+                {
+                  "href": "/ws_probe/funcprop",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                }
+              ]
+            }
+          },
+          "actions": {
+            "cancel_myself": {
+              "description": "Increment the data property, then pretend to be cancelled.",
+              "title": "Increment the data property, then pretend to be cancelled.",
+              "forms": [
+                {
+                  "href": "/ws_probe/cancel_myself",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "cancel_myself_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "cancel_myself_output"
+              },
+              "synchronous": false
+            },
+            "increment_dataprop": {
+              "description": "Increment the data property.",
+              "title": "Increment the data property.",
+              "forms": [
+                {
+                  "href": "/ws_probe/increment_dataprop",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "increment_dataprop_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "increment_dataprop_output"
+              },
+              "synchronous": false
+            },
+            "raise_error": {
+              "description": "Raise an exception to test for error status.",
+              "title": "Raise an exception to test for error status.",
+              "forms": [
+                {
+                  "href": "/ws_probe/raise_error",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "raise_error_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "raise_error_output"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A Thing with various different properties and actions.\n\n    This is used by the earlier tests, ensuring properties may\n    be observed.\n    ",
+          "forms": [
+            {
+              "href": "/ws_probe/properties",
+              "op": [
+                "readallproperties",
+                "writemultipleproperties"
+              ]
+            },
+            {
+              "href": "/ws_probe/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/ws_probe/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:6>\",\"title\":\"ThingWithProperties\",\"properties\":{\"dataprop\":{\"title\":\"dataprop\",\"writeOnly\":false,\"readOnly\":false,\"default\":0,\"type\":\"integer\",\"forms\":[{\"href\":\"/ws_probe/dataprop\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/ws_probe/dataprop\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/ws_probe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"funcprop\":{\"title\":\"funcprop\",\"writeOnly\":false,\"readOnly\":false,\"type\":\"integer\",\"forms\":[{\"href\":\"/ws_probe/funcprop\",\"op\":[\"readproperty\",\"writeproperty\"]}]}},\"actions\":{\"cancel_myself\":{\"description\":\"Increment the data property, then pretend to be cancelled.\",\"title\":\"Increment the data property, then pretend to be cancelled.\",\"forms\":[{\"href\":\"/ws_probe/cancel_myself\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"cancel_myself_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"cancel_myself_output\"},\"synchronous\":false},\"increment_dataprop\":{\"description\":\"Increment the data property.\",\"title\":\"Increment the data property.\",\"forms\":[{\"href\":\"/ws_probe/increment_dataprop\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"increment_dataprop_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"increment_dataprop_output\"},\"synchronous\":false},\"raise_error\":{\"description\":\"Raise an exception to test for error status.\",\"title\":\"Raise an exception to test for error status.\",\"forms\":[{\"href\":\"/ws_probe/raise_error\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"raise_error_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"raise_error_output\"},\"synchronous\":false}},\"description\":\"A Thing with various different properties and actions.\\n\\n    This is used by the earlier tests, ensuring properties may\\n    be observed.\\n    \",\"forms\":[{\"href\":\"/ws_probe/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/ws_probe/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/ws_probe/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "td_blob_probe",
+        "method": "GET",
+        "path": "/blob_probe/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:7>",
+          "title": "BlobProbe",
+          "properties": {},
+          "actions": {
+            "add_frames": {
+              "description": "Add frames to the stream, and return how many there were.",
+              "title": "Add frames to the stream, and return how many there were.",
+              "forms": [
+                {
+                  "href": "/blob_probe/add_frames",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "add_frames_input",
+                "type": "object",
+                "properties": {
+                  "count": {
+                    "default": 3,
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "add_frames_output",
+                "type": "integer"
+              },
+              "synchronous": false
+            },
+            "capture": {
+              "description": "Capture an image, held in memory.",
+              "title": "Capture an image, held in memory.",
+              "forms": [
+                {
+                  "href": "/blob_probe/capture",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "image/jpeg"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "capture_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "capture_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "image/jpeg",
+                    "default": "image/jpeg",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            },
+            "capture_to_file": {
+              "description": "Capture an image, saved in a temporary directory.",
+              "title": "Capture an image, saved in a temporary directory.",
+              "forms": [
+                {
+                  "href": "/blob_probe/capture_to_file",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "image/jpeg"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "capture_to_file_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "capture_to_file_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "image/jpeg",
+                    "default": "image/jpeg",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            },
+            "csv": {
+              "description": "Return CSV data as a vaguely typed Blob.",
+              "title": "Return CSV data as a vaguely typed Blob.",
+              "forms": [
+                {
+                  "href": "/blob_probe/csv",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "text/*"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "csv_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "csv_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "default": "text/*",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "This URL will download some vague text data.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            },
+            "jpeg_size": {
+              "description": "Return the size of an image, in bytes.",
+              "title": "Return the size of an image, in bytes.",
+              "forms": [
+                {
+                  "href": "/blob_probe/jpeg_size",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "jpeg_size_input",
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                    "title": "JPEGBlob",
+                    "type": "object",
+                    "properties": {
+                      "href": {
+                        "title": "Href",
+                        "type": "string"
+                      },
+                      "media_type": {
+                        "title": "Media Type",
+                        "const": "image/jpeg",
+                        "default": "image/jpeg",
+                        "type": "string"
+                      },
+                      "rel": {
+                        "title": "Rel",
+                        "const": "output",
+                        "default": "output",
+                        "type": "string"
+                      },
+                      "description": {
+                        "title": "Description",
+                        "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "href",
+                      "media_type"
+                    ]
+                  }
+                },
+                "required": [
+                  "image"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "jpeg_size_output",
+                "type": "integer"
+              },
+              "synchronous": false
+            },
+            "passthrough": {
+              "description": "Return the Blob it is given.",
+              "title": "Return the Blob it is given.",
+              "forms": [
+                {
+                  "href": "/blob_probe/passthrough",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "text/plain"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "passthrough_input",
+                "type": "object",
+                "properties": {
+                  "blob": {
+                    "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                    "title": "TextBlob",
+                    "type": "object",
+                    "properties": {
+                      "href": {
+                        "title": "Href",
+                        "type": "string"
+                      },
+                      "media_type": {
+                        "title": "Media Type",
+                        "const": "text/plain",
+                        "default": "text/plain",
+                        "type": "string"
+                      },
+                      "rel": {
+                        "title": "Rel",
+                        "const": "output",
+                        "default": "output",
+                        "type": "string"
+                      },
+                      "description": {
+                        "title": "Description",
+                        "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "href",
+                      "media_type"
+                    ]
+                  }
+                },
+                "required": [
+                  "blob"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "passthrough_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "text/plain",
+                    "default": "text/plain",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            },
+            "restart_stream": {
+              "description": "Start the stream again, with an empty buffer.",
+              "title": "Start the stream again, with an empty buffer.",
+              "forms": [
+                {
+                  "href": "/blob_probe/restart_stream",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "restart_stream_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "restart_stream_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "stop_stream": {
+              "description": "Stop the stream: its clients' responses end.",
+              "title": "Stop the stream: its clients' responses end.",
+              "forms": [
+                {
+                  "href": "/blob_probe/stop_stream",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "stop_stream_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "stop_stream_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "text": {
+              "description": "Return some text as a Blob.",
+              "title": "Return some text as a Blob.",
+              "forms": [
+                {
+                  "href": "/blob_probe/text",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "text/plain"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "text_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "text_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "text/plain",
+                    "default": "text/plain",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            },
+            "two_texts": {
+              "description": "Return two Blobs in a dictionary.",
+              "title": "Return two Blobs in a dictionary.",
+              "forms": [
+                {
+                  "href": "/blob_probe/two_texts",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "two_texts_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "two_texts_output",
+                "type": "object",
+                "additionalProperties": {
+                  "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                  "properties": {
+                    "href": {
+                      "title": "Href",
+                      "type": "string"
+                    },
+                    "media_type": {
+                      "const": "text/plain",
+                      "default": "text/plain",
+                      "title": "Media Type",
+                      "type": "string"
+                    },
+                    "rel": {
+                      "const": "output",
+                      "default": "output",
+                      "title": "Rel",
+                      "type": "string"
+                    },
+                    "description": {
+                      "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                      "title": "Description",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "href",
+                    "media_type"
+                  ],
+                  "title": "TextBlob",
+                  "type": "object"
+                }
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A Thing for probing Blobs and MJPEG streams.",
+          "links": [
+            {
+              "href": "/blob_probe/stream",
+              "type": "multipart/x-mixed-replace",
+              "rel": "alternate"
+            },
+            {
+              "href": "/blob_probe/stream/viewer",
+              "type": "text/html",
+              "rel": "alternate"
+            }
+          ],
+          "forms": [
+            {
+              "href": "/blob_probe/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:7>\",\"title\":\"BlobProbe\",\"properties\":{},\"actions\":{\"add_frames\":{\"description\":\"Add frames to the stream, and return how many there were.\",\"title\":\"Add frames to the stream, and return how many there were.\",\"forms\":[{\"href\":\"/blob_probe/add_frames\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"add_frames_input\",\"type\":\"object\",\"properties\":{\"count\":{\"default\":3,\"type\":\"integer\"}},\"additionalProperties\":false},\"output\":{\"title\":\"add_frames_output\",\"type\":\"integer\"},\"synchronous\":false},\"capture\":{\"description\":\"Capture an image, held in memory.\",\"title\":\"Capture an image, held in memory.\",\"forms\":[{\"href\":\"/blob_probe/capture\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"image/jpeg\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"capture_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"capture_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false},\"capture_to_file\":{\"description\":\"Capture an image, saved in a temporary directory.\",\"title\":\"Capture an image, saved in a temporary directory.\",\"forms\":[{\"href\":\"/blob_probe/capture_to_file\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"image/jpeg\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"capture_to_file_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"capture_to_file_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false},\"csv\":{\"description\":\"Return CSV data as a vaguely typed Blob.\",\"title\":\"Return CSV data as a vaguely typed Blob.\",\"forms\":[{\"href\":\"/blob_probe/csv\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"text/*\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"csv_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"csv_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"default\":\"text/*\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"This URL will download some vague text data.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false},\"jpeg_size\":{\"description\":\"Return the size of an image, in bytes.\",\"title\":\"Return the size of an image, in bytes.\",\"forms\":[{\"href\":\"/blob_probe/jpeg_size\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"jpeg_size_input\",\"type\":\"object\",\"properties\":{\"image\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"JPEGBlob\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]}},\"required\":[\"image\"],\"additionalProperties\":false},\"output\":{\"title\":\"jpeg_size_output\",\"type\":\"integer\"},\"synchronous\":false},\"passthrough\":{\"description\":\"Return the Blob it is given.\",\"title\":\"Return the Blob it is given.\",\"forms\":[{\"href\":\"/blob_probe/passthrough\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"text/plain\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"passthrough_input\",\"type\":\"object\",\"properties\":{\"blob\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"TextBlob\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"text/plain\",\"default\":\"text/plain\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]}},\"required\":[\"blob\"],\"additionalProperties\":false},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"passthrough_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"text/plain\",\"default\":\"text/plain\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false},\"restart_stream\":{\"description\":\"Start the stream again, with an empty buffer.\",\"title\":\"Start the stream again, with an empty buffer.\",\"forms\":[{\"href\":\"/blob_probe/restart_stream\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"restart_stream_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"restart_stream_output\",\"type\":\"null\"},\"synchronous\":false},\"stop_stream\":{\"description\":\"Stop the stream: its clients' responses end.\",\"title\":\"Stop the stream: its clients' responses end.\",\"forms\":[{\"href\":\"/blob_probe/stop_stream\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"stop_stream_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"stop_stream_output\",\"type\":\"null\"},\"synchronous\":false},\"text\":{\"description\":\"Return some text as a Blob.\",\"title\":\"Return some text as a Blob.\",\"forms\":[{\"href\":\"/blob_probe/text\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"text/plain\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"text_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"text_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"text/plain\",\"default\":\"text/plain\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false},\"two_texts\":{\"description\":\"Return two Blobs in a dictionary.\",\"title\":\"Return two Blobs in a dictionary.\",\"forms\":[{\"href\":\"/blob_probe/two_texts\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"two_texts_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"two_texts_output\",\"type\":\"object\",\"additionalProperties\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"const\":\"text/plain\",\"default\":\"text/plain\",\"title\":\"Media Type\",\"type\":\"string\"},\"rel\":{\"const\":\"output\",\"default\":\"output\",\"title\":\"Rel\",\"type\":\"string\"},\"description\":{\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"title\":\"Description\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"],\"title\":\"TextBlob\",\"type\":\"object\"}},\"synchronous\":false}},\"description\":\"A Thing for probing Blobs and MJPEG streams.\",\"links\":[{\"href\":\"/blob_probe/stream\",\"type\":\"multipart/x-mixed-replace\",\"rel\":\"alternate\"},{\"href\":\"/blob_probe/stream/viewer\",\"type\":\"text/html\",\"rel\":\"alternate\"}],\"forms\":[{\"href\":\"/blob_probe/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "td_ndarray_probe",
+        "method": "GET",
+        "path": "/ndarray_probe/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:8>",
+          "title": "NDArrayProbe",
+          "properties": {
+            "matrix": {
+              "description": "A matrix of numbers, 2 by 3 to start with.",
+              "title": "A matrix of numbers, 2 by 3 to start with.",
+              "writeOnly": false,
+              "readOnly": false,
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "oneOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "forms": [
+                {
+                  "href": "/ndarray_probe/matrix",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                }
+              ]
+            }
+          },
+          "actions": {
+            "double": {
+              "description": "Double every element of an array.",
+              "title": "Double every element of an array.",
+              "forms": [
+                {
+                  "href": "/ndarray_probe/double",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "double_input",
+                "type": "object",
+                "properties": {
+                  "arr": {
+                    "description": "A RootModel describing a list-of-lists up to 7 deep.\n\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\nserialised to a list. It is used in the annotated `.NDArray` type.",
+                    "title": "NestedListOfNumbersModel",
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "oneOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "oneOf": [
+                                    {
+                                      "type": "integer"
+                                    },
+                                    {
+                                      "type": "number"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "oneOf": [
+                                      {
+                                        "type": "integer"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {}
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "arr"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "description": "A RootModel describing a list-of-lists up to 7 deep.\n\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\nserialised to a list. It is used in the annotated `.NDArray` type.",
+                "title": "double_output",
+                "oneOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "oneOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "synchronous": false
+            },
+            "ramp": {
+              "description": "Return the integers from 0 to n - 1.",
+              "title": "Return the integers from 0 to n - 1.",
+              "forms": [
+                {
+                  "href": "/ndarray_probe/ramp",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "ramp_input",
+                "type": "object",
+                "properties": {
+                  "n": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "n"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "description": "A RootModel describing a list-of-lists up to 7 deep.\n\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\nserialised to a list. It is used in the annotated `.NDArray` type.",
+                "title": "ramp_output",
+                "oneOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "oneOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "synchronous": false
+            },
+            "total": {
+              "description": "Add up every element of an array.",
+              "title": "Add up every element of an array.",
+              "forms": [
+                {
+                  "href": "/ndarray_probe/total",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "total_input",
+                "type": "object",
+                "properties": {
+                  "arr": {
+                    "description": "A RootModel describing a list-of-lists up to 7 deep.\n\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\nserialised to a list. It is used in the annotated `.NDArray` type.",
+                    "title": "NestedListOfNumbersModel",
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "oneOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "oneOf": [
+                                    {
+                                      "type": "integer"
+                                    },
+                                    {
+                                      "type": "number"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "oneOf": [
+                                      {
+                                        "type": "integer"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {}
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "arr"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "total_output",
+                "type": "number"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A Thing with array-valued affordances.\n\n    It is used to check how arrays are described and serialised.\n    ",
+          "forms": [
+            {
+              "href": "/ndarray_probe/properties",
+              "op": [
+                "readallproperties",
+                "writemultipleproperties"
+              ]
+            },
+            {
+              "href": "/ndarray_probe/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:8>\",\"title\":\"NDArrayProbe\",\"properties\":{\"matrix\":{\"description\":\"A matrix of numbers, 2 by 3 to start with.\",\"title\":\"A matrix of numbers, 2 by 3 to start with.\",\"writeOnly\":false,\"readOnly\":false,\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{}}}}}}}}],\"forms\":[{\"href\":\"/ndarray_probe/matrix\",\"op\":[\"readproperty\",\"writeproperty\"]}]}},\"actions\":{\"double\":{\"description\":\"Double every element of an array.\",\"title\":\"Double every element of an array.\",\"forms\":[{\"href\":\"/ndarray_probe/double\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"double_input\",\"type\":\"object\",\"properties\":{\"arr\":{\"description\":\"A RootModel describing a list-of-lists up to 7 deep.\\n\\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\\nserialised to a list. It is used in the annotated `.NDArray` type.\",\"title\":\"NestedListOfNumbersModel\",\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{}}}}}}}}]}},\"required\":[\"arr\"],\"additionalProperties\":false},\"output\":{\"description\":\"A RootModel describing a list-of-lists up to 7 deep.\\n\\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\\nserialised to a list. It is used in the annotated `.NDArray` type.\",\"title\":\"double_output\",\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{}}}}}}}}]},\"synchronous\":false},\"ramp\":{\"description\":\"Return the integers from 0 to n - 1.\",\"title\":\"Return the integers from 0 to n - 1.\",\"forms\":[{\"href\":\"/ndarray_probe/ramp\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"ramp_input\",\"type\":\"object\",\"properties\":{\"n\":{\"type\":\"integer\"}},\"required\":[\"n\"],\"additionalProperties\":false},\"output\":{\"description\":\"A RootModel describing a list-of-lists up to 7 deep.\\n\\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\\nserialised to a list. It is used in the annotated `.NDArray` type.\",\"title\":\"ramp_output\",\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{}}}}}}}}]},\"synchronous\":false},\"total\":{\"description\":\"Add up every element of an array.\",\"title\":\"Add up every element of an array.\",\"forms\":[{\"href\":\"/ndarray_probe/total\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"total_input\",\"type\":\"object\",\"properties\":{\"arr\":{\"description\":\"A RootModel describing a list-of-lists up to 7 deep.\\n\\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\\nserialised to a list. It is used in the annotated `.NDArray` type.\",\"title\":\"NestedListOfNumbersModel\",\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{}}}}}}}}]}},\"required\":[\"arr\"],\"additionalProperties\":false},\"output\":{\"title\":\"total_output\",\"type\":\"number\"},\"synchronous\":false}},\"description\":\"A Thing with array-valued affordances.\\n\\n    It is used to check how arrays are described and serialised.\\n    \",\"forms\":[{\"href\":\"/ndarray_probe/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/ndarray_probe/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    }
+  ]
+}

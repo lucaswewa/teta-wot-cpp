@@ -1,0 +1,64 @@
+{
+  "config": {
+    "things": {
+      "mything": "labthings_fastapi.example_things:MyThing",
+      "broken": "labthings_fastapi.example_things:ThingWithBrokenAffordances",
+      "counter": "twins.counter:TestThing",
+      "types": "twins.types_probe:TypesThing",
+      "http_probe": "twins.http_probe:HttpProbe",
+      "settings_probe": "twins.settings_probe:SettingsProbe",
+      "ws_probe": "twins.ws_probe:ThingWithProperties",
+      "blob_probe": "twins.blob_probe:BlobProbe",
+      "ndarray_probe": "twins.ndarray_probe:NDArrayProbe"
+    },
+    "server_id": "conformance",
+    "wire_profile": "wot"
+  },
+  "steps": [
+    {
+      "name": "td_mything",
+      "method": "GET",
+      "path": "/mything/"
+    },
+    {
+      "name": "td_broken",
+      "method": "GET",
+      "path": "/broken/"
+    },
+    {
+      "name": "td_counter",
+      "method": "GET",
+      "path": "/counter/"
+    },
+    {
+      "name": "td_types",
+      "method": "GET",
+      "path": "/types/"
+    },
+    {
+      "name": "td_http_probe",
+      "method": "GET",
+      "path": "/http_probe/"
+    },
+    {
+      "name": "td_settings_probe",
+      "method": "GET",
+      "path": "/settings_probe/"
+    },
+    {
+      "name": "td_ws_probe",
+      "method": "GET",
+      "path": "/ws_probe/"
+    },
+    {
+      "name": "td_blob_probe",
+      "method": "GET",
+      "path": "/blob_probe/"
+    },
+    {
+      "name": "td_ndarray_probe",
+      "method": "GET",
+      "path": "/ndarray_probe/"
+    }
+  ]
+}
