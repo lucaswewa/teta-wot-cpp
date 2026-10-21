@@ -1,6 +1,6 @@
 # Architecture and Implementation Plan: teta-wot-cpp
 
-Status: **draft for review** (2026-10-21; revised the same day with the answers to the open questions, §10). This plan implements [goals.md](goals.md). No library code is written until the plan is approved.
+Status: **draft for review** (2026-10-21; revised the same day with the answers to the open questions, §11). This plan implements [goals.md](goals.md). No library code is written until the plan is approved.
 
 The goals, restated:
 
@@ -14,7 +14,7 @@ The goals, restated:
 
 ## 0. Decisions
 
-Each becomes an ADR in `docs/adr/` in Phase 0. D1, D2, D3, D5, D11 and D12 are settled by your answers (§10); approving the plan accepts the rest.
+Each becomes an ADR in `docs/adr/` in Phase 0. D1, D2, D3, D5, D11 and D12 are settled by your answers (§11); approving the plan accepts the rest.
 
 | # | Topic | Proposal |
 |---|---|---|
@@ -28,7 +28,7 @@ Each becomes an ADR in `docs/adr/` in Phase 0. D1, D2, D3, D5, D11 and D12 are s
 | D8 | Validation | **Port `teta-wot`'s `SchemaValidator`** (pydantic lax-mode coercions and error bodies, driven by the DataSchema) one-to-one, with **RE2** for `pattern` (same syntax family as Rust's `regex`, which pydantic-core also uses). |
 | D9 | Errors | Thing code reports failures by throwing (`HandledError` for anticipated ones) or returning `Expected<T, ActionError>`. Any exception escaping an action ends its invocation as `error`; the server carries on. A crash (segfault) can't be caught in C++; this is a documented behavioural difference, not a wire one. |
 | D10 | Logging | A small `teta::wot::log` facade (`std::format` + `std::source_location`) with per-invocation capture through a thread-local invocation scope, and an **spdlog sink** so driver code that already logs with spdlog is captured too. Records have `teta-wot`'s JSON shape (`levelname`, `levelno`, `lineno`, `filename`, `created`, …). |
-| D11 | Verification | **Parity with `teta-wot` v0.1.0 is the gate** (§7): golden fixtures captured from the Rust reference server and replayed against the C++ server, and live **differential testing** of both servers. LabThings' Python `ThingClient` is not a gating client. |
+| D11 | Verification | **Parity with `teta-wot` v0.1.0 is the gate** (§8): golden fixtures captured from the Rust reference server and replayed against the C++ server, and live **differential testing** of both servers. LabThings' Python `ThingClient` is not a gating client. |
 | D12 | Naming | Project `teta-wot-cpp`; namespace `teta::wot`; CMake package `teta-wot`, targets `teta::wot`, `teta::wot-td`, …; headers under `<teta/wot/…>`, umbrella `<teta/wot.hpp>`. |
 | D13 | Licence | MIT (the repository's licence), so it can be packaged (a vcpkg overlay port in Phase 10). |
 
@@ -47,7 +47,7 @@ Each becomes an ADR in `docs/adr/` in Phase 0. D1, D2, D3, D5, D11 and D12 are s
 - Configuration files, the registry, the command line with `teta-wot`'s exit codes, the fallback server, graceful shutdown.
 - Blobs; `NdArray`; the Windows service.
 - `TestClient`, `Harness`, `action_ctx` for tests.
-- The 35 examples and the guide.
+- The 35 examples (§6) and the guide.
 
 **Added for Linux** (no wire effect): SIGINT/SIGTERM shutdown, and a systemd unit with `sd_notify` readiness as the Linux counterpart of the Windows service.
 
@@ -77,7 +77,7 @@ teta-wot-cpp/
   include/teta/wot/...      public headers, one folder per library
   src/<library>/...          implementation
   tests/<library>/...        GoogleTest suites; tests/compile_fail/ (expected build failures)
-  conformance/               Rust reference server, scenarios, captured fixtures, differential runner (§7)
+  conformance/               Rust reference server, scenarios, captured fixtures, differential runner (§8)
   examples/<name>/           one per teta-wot example, same names
   fuzz/                      libFuzzer targets
   tools/soak/                the soak tool
@@ -181,6 +181,7 @@ Parity is easiest if a few things are owned outright:
 | SHA-1 (UUID v5), base64 | `drogon::utils` | Already linked |
 | Tests | GoogleTest; JSON-Schema validation with pboettch/json-schema-validator (draft-07, for the W3C TD schema) | |
 | Fuzzing | libFuzzer (Clang, Linux CI) | Ports `teta-wot`'s fuzz targets |
+| JPEG frames (examples only) | stb_image_write (vendored) | Simulated camera images, as `jpeg-encoder` in the Rust examples |
 
 ---
 
@@ -235,8 +236,8 @@ Each phase ports one area of `teta-wot`, and ends with its gate green on **both*
 ### 5.0 Every phase delivers
 
 - the code, with unit tests ported from the corresponding `teta-wot` tests;
-- its conformance gate (§7) passing;
-- the examples for its concepts (same names as `teta-wot`'s), each run by CI;
+- its conformance gate (§8) passing;
+- the examples for its concepts (§6), each run by CI and, from Phase 4, compared with the Rust original;
 - a note in `docs/notes/phase-NN-*.md` (what was built, deviations, wire facts found) and its ADRs;
 - `clang-format`, `clang-tidy` and warnings-as-errors clean (`/W4` on MSVC, `-Wall -Wextra -Wpedantic` on GCC/Clang); ASan+UBSan and TSan runs on Linux.
 
@@ -247,6 +248,7 @@ Each phase ports one area of `teta-wot`, and ends with its gate green on **both*
 - **JSON spike:** the `serde_json`-exact serialiser, checked against a corpus of numbers and strings serialised by `serde_json` (generated by a tiny Rust program in `conformance/`).
 - **Reference server:** `conformance/reference-rs/`, a Rust binary in this repository depending on `teta-wot` at the `v0.1.0` tag, serving the twin Things (ported from `wot/conformance/twin-server` to `teta-wot`'s API, plus the examples' Things) with `teta-wot`'s command line. The C++ twin server (`conformance/twin-server-cpp/`) serves the same Things under the same registry names.
 - **Fixture capture:** `conformance/scenarios/` (scripted requests, adapted from `wot`'s capture scripts) and `conformance/capture.py`, which runs them against the reference server and writes the golden fixtures to `conformance/fixtures/`.
+- The examples harness: `teta_wot_add_example`, CTest registration, `examples/README.md`, and the `cmake-consumer` example (§6).
 - ADRs for D1–D13; `docs/wire-contract.md`; the guide skeleton.
 
 **Gate:** the spike results recorded in the Phase 0 note; any spike that fails reopens its decision before Phase 1.
@@ -267,13 +269,13 @@ Ports `validate.rs`: lax coercions, error types, `loc`, `msg`, `input`, `ctx`, t
 
 Ports `teta-wot-core`: `Thing`, `ThingSpec` and `ThingDefinition`; `Prop<T>` and functional properties; actions, invocations (state machine, retention, lazy expiry), `ActionCtx`, cancellation with child invocations; global lock; logs; broker; events; device actors; the worker pool.
 
-**Gate:** `teta-wot-core`'s tests (`property`, `runtime`, `cancel`, `device`, `validate`) ported and passing; TSan clean; the compile-fail suite; the `property-cells`, `functional-properties`, `cancellable-action`, `global-lock`, `device-actor`, `invocation-logs`, `builder_thing` examples (in-process).
+**Gate:** `teta-wot-core`'s tests (`property`, `runtime`, `cancel`, `device`, `validate`) ported and passing; TSan clean; the compile-fail suite; the `compile-errors`, `property-cells`, `functional-properties`, `cancellable-action`, `global-lock`, `device-actor`, `invocation-logs`, `builder_thing` examples (in-process).
 
 ### Phase 4: HTTP binding, Drogon adapter and TestClient (L). **First end-to-end milestone.**
 
 Ports `teta-wot-http` (routes, dispatcher, the `tetathing` renderer, errors, CORS) and the server builder, plus the Drogon adapter and `TestClient`.
 
-**Gate:** the HTTP fixtures (`default`, `locked`, `prefixed` scenarios) replayed through `TestClient` and over real sockets, with no deltas; the differential runner (§7.2) green on the HTTP scenarios; the quickstart, `light`, `counter-server`, `http-walkthrough`, `api-prefix`, `custom-endpoint` examples.
+**Gate:** the HTTP fixtures (`default`, `locked`, `prefixed` scenarios) replayed through `TestClient` and over real sockets, with no deltas; the differential runner (§8.2) green on the HTTP scenarios; the quickstart, `light`, `counter-server`, `http-walkthrough`, `api-prefix`, `custom-endpoint`, `drogon-integration` examples.
 
 ### Phase 5: Composition, settings, configuration, lifecycle (M–L)
 
@@ -309,13 +311,79 @@ The `wot` wire profile (204s, problem details, `ActionStatus`, synchronous actio
 
 `NdArray`; the Windows service (install/uninstall, stop during a long action) and the systemd unit; fuzz targets (validation, WS parser, request bodies) in CI; the shutdown-under-load test; the soak tool; the simulated microscope and `microscope-service`; the full guide; vcpkg overlay port; v0.1.0.
 
-**Gate:** the array scenarios (including ragged arrays) equal to the reference's; `service_test.ps1` on Windows and a systemd test on Linux; 24 h soak with no leak (ASan/LSan on Linux, CRT debug heap on Windows); every one of the 35 examples ported and run by CI.
+**Gate:** the array scenarios (including ragged arrays) equal to the reference's; `service_test.ps1` on Windows and a systemd test on Linux; 24 h soak with no leak (ASan/LSan on Linux, CRT debug heap on Windows); every example in §6 ported, run by CI on both OSes, and equal on the wire to its Rust original.
 
 Rough sizing (S ≈ 1 week, M ≈ 2–3, L ≈ 4–5 for one developer): about 30–40 weeks, Phases 2, 3 and 4 being the bulk.
 
 ---
 
-## 6. Platform specifics
+## 6. Examples
+
+Examples are part of each phase's deliverable (§5.0), not an afterthought: each teaches one concept with the public API only, and doubles as a test.
+
+### 6.1 Conventions
+
+- **One folder per example,** `examples/<name>/`, with the same name as `teta-wot`'s, holding `CMakeLists.txt`, `main.cpp` (plus any headers or assets) and a `README.md` with `teta-wot`'s sections: **Concept**, **Technologies**, how to run it, what to look for.
+- **Two modes, as in `teta-wot`:** run without arguments, an example runs a short in-process demonstration (through `TestClient` or in-process calls), prints what it shows, and exits 0; with `--serve` it serves on `127.0.0.1:5000` until Ctrl-C/SIGTERM.
+- **One CMake helper,** `teta_wot_add_example(<name> SOURCES … [WINDOWS_ONLY] [NEEDS python|node])`, builds it against the installed-style targets (`teta::wot`) and registers its demonstration as a CTest test (label `example`), so CI runs every example on both OSes.
+- **Wire parity, too.** Each example's Things are the same as the Rust example's, under the same names and options. Phase 4 onwards, the differential runner (§8.2) serves each example with `--serve` from both implementations (the Rust ones built from `teta-wot` v0.1.0's `examples/`) and compares their TDs, OpenAPI documents and a scripted session. A C++ example therefore can't drift from its Rust original.
+- **Scripts and clients** that `teta-wot`'s examples use (`walkthrough.sh`/`.ps1`, the Python clients, the node-wot consumer, the browser pages) are copied unchanged, since they only see the wire: a script that works against the Rust example must work against the C++ one.
+- **Only the examples need extra dependencies:** `stb_image_write` (vendored, single header) encodes the simulated JPEG frames where the Rust examples use `jpeg-encoder`.
+- **`examples/README.md`** catalogues them by phase and by concept, with the same "to learn / start with" table as `teta-wot`'s guide.
+
+### 6.2 Catalogue
+
+The 35 examples of `teta-wot` v0.1.0, by the phase that delivers them:
+
+| Phase | Example | Concept | C++ notes |
+|---|---|---|---|
+| 1 | `td_builder` | A TD built by hand, validated against the W3C schema | `td::ThingDescription::builder`, the affordance builders |
+| 1 | `schema-to-dataschema` | How C++ types become DataSchemas | `Codec<T>`, Boost.PFR structs, `describe<T>` for docs and constraints (replaces schemars) |
+| 3 | `builder_thing` | A Thing defined with the builder API | `ThingDefinition`, `Runtime`, the type-erased registry |
+| 3 | `property-cells` | `Prop<T>`: validation, notification, read-only | `Watcher<T>` replaces `tokio::sync::watch` |
+| 3 | `functional-properties` | Getters, setters, resetters | `.setter()`, `.resetter()`, `.blocking()` |
+| 3 | `cancellable-action` | Cooperative cancellation | `ActionCtx::sleep`, `check_cancelled`, `cancelled`, child invocations, `std::stop_token` |
+| 3 | `global-lock` | Actions and writes one at a time | `.global_lock(false)`, `ctx.hold_global_lock()` |
+| 3 | `device-actor` | A synchronous driver on its own thread | `Device<D>`: `call`, `post`, timeouts, faults, `reset`, `abort` |
+| 3 | `invocation-logs` | Per-invocation logs | `tw::log`, and the **spdlog sink** capturing a driver that logs with spdlog |
+| 4 | `quickstart-counter` | The first Thing, served | `Thing<T>` + `define()`, `TestClient` |
+| 4 | `light` | The guide's tutorial Thing | constraints, `readonly`, a functional property |
+| 4 | `counter-server` | The first end-to-end milestone | `ThingServer` on Drogon |
+| 4 | `http-walkthrough` | Every route, status and header over a real socket | `walkthrough.sh` / `walkthrough.ps1` unchanged |
+| 4 | `api-prefix` | Serving under `/api/v1` | `api_prefix`, `TestClient::with_host` |
+| 4 | `custom-endpoint` | Routes outside the TD | `t.endpoint(...)` on the neutral `Request`/`Response` |
+| 5 | `thing-slots` | Composition, interfaces, swapping implementations by configuration | `Slot`, `OptSlot`, `SlotMap`, abstract-base-class interfaces, two configuration files |
+| 5 | `dependency-injection` | Services shared between Things | `ThingServerBuilder::service`, `Dep<S>`, `Server` |
+| 5 | `settings` | Properties that survive restarts | `.setting()`; files interchangeable with the Rust example's |
+| 5 | `config-and-cli` | An application binary served from configuration files | `Registry`, `serve_from_cli`, exit codes, the fallback server |
+| 5 | `graceful-shutdown` | Stopping without leaving hardware in a bad state | Console control events on Windows, SIGINT/SIGTERM on Linux |
+| 6 | `observe-websocket` | Observing over `/{thing}/ws` | Browser page and Python script unchanged |
+| 6 | `sse-observe` | `EventSource` in the browser | `on_start`/`on_stop` feeding a property from a `std::jthread` |
+| 6 | `events` | A driver emitting events from its thread | `Event<T>::emit` from a `Device<D>` |
+| 7 | `blob-camera` | Blobs out and back in | `Blob<blob::Jpeg>`, `from_bytes`, `from_temporary_directory` |
+| 7 | `mjpeg-stream` | A live preview and actions waiting for frames | `MjpegStream`, `add_frame` from a thread, `grab_frame`, `next_frame_size` |
+| 8 | `openapi-export` | The OpenAPI document and TDs without a server | `openapi()`, `thing_description()`; `openapi-typescript` unchanged |
+| 8 | `docs-offline` | Swagger UI and ReDoc with no internet | `TETA_WOT_DOCS_OFFLINE=ON` |
+| 9 | `strict-profile` | `tetathing` and `wot` side by side | Two servers, same requests |
+| 9 | `discovery` | `/.well-known/wot`, the directory, DNS-SD | `TETA_WOT_MDNS=ON`; found by Python `zeroconf` |
+| 9 | `bearer-security` | Requiring a token | `Security::bearer` |
+| 9 | `node-wot-consumer` | Interoperability with Eclipse node-wot | The JavaScript consumer unchanged |
+| 9 | `units-and-semantics` | Units, `@type`, `@context` | `.unit()`, `.semantic_type()`, `t.context()` |
+| 10 | `ndarray-property` | Arrays as nested lists | `NdArray<double, 2>`, `NdArray<double, dynamic_rank>` |
+| 10 | `simulated-microscope` | The capstone: stage, camera, autofocus with slots, settings, MJPEG, Blobs, events, arrays | Same `microscope.json` and `demo.py` as the Rust one |
+| 10 | `microscope-service` | The microscope as a service | Windows: SCM install/uninstall/run/console and `service_test.ps1`; Linux: `install` writes a systemd unit, `Type=notify`, and `service_test.sh` checks a stop during a long action |
+
+### 6.3 Examples only the C++ project needs
+
+| Phase | Example | Concept |
+|---|---|---|
+| 0 | `cmake-consumer` | Using the library from another CMake project: `find_package(teta-wot CONFIG REQUIRED)` with vcpkg (and, from Phase 10, the overlay port). CI builds it from an installed tree on both OSes. |
+| 3 | `compile-errors` | What the compiler says when a Thing is declared wrongly (a type without a `Codec`, a wrong number of parameter names, a setter without its property), with each message explained. It mirrors `tests/compile_fail/`, and is the counterpart of `teta-wot`'s `trybuild` UI tests. Its demonstration only lists the cases; CI checks they fail to compile. |
+| 4 | `drogon-integration` | Serving Things inside an application that already uses Drogon for its own routes: mounting the dispatcher next to existing controllers, sharing the event loops, and leaving shutdown to the application. |
+
+---
+
+## 7. Platform specifics
 
 | Concern | Windows | Linux |
 |---|---|---|
@@ -330,23 +398,23 @@ Rough sizing (S ≈ 1 week, M ≈ 2–3, L ≈ 4–5 for one developer): about 3
 
 ---
 
-## 7. Verification strategy
+## 8. Verification strategy
 
-### 7.1 Golden fixtures from the reference
+### 8.1 Golden fixtures from the reference
 
 `conformance/fixtures/` holds the answers of the Rust reference server (`teta-wot` v0.1.0) to every scenario in `conformance/scenarios/`: TDs, validation, HTTP exchanges in several server configurations (default, global lock, API prefix, `wot` profile, security), settings files written and read, WebSocket and SSE messages, OpenAPI documents. They are normalised as the `wot` repository's fixtures are (UUIDs numbered by first appearance, timestamps masked, the race in a fresh invocation's state masked, only contract headers kept). GoogleTest suites replay them against the C++ twin server, through `TestClient` and over sockets, and require equality. These run on every CI job without building Rust. CI also re-captures them and fails if anything under `fixtures/` changes, so they can't drift from the reference.
 
-### 7.2 Live differential testing
+### 8.2 Live differential testing
 
 `conformance/diff/` (Python, pinned with `uv`) starts the reference server and the C++ twin server from the **same configuration file**, sends the same requests (HTTP, SSE, WebSocket, MJPEG) to both, normalises both answers the same way, and requires them to be equal, headers included. Besides the scripted scenarios it has a randomised mode: request bodies generated from each affordance's DataSchema (valid, borderline and invalid), odd paths and methods, and WebSocket messages, to find differences no one scripted. It runs on Windows and Linux (the reference is built from source on both).
 
-### 7.3 Engineering tests
+### 8.3 Engineering tests
 
 Unit tests ported from `teta-wot`; compile-fail tests; ASan/UBSan/TSan builds; libFuzzer targets; the shutdown-under-load test and the soak tool; every example run by CI.
 
 ---
 
-## 8. Risks and mitigations
+## 9. Risks and mitigations
 
 | Risk | Mitigation |
 |---|---|
@@ -362,17 +430,17 @@ Unit tests ported from `teta-wot`; compile-fail tests; ASan/UBSan/TSan builds; l
 
 ---
 
-## 9. Deliverables of this plan's first step (Phase 0)
+## 10. Deliverables of this plan's first step (Phase 0)
 
 1. ADRs 0001–0013 for D1–D13.
-2. The repository skeleton building an empty library and a test on both OSes in CI.
+2. The repository skeleton building an empty library and a test on both OSes in CI, with the examples harness and the `cmake-consumer` example (§6).
 3. The Drogon and JSON spikes, with their results in `docs/notes/phase-00-baseline.md`.
 4. `conformance/`: the Rust reference server at `teta-wot` v0.1.0, the capture tooling, and the first scenario captured and compared (the counter's TD and one invocation).
 5. `docs/wire-contract.md`.
 
 ---
 
-## 10. Answered questions
+## 11. Answered questions
 
 | # | Question | Answer | Where it lands |
 |---|---|---|---|
@@ -380,6 +448,6 @@ Unit tests ported from `teta-wot`; compile-fail tests; ASan/UBSan/TSan builds; l
 | 2 | Concurrency | **Actions on threads only** | D5, §2.3 |
 | 3 | Package manager | **vcpkg** | D3 |
 | 4 | Reference | **`teta-wot` tag `v0.1.0`** | D1, §3 |
-| 5 | Rust reference twins | **In this repository** (`conformance/reference-rs/`) | Phase 0, §7 |
+| 5 | Rust reference twins | **In this repository** (`conformance/reference-rs/`) | Phase 0, §8 |
 | 6 | Naming | **`teta::wot`, `<teta/wot/…>`** | D12 |
-| 7 | Gating client | **Matching `teta-wot` is enough**; LabThings' `ThingClient` is not gating | D11, §3, §7 |
+| 7 | Gating client | **Matching `teta-wot` is enough**; LabThings' `ThingClient` is not gating | D11, §3, §8 |
