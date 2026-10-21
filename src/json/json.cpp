@@ -99,12 +99,12 @@ void append_compact(std::string& out, const Value& value) {
     throw std::invalid_argument("a binary or discarded value has no JSON text");
 }
 
-void newline_and_indent(std::string& out, int level) {
+void newline_and_indent(std::string& out, int level, std::size_t indent) {
     out += '\n';
-    out.append(static_cast<std::size_t>(level) * 4, ' ');
+    out.append(static_cast<std::size_t>(level) * indent, ' ');
 }
 
-void append_pretty(std::string& out, const Value& value, int level) {
+void append_pretty(std::string& out, const Value& value, int level, std::size_t indent) {
     if (value.is_array() && !value.empty()) {
         out += '[';
         bool first = true;
@@ -113,10 +113,10 @@ void append_pretty(std::string& out, const Value& value, int level) {
                 out += ',';
             }
             first = false;
-            newline_and_indent(out, level + 1);
-            append_pretty(out, item, level + 1);
+            newline_and_indent(out, level + 1, indent);
+            append_pretty(out, item, level + 1, indent);
         }
-        newline_and_indent(out, level);
+        newline_and_indent(out, level, indent);
         out += ']';
         return;
     }
@@ -128,12 +128,12 @@ void append_pretty(std::string& out, const Value& value, int level) {
                 out += ',';
             }
             first = false;
-            newline_and_indent(out, level + 1);
+            newline_and_indent(out, level + 1, indent);
             append_string(out, key);
             out += ": ";
-            append_pretty(out, item, level + 1);
+            append_pretty(out, item, level + 1, indent);
         }
-        newline_and_indent(out, level);
+        newline_and_indent(out, level, indent);
         out += '}';
         return;
     }
@@ -234,9 +234,9 @@ std::string dump(const Value& value) {
     return out;
 }
 
-std::string dump_pretty(const Value& value) {
+std::string dump_pretty(const Value& value, std::size_t indent) {
     std::string out;
-    append_pretty(out, value, 0);
+    append_pretty(out, value, 0, indent);
     return out;
 }
 

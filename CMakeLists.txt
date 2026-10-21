@@ -16,14 +16,19 @@ option(TETA_WOT_BUILD_TESTS "Build the unit tests" ${TETA_WOT_TOP_LEVEL})
 option(TETA_WOT_BUILD_EXAMPLES "Build the examples, and run them as tests" ${TETA_WOT_TOP_LEVEL})
 option(TETA_WOT_BUILD_SPIKES "Build the Phase 0 spikes (needs Drogon)" OFF)
 option(TETA_WOT_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
+option(TETA_WOT_TD_VALIDATION "Build teta::wot-td-validation (needs json-schema-validator)" ${TETA_WOT_BUILD_TESTS})
 
 include(GNUInstallDirs)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(TetaWotWarnings)
+include(TetaWotEmbed)
 
 find_package(nlohmann_json 3.11 CONFIG REQUIRED)
 find_package(boost_pfr CONFIG REQUIRED)
+if(TETA_WOT_TD_VALIDATION)
+    find_package(nlohmann_json_schema_validator CONFIG REQUIRED)
+endif()
 
 add_subdirectory(src)
 
@@ -46,6 +51,9 @@ endif()
 include(CMakePackageConfigHelpers)
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(TARGETS teta_wot_json teta_wot_td teta_wot EXPORT teta-wot-targets)
+if(TETA_WOT_TD_VALIDATION)
+    install(TARGETS teta_wot_td_validation EXPORT teta-wot-targets)
+endif()
 install(EXPORT teta-wot-targets
     NAMESPACE teta::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/teta-wot)

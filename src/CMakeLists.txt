@@ -31,3 +31,15 @@ set_target_properties(teta_wot_td PROPERTIES EXPORT_NAME wot-td)
 target_link_libraries(teta_wot_td
     PUBLIC teta_wot_json Boost::pfr
     PRIVATE $<BUILD_INTERFACE:teta_wot_warnings>)
+
+# teta::wot-td-validation: TDs against the W3C TD 1.1 JSON Schema (optional;
+# teta-wot's `validation` feature).
+if(TETA_WOT_TD_VALIDATION)
+    add_library(teta_wot_td_validation td/validation.cpp)
+    add_library(teta::wot-td-validation ALIAS teta_wot_td_validation)
+    set_target_properties(teta_wot_td_validation PROPERTIES EXPORT_NAME wot-td-validation)
+    teta_wot_embed(teta_wot_td_validation "${PROJECT_SOURCE_DIR}/schema/td-json-schema-validation.json" td_json_schema)
+    target_link_libraries(teta_wot_td_validation
+        PUBLIC teta_wot_td
+        PRIVATE nlohmann_json_schema_validator::validator $<BUILD_INTERFACE:teta_wot_warnings>)
+endif()

@@ -102,6 +102,47 @@ struct EmptyObject {
     extra: Map<String, Value>,
 }
 
+/// A rectangular region of the sensor, in pixels.
+#[derive(Serialize, Deserialize, JsonSchema)]
+struct Region {
+    x: u32,
+    y: u32,
+    width: u32,
+    height: u32,
+}
+
+/// How the camera reads out the sensor.
+#[derive(Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+enum Readout {
+    /// All rows at once.
+    Global,
+    /// Row by row.
+    Rolling,
+}
+
+/// Settings for one acquisition (the schema-to-dataschema example's).
+#[derive(Serialize, Deserialize, JsonSchema)]
+struct Acquisition {
+    /// Exposure time in milliseconds.
+    exposure_ms: f64,
+    /// Region of interest. The whole sensor is used when this is missing.
+    roi: Option<Region>,
+    #[serde(default = "rolling")]
+    readout: Readout,
+    /// Analogue gain for each colour channel.
+    gains: Vec<u8>,
+    /// Horizontal and vertical binning.
+    binning: (u8, u8),
+    /// Optional label saved with the image.
+    #[serde(default)]
+    label: Option<String>,
+}
+
+fn rolling() -> Readout {
+    Readout::Rolling
+}
+
 fn case<T: JsonSchema>(out: &mut String, name: &str) {
     let json_schema = SchemaSettings::draft2020_12()
         .into_generator()
@@ -143,6 +184,8 @@ fn main() {
         // Structs and enums.
         Position, Waypoint, Mode, Calibration, Documented, Route, Undocumented,
         EmptyInput, teta_wot::NoInput,
+        // The schema-to-dataschema example's types.
+        Region, Readout, Option<Readout>, Acquisition, (u8, u8),
     );
     print!("{out}");
 }

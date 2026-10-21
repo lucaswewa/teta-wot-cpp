@@ -20,7 +20,7 @@
     },
     "tests": {
       "description": "Unit tests and fixture replay",
-      "dependencies": ["gtest"]
+      "dependencies": ["gtest", "json-schema-validator"]
     }
   }
 }

@@ -108,7 +108,39 @@ std::optional<DataType> data_type_from_string(std::string_view name) {
 }
 
 bool ArrayItems::operator==(const ArrayItems&) const = default;
-bool DataSchema::operator==(const DataSchema&) const = default;
+// Written out rather than defaulted: Clang 18 crashes instantiating the
+// defaulted comparison of this recursive type through `std::pair`.
+bool DataSchema::operator==(const DataSchema& o) const {
+    const auto same_properties = [&] {
+        if (properties.has_value() != o.properties.has_value()) {
+            return false;
+        }
+        if (!properties) {
+            return true;
+        }
+        if (properties->size() != o.properties->size()) {
+            return false;
+        }
+        for (std::size_t i = 0; i < properties->size(); ++i) {
+            if ((*properties)[i].first != (*o.properties)[i].first ||
+                !((*properties)[i].second == (*o.properties)[i].second)) {
+                return false;
+            }
+        }
+        return true;
+    };
+    return semantic_type == o.semantic_type && description == o.description && title == o.title &&
+           descriptions == o.descriptions && titles == o.titles && write_only == o.write_only &&
+           read_only == o.read_only && one_of == o.one_of && unit == o.unit && enumeration == o.enumeration &&
+           format == o.format && constant == o.constant && default_value == o.default_value &&
+           data_type == o.data_type && items == o.items && max_items == o.max_items &&
+           min_items == o.min_items && minimum == o.minimum && maximum == o.maximum &&
+           exclusive_minimum == o.exclusive_minimum && exclusive_maximum == o.exclusive_maximum &&
+           multiple_of == o.multiple_of && same_properties() && required == o.required &&
+           min_length == o.min_length && max_length == o.max_length && pattern == o.pattern &&
+           content_encoding == o.content_encoding && content_media_type == o.content_media_type &&
+           extra == o.extra;
+}
 
 DataSchema DataSchema::of(DataType type) {
     DataSchema s;

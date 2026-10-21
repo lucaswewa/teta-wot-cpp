@@ -12,8 +12,8 @@
 // - strings with only `"`, `\` and control characters escaped (`\b`, `\t`,
 //   `\n`, `\f`, `\r`, and `\u00XX` with lowercase hex for the others);
 //   non-ASCII text is written as UTF-8;
-// - `dump_pretty` as `serde_json`'s `PrettyFormatter` with a four-space
-//   indent: what teta-wot's settings files contain.
+// - `dump_pretty` as `serde_json`'s `PrettyFormatter`: two spaces by
+//   default (`to_string_pretty`), four for teta-wot's settings files.
 //
 // `tests/json/serde_json_corpus.txt`, written by `serde_json` itself
 // (`conformance/reference-rs`, `json-corpus`), is the specification.
@@ -35,9 +35,10 @@ using Value = nlohmann::ordered_json;
 /// floats, binary values and discarded values.
 std::string dump(const Value& value);
 
-/// The indented text of a value, as `serde_json`'s `PrettyFormatter` with a
-/// four-space indent writes it.
-std::string dump_pretty(const Value& value);
+/// The indented text of a value, as `serde_json`'s `PrettyFormatter` writes
+/// it with `indent` spaces (two, as `to_string_pretty`; settings files use
+/// four).
+std::string dump_pretty(const Value& value, std::size_t indent = 2);
 
 /// Appends a finite double as `serde_json` writes it.
 void append_double(std::string& out, double value);

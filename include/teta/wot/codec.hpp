@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <boost/pfr.hpp>
 #include <concepts>
@@ -34,6 +35,7 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
+#include <typeinfo>
 #include <unordered_map>
 #include <utility>
 #include <variant>
@@ -61,11 +63,47 @@ concept Encodable = requires(const T& value) {
     { Codec<T>::referenced } -> std::convertible_to<bool>;
 };
 
+namespace codec {
+
+/// The schema being generated on this thread, so that a struct that contains
+/// itself refers to itself (`$ref`) instead of expanding forever. Only
+/// recursive structs end up in its `$defs`; the conversion then stops at its
+/// recursion limit, as teta-wot's does for a recursive type.
+struct Generator {
+    json::Value defs = json::Value::object();
+    std::vector<std::string> in_progress;
+    std::vector<std::string> recursive;
+};
+
+inline thread_local Generator* current_generator = nullptr;
+
+}  // namespace codec
+
+/// A type's JSON Schema, with the `$defs` of its recursive structs.
+template <Encodable T>
+json::Value json_schema_for() {
+    codec::Generator generator;
+    codec::Generator* previous = codec::current_generator;
+    codec::current_generator = &generator;
+    json::Value schema;
+    try {
+        schema = Codec<T>::json_schema();
+    } catch (...) {
+        codec::current_generator = previous;
+        throw;
+    }
+    codec::current_generator = previous;
+    if (!generator.defs.empty() && schema.is_object()) {
+        schema["$defs"] = std::move(generator.defs);
+    }
+    return schema;
+}
+
 /// The DataSchema of a type: its JSON Schema, converted (teta-wot's
 /// `DataSchema::for_type`).
 template <Encodable T>
 td::DataSchema for_type() {
-    return td::from_json_schema(Codec<T>::json_schema());
+    return td::from_json_schema(json_schema_for<T>());
 }
 
 /// A value as JSON, as serde writes it.
@@ -177,8 +215,11 @@ class StructInfo {
 template <typename E>
 class EnumInfo {
   public:
-    EnumInfo& value(E value, std::string name) {
+    /// A value and its name; with a description (a variant's doc comment in
+    /// Rust), as schemars describes documented variants.
+    EnumInfo& value(E value, std::string name, std::optional<std::string> description = std::nullopt) {
         values_.emplace_back(value, std::move(name));
+        descriptions_.push_back(std::move(description));
         return *this;
     }
     EnumInfo& description(std::string text) {
@@ -187,10 +228,12 @@ class EnumInfo {
     }
 
     const std::vector<std::pair<E, std::string>>& values() const { return values_; }
+    const std::vector<std::optional<std::string>>& value_descriptions() const { return descriptions_; }
     const std::optional<std::string>& description_text() const { return description_; }
 
   private:
     std::vector<std::pair<E, std::string>> values_;
+    std::vector<std::optional<std::string>> descriptions_;
     std::optional<std::string> description_;
 };
 
@@ -422,17 +465,35 @@ struct Codec<OrderedMap<V>> : codec::StringMapCodec<OrderedMap<V>> {};
 // ---- Enums --------------------------------------------------------------------------
 
 /// Enums whose values are described (`Describe<E>`): a string, one of their
-/// names, as serde writes unit-only enums.
+/// names, as serde writes unit-only enums. As schemars does, the schema is an
+/// `enum` of the names, or, when a value has a description, a `oneOf` of
+/// `const`s.
 template <codec::DescribedEnum E>
 struct Codec<E> {
     static constexpr bool referenced = true;
     static json::Value json_schema() {
         const auto info = codec::enum_info<E>();
-        json::Value names = json::Value::array();
-        for (const auto& [value, name] : info.values()) {
-            names.push_back(name);
+        const auto& descriptions = info.value_descriptions();
+        const bool documented =
+            std::ranges::any_of(descriptions, [](const auto& d) { return d.has_value(); });
+        json::Value schema;
+        if (documented) {
+            json::Value branches = json::Value::array();
+            for (std::size_t i = 0; i < info.values().size(); ++i) {
+                json::Value branch = {{"type", "string"}, {"const", info.values()[i].second}};
+                if (descriptions[i]) {
+                    branch["description"] = *descriptions[i];
+                }
+                branches.push_back(std::move(branch));
+            }
+            schema = {{"oneOf", std::move(branches)}};
+        } else {
+            json::Value names = json::Value::array();
+            for (const auto& [value, name] : info.values()) {
+                names.push_back(name);
+            }
+            schema = {{"type", "string"}, {"enum", std::move(names)}};
         }
-        json::Value schema = {{"type", "string"}, {"enum", std::move(names)}};
         if (info.description_text()) {
             schema["description"] = *info.description_text();
         }
@@ -458,6 +519,40 @@ struct Codec<T> {
     static constexpr bool referenced = true;
 
     static json::Value json_schema() {
+        codec::Generator* generator = codec::current_generator;
+        const std::string key = typeid(T).name();
+        if (generator) {
+            if (std::ranges::find(generator->in_progress, key) != generator->in_progress.end()) {
+                // The struct contains itself: refer to it, as schemars does.
+                if (std::ranges::find(generator->recursive, key) == generator->recursive.end()) {
+                    generator->recursive.push_back(key);
+                }
+                return {{"$ref", "#/$defs/" + key}};
+            }
+            generator->in_progress.push_back(key);
+        }
+        json::Value schema = schema_of_fields();
+        if (generator) {
+            generator->in_progress.pop_back();
+            if (std::ranges::find(generator->recursive, key) != generator->recursive.end()) {
+                generator->defs[key] = schema;
+            }
+        }
+        return schema;
+    }
+
+    static json::Value encode(const T& value) {
+        json::Value out = json::Value::object();
+        constexpr auto names = boost::pfr::names_as_array<T>();
+        boost::pfr::for_each_field(value, [&](const auto& member, std::size_t index) {
+            using M = std::remove_cvref_t<decltype(member)>;
+            out[std::string(names[index])] = Codec<M>::encode(member);
+        });
+        return out;
+    }
+
+  private:
+    static json::Value schema_of_fields() {
         const auto info = codec::struct_info<T>();
         const T defaults{};
         std::vector<codec::Field> fields;
@@ -480,16 +575,6 @@ struct Codec<T> {
             fields.push_back(std::move(field));
         });
         return codec::object_schema(fields, info.description_text(), info.denies_unknown_fields());
-    }
-
-    static json::Value encode(const T& value) {
-        json::Value out = json::Value::object();
-        constexpr auto names = boost::pfr::names_as_array<T>();
-        boost::pfr::for_each_field(value, [&](const auto& member, std::size_t index) {
-            using M = std::remove_cvref_t<decltype(member)>;
-            out[std::string(names[index])] = Codec<M>::encode(member);
-        });
-        return out;
     }
 };
 

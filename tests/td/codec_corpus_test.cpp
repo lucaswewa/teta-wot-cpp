@@ -88,6 +88,46 @@ struct Undocumented {
     std::optional<std::uint8_t> b;
 };
 
+/// A rectangular region of the sensor, in pixels.
+struct Region {
+    std::uint32_t x;
+    std::uint32_t y;
+    std::uint32_t width;
+    std::uint32_t height;
+    static void describe(tw::StructInfo<Region>& s) {
+        s.description("A rectangular region of the sensor, in pixels.");
+    }
+};
+
+/// How the camera reads out the sensor.
+enum class Readout { global, rolling };
+
+/// Settings for one acquisition.
+struct Acquisition {
+    double exposure_ms;
+    std::optional<Region> roi;
+    Readout readout = Readout::rolling;
+    std::vector<std::uint8_t> gains;
+    std::pair<std::uint8_t, std::uint8_t> binning;
+    std::optional<std::string> label;
+
+    static void describe(tw::StructInfo<Acquisition>& s) {
+        s.description("Settings for one acquisition (the schema-to-dataschema example's).");
+        s.field("exposure_ms").description("Exposure time in milliseconds.");
+        s.field("roi").description("Region of interest. The whole sensor is used when this is missing.");
+        s.field("readout").defaulted();
+        s.field("gains").description("Analogue gain for each colour channel.");
+        s.field("binning").description("Horizontal and vertical binning.");
+        s.field("label").description("Optional label saved with the image.").defaulted();
+    }
+};
+
+/// A tree of named nodes: it refers to itself, so it has no DataSchema.
+struct Node {
+    std::string name;
+    std::vector<Node> children;
+};
+
 /// mything's input of an action with only `**kwargs`: a type with a
 /// hand-written codec, as schemars derives it from attributes the C++
 /// codecs have no equivalent for.
@@ -99,6 +139,15 @@ template <>
 struct teta::wot::Describe<corpus::Mode> {
     static void describe(EnumInfo<corpus::Mode>& e) {
         e.value(corpus::Mode::fast, "fast").value(corpus::Mode::slow, "slow");
+    }
+};
+
+template <>
+struct teta::wot::Describe<corpus::Readout> {
+    static void describe(EnumInfo<corpus::Readout>& e) {
+        e.description("How the camera reads out the sensor.")
+            .value(corpus::Readout::global, "global", "All rows at once.")
+            .value(corpus::Readout::rolling, "rolling", "Row by row.");
     }
 };
 
@@ -182,6 +231,11 @@ const std::map<std::string, std::function<std::string()>> cases = {
     CASE("Undocumented", Undocumented),
     CASE("EmptyInput", EmptyInput),
     CASE("teta_wot::NoInput", tw::NoInput),
+    CASE("Region", Region),
+    CASE("Readout", Readout),
+    CASE("Option<Readout>", std::optional<Readout>),
+    CASE("Acquisition", Acquisition),
+    CASE("(u8, u8)", std::pair<std::uint8_t, std::uint8_t>),
 };
 
 // Rust types with no C++ counterpart.
@@ -206,6 +260,17 @@ TEST(CodecCorpus, EveryRustTypeHasTheSameDataSchema) {
         ++checked;
     }
     EXPECT_EQ(checked, static_cast<int>(cases.size()));
+}
+
+// A recursive type can't be inlined: the conversion stops at the recursion
+// limit, as teta-wot's does.
+TEST(Codec, ARecursiveStructReachesTheRecursionLimit) {
+    try {
+        tw::for_type<Node>();
+        FAIL() << "no error";
+    } catch (const tw::td::ConversionError& error) {
+        EXPECT_EQ(error.kind(), tw::td::ConversionError::Kind::recursion_limit);
+    }
 }
 
 TEST(Codec, EncodesAsSerde) {

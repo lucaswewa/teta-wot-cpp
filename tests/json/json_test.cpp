@@ -101,7 +101,7 @@ TEST(SerdeJsonCorpus, Strings) {
 TEST(SerdeJsonCorpus, PrettyAsSettingsFiles) {
     for (const auto& c : corpus()) {
         if (c.kind == 'p') {
-            EXPECT_EQ(dump_pretty(Value::parse(unhex(c.input))), unhex(c.expected)) << "line " << c.line;
+            EXPECT_EQ(dump_pretty(Value::parse(unhex(c.input)), 4), unhex(c.expected)) << "line " << c.line;
         }
     }
 }

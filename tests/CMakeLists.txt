@@ -4,9 +4,11 @@ include(GoogleTest)
 add_executable(teta-wot-tests
     json/json_test.cpp
     td/codec_corpus_test.cpp
+    td/model_test.cpp
     td/schema_corpus_test.cpp
-    td/twin_tds_test.cpp)
-target_link_libraries(teta-wot-tests PRIVATE teta::wot-json teta::wot-td GTest::gtest_main teta_wot_warnings)
+    td/twin_tds_test.cpp
+    td/validation_test.cpp)
+target_link_libraries(teta-wot-tests PRIVATE teta::wot-json teta::wot-td teta::wot-td-validation GTest::gtest_main teta_wot_warnings)
 target_compile_definitions(teta-wot-tests PRIVATE
     TETA_WOT_SERDE_JSON_CORPUS="${CMAKE_CURRENT_SOURCE_DIR}/json/serde_json_corpus.txt"
     TETA_WOT_SCHEMA_CORPUS="${CMAKE_CURRENT_SOURCE_DIR}/td/schema_corpus.jsonl"
