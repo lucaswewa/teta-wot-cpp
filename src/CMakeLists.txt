@@ -14,4 +14,20 @@ target_compile_features(teta_wot_json PUBLIC cxx_std_20)
 add_library(teta_wot INTERFACE)
 add_library(teta::wot ALIAS teta_wot)
 set_target_properties(teta_wot PROPERTIES EXPORT_NAME wot)
-target_link_libraries(teta_wot INTERFACE teta_wot_json)
+target_link_libraries(teta_wot INTERFACE teta_wot_json teta_wot_td)
+
+# teta::wot-td: the TD model, DataSchema conversion, codecs (Phase 1).
+add_library(teta_wot_td
+    codec/codec.cpp
+    td/constraints.cpp
+    td/convert.cpp
+    td/data_schema.cpp
+    td/describe.cpp
+    td/form.cpp
+    td/parse.cpp
+    td/thing.cpp)
+add_library(teta::wot-td ALIAS teta_wot_td)
+set_target_properties(teta_wot_td PROPERTIES EXPORT_NAME wot-td)
+target_link_libraries(teta_wot_td
+    PUBLIC teta_wot_json Boost::pfr
+    PRIVATE $<BUILD_INTERFACE:teta_wot_warnings>)

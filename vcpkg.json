@@ -5,6 +5,7 @@
   "description": "W3C Web of Things Things served over HTTP with Drogon, with wire-level parity with teta-wot.",
   "license": "MIT",
   "dependencies": [
+    "boost-pfr",
     "nlohmann-json"
   ],
   "features": {

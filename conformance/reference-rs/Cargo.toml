@@ -25,3 +25,7 @@ path = "src/main.rs"
 [[bin]]
 name = "json-corpus"
 path = "src/bin/json_corpus.rs"
+
+[[bin]]
+name = "schema-corpus"
+path = "src/bin/schema_corpus.rs"

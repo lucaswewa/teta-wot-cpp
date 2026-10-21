@@ -23,6 +23,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(TetaWotWarnings)
 
 find_package(nlohmann_json 3.11 CONFIG REQUIRED)
+find_package(boost_pfr CONFIG REQUIRED)
 
 add_subdirectory(src)
 
@@ -44,7 +45,7 @@ endif()
 # Installation, for `find_package(teta-wot)` (the cmake-consumer example).
 include(CMakePackageConfigHelpers)
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(TARGETS teta_wot_json teta_wot EXPORT teta-wot-targets)
+install(TARGETS teta_wot_json teta_wot_td teta_wot EXPORT teta-wot-targets)
 install(EXPORT teta-wot-targets
     NAMESPACE teta::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/teta-wot)
