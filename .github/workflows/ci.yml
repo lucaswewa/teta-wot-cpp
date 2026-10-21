@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# Windows and Linux are both supported platforms (ADR-0002, ADR-0003).
+jobs:
+  build:
+    name: ${{ matrix.preset }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: windows-latest, preset: windows-msvc}
+          - {os: windows-latest, preset: windows-clang-cl}
+          - {os: ubuntu-24.04, preset: linux-gcc}
+          - {os: ubuntu-24.04, preset: linux-clang-asan}
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/../vcpkg
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/../vcpkg-cache
+    steps:
+      - uses: actions/checkout@v7
+      - name: Linux packages
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+      # vcpkg at the baseline in vcpkg-configuration.json.
+      - name: vcpkg
+        shell: bash
+        run: |
+          baseline=$(python3 -c "import json; print(json.load(open('vcpkg-configuration.json'))['default-registry']['baseline'])")
+          git init "$VCPKG_ROOT"
+          git -C "$VCPKG_ROOT" remote add origin https://github.com/microsoft/vcpkg.git
+          git -C "$VCPKG_ROOT" fetch --depth 1 origin "$baseline"
+          git -C "$VCPKG_ROOT" checkout FETCH_HEAD
+          mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
+          if [ "$RUNNER_OS" = Windows ]; then "$VCPKG_ROOT/bootstrap-vcpkg.bat" -disableMetrics; else "$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics; fi
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+          restore-keys: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-
+      - name: Developer command prompt
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+      - name: Test (unit tests and examples)
+        run: ctest --preset ${{ matrix.preset }}
+      # The cmake-consumer example again, against the installed package (not
+      # for the sanitizer build, whose library needs the sanitizer runtime).
+      - name: Install, then build cmake-consumer against it
+        if: matrix.preset != 'linux-clang-asan'
+        shell: bash
+        run: |
+          cmake --install build/${{ matrix.preset }} --prefix "${{ runner.temp }}/teta-wot"
+          triplet=$( [ "$RUNNER_OS" = Windows ] && echo x64-windows-static || echo x64-linux )
+          # The library's dependencies come from the vcpkg tree the build used.
+          cmake -S examples/cmake-consumer -B build/consumer -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_COMPILER=$( [ "$RUNNER_OS" = Windows ] && echo cl || echo g++ ) \
+            -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>' \
+            -DCMAKE_PREFIX_PATH="${{ runner.temp }}/teta-wot;$PWD/build/${{ matrix.preset }}/vcpkg_installed/$triplet"
+          cmake --build build/consumer
+          ctest --test-dir build/consumer --output-on-failure
+
+  # The parity reference (teta-wot v0.1.0): the fixtures and the serde_json
+  # corpus must be what it produces now (ADR-0011).
+  reference:
+    name: Reference fixtures
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      # rustup reads conformance/reference-rs/rust-toolchain.toml.
+      - name: Toolchain
+        working-directory: conformance/reference-rs
+        run: rustup toolchain install
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            conformance/reference-rs/target
+          key: reference-rs-${{ hashFiles('conformance/reference-rs/Cargo.lock') }}
+      - name: Build the reference server
+        working-directory: conformance/reference-rs
+        run: cargo build --release --locked
+      - name: The serde_json corpus is up to date
+        run: |
+          conformance/reference-rs/target/release/json-corpus > tests/json/serde_json_corpus.txt
+          git diff --exit-code -- tests/json/serde_json_corpus.txt
+      - name: The fixtures are what the reference answers
+        run: |
+          python3 conformance/run.py capture --server conformance/reference-rs/target/release/reference-server
+          git diff --exit-code -- conformance/fixtures
+      - name: The harness compares two servers
+        run: |
+          server=conformance/reference-rs/target/release/reference-server
+          python3 conformance/run.py diff --server $server --server $server
+
+  format:
+    name: Format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: clang-format
+        run: |
+          clang-format --version
+          git ls-files '*.cpp' '*.hpp' | xargs clang-format --dry-run --Werror

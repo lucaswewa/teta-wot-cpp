@@ -1,0 +1,4 @@
+# The toolchain teta-wot v0.1.0 pins.
+[toolchain]
+channel = "1.98.1"
+profile = "minimal"

@@ -1,0 +1,17 @@
+# teta::wot-json: JSON values and serde_json-exact serialisation (ADR-0006).
+add_library(teta_wot_json json/json.cpp)
+add_library(teta::wot-json ALIAS teta_wot_json)
+set_target_properties(teta_wot_json PROPERTIES EXPORT_NAME wot-json)
+target_include_directories(teta_wot_json PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+target_link_libraries(teta_wot_json
+    PUBLIC nlohmann_json::nlohmann_json
+    PRIVATE $<BUILD_INTERFACE:teta_wot_warnings>)
+target_compile_features(teta_wot_json PUBLIC cxx_std_20)
+
+# teta::wot: what applications link to; it grows with each phase.
+add_library(teta_wot INTERFACE)
+add_library(teta::wot ALIAS teta_wot)
+set_target_properties(teta_wot PROPERTIES EXPORT_NAME wot)
+target_link_libraries(teta_wot INTERFACE teta_wot_json)

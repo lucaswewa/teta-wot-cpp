@@ -1,0 +1,98 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {"major": 3, "minor": 28, "patch": 0},
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "TETA_WOT_WARNINGS_AS_ERRORS": "ON",
+        "TETA_WOT_BUILD_SPIKES": "ON"
+      }
+    },
+    {
+      "name": "vcpkg",
+      "hidden": true,
+      "inherits": "base",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {"VCPKG_MANIFEST_FEATURES": "tests;drogon"}
+    },
+    {
+      "name": "linux",
+      "hidden": true,
+      "condition": {"type": "equals", "lhs": "${hostSystemName}", "rhs": "Linux"}
+    },
+    {
+      "name": "windows",
+      "hidden": true,
+      "condition": {"type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows"},
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+      }
+    },
+    {
+      "name": "linux-gcc",
+      "displayName": "Linux, GCC",
+      "inherits": ["vcpkg", "linux"],
+      "cacheVariables": {"CMAKE_CXX_COMPILER": "g++"}
+    },
+    {
+      "name": "linux-clang",
+      "displayName": "Linux, Clang",
+      "inherits": ["vcpkg", "linux"],
+      "cacheVariables": {"CMAKE_CXX_COMPILER": "clang++"}
+    },
+    {
+      "name": "linux-clang-asan",
+      "displayName": "Linux, Clang, AddressSanitizer and UndefinedBehaviorSanitizer",
+      "inherits": "linux-clang",
+      "cacheVariables": {"CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all"}
+    },
+    {
+      "name": "linux-clang-tsan",
+      "displayName": "Linux, Clang, ThreadSanitizer",
+      "inherits": "linux-clang",
+      "cacheVariables": {"CMAKE_CXX_FLAGS": "-fsanitize=thread"}
+    },
+    {
+      "name": "windows-msvc",
+      "displayName": "Windows, MSVC (from a developer command prompt)",
+      "inherits": ["vcpkg", "windows"],
+      "cacheVariables": {"CMAKE_CXX_COMPILER": "cl"}
+    },
+    {
+      "name": "windows-clang-cl",
+      "displayName": "Windows, clang-cl (from a developer command prompt)",
+      "inherits": ["vcpkg", "windows"],
+      "cacheVariables": {"CMAKE_CXX_COMPILER": "clang-cl"}
+    },
+    {
+      "name": "system",
+      "displayName": "Without vcpkg: dependencies from CMAKE_PREFIX_PATH or the system",
+      "inherits": "base"
+    }
+  ],
+  "buildPresets": [
+    {"name": "linux-gcc", "configurePreset": "linux-gcc"},
+    {"name": "linux-clang", "configurePreset": "linux-clang"},
+    {"name": "linux-clang-asan", "configurePreset": "linux-clang-asan"},
+    {"name": "linux-clang-tsan", "configurePreset": "linux-clang-tsan"},
+    {"name": "windows-msvc", "configurePreset": "windows-msvc"},
+    {"name": "windows-clang-cl", "configurePreset": "windows-clang-cl"},
+    {"name": "system", "configurePreset": "system"}
+  ],
+  "testPresets": [
+    {"name": "test-base", "hidden": true, "output": {"outputOnFailure": true}, "execution": {"noTestsAction": "error"}},
+    {"name": "linux-gcc", "inherits": "test-base", "configurePreset": "linux-gcc"},
+    {"name": "linux-clang", "inherits": "test-base", "configurePreset": "linux-clang"},
+    {"name": "linux-clang-asan", "inherits": "test-base", "configurePreset": "linux-clang-asan"},
+    {"name": "linux-clang-tsan", "inherits": "test-base", "configurePreset": "linux-clang-tsan"},
+    {"name": "windows-msvc", "inherits": "test-base", "configurePreset": "windows-msvc"},
+    {"name": "windows-clang-cl", "inherits": "test-base", "configurePreset": "windows-clang-cl"},
+    {"name": "system", "inherits": "test-base", "configurePreset": "system"}
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "teta-wot-cpp",
+  "version": "0.0.0",
+  "description": "W3C Web of Things Things served over HTTP with Drogon, with wire-level parity with teta-wot.",
+  "license": "MIT",
+  "dependencies": [
+    "nlohmann-json"
+  ],
+  "features": {
+    "drogon": {
+      "description": "The Drogon transport (and, in Phase 0, the Drogon spike)",
+      "dependencies": [
+        {
+          "name": "drogon",
+          "default-features": false
+        }
+      ]
+    },
+    "tests": {
+      "description": "Unit tests and fixture replay",
+      "dependencies": ["gtest"]
+    }
+  }
+}

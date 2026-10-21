@@ -1,0 +1,23 @@
+[package]
+name = "reference-rs"
+description = "The parity reference: teta-wot v0.1.0 serving the twin Things, and the serde_json corpus generator."
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.98"
+publish = false
+
+# The reference is pinned to the teta-wot v0.1.0 tag (ADR-0001).
+[dependencies]
+anyhow = "1.0"
+serde = "1.0.229"
+serde_json = { version = "1.0.151", features = ["preserve_order"] }
+teta-wot = { git = "https://github.com/lucaswewa/teta-wot", tag = "v0.1.0" }
+tokio = { version = "1.47", features = ["macros", "rt-multi-thread"] }
+
+[[bin]]
+name = "reference-server"
+path = "src/main.rs"
+
+[[bin]]
+name = "json-corpus"
+path = "src/bin/json_corpus.rs"

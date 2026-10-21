@@ -66,3 +66,11 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Build trees
+/build/
+/out/
+/vcpkg_installed/
+CMakeUserPresets.json
+conformance/reference-rs/target/
+__pycache__/

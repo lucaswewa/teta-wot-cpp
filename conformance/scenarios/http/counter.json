@@ -1,0 +1,20 @@
+{
+  "config": {
+    "things": {"counter": "twins.counter:TestThing"},
+    "server_id": "conformance"
+  },
+  "steps": [
+    {"name": "td", "method": "GET", "path": "/counter/"},
+    {"name": "td_without_slash", "method": "GET", "path": "/counter"},
+    {"name": "read_counter", "method": "GET", "path": "/counter/counter"},
+    {"name": "write_readonly", "method": "PUT", "path": "/counter/counter", "json": 5},
+    {"name": "invoke", "method": "POST", "path": "/counter/increment_counter", "wait": true},
+    {"name": "read_after_invoke", "method": "GET", "path": "/counter/counter"},
+    {"name": "get_invocation", "method": "GET", "path": "/action_invocations/{last}"},
+    {"name": "list_action_invocations", "method": "GET", "path": "/counter/increment_counter"},
+    {"name": "things", "method": "GET", "path": "/things/"},
+    {"name": "not_found", "method": "GET", "path": "/nothing/here"},
+    {"name": "cors_preflight", "method": "OPTIONS", "path": "/counter/counter",
+     "headers": {"Origin": "http://example.com", "Access-Control-Request-Method": "PUT"}}
+  ]
+}
