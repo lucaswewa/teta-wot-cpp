@@ -59,12 +59,14 @@ jobs:
         run: |
           cmake --install build/${{ matrix.preset }} --prefix "${{ runner.temp }}/teta-wot"
           triplet=$( [ "$RUNNER_OS" = Windows ] && echo x64-windows-static || echo x64-linux )
+          # CMake on Windows needs D:/a/... paths, not Git Bash's /d/a/...
+          root=$( [ "$RUNNER_OS" = Windows ] && cygpath -m "$PWD" || echo "$PWD" )
           # The library's dependencies come from the vcpkg tree the build used.
           cmake -S examples/cmake-consumer -B build/consumer -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_CXX_COMPILER=$( [ "$RUNNER_OS" = Windows ] && echo cl || echo g++ ) \
             -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>' \
-            -DCMAKE_PREFIX_PATH="${{ runner.temp }}/teta-wot;$PWD/build/${{ matrix.preset }}/vcpkg_installed/$triplet"
+            -DCMAKE_PREFIX_PATH="${{ runner.temp }}/teta-wot;$root/build/${{ matrix.preset }}/vcpkg_installed/$triplet"
           cmake --build build/consumer
           ctest --test-dir build/consumer --output-on-failure
 
