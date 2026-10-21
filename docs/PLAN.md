@@ -152,7 +152,14 @@ public:
 - **Docs.** `.doc(text)` follows `teta-wot`'s doc-comment rule: the first paragraph is the title, the whole text the description, so TDs come out the same.
 - **Misuse fails to compile** with a readable message (concepts and `static_assert`), as `teta-wot`'s `trybuild` tests check: a property type without a `Codec`, a setter without its property, a reserved or colliding name (checked when the definition is built, at server build time), a non-copyable property type. `tests/compile_fail/` ports those cases.
 - **In-process calls** are typed through member pointers and run as child invocations (shared cancellation, logs and lock hold), blocking the calling worker until they finish: `auto pos = stage.call(&Stage::move_to, 0, 0, 250);` Interfaces are abstract base classes: `Slot<CameraApi>` holds whichever Thing `implements<CameraApi>()`.
-- **Threads only (D5):** Rust actions are `async fn`, but their main need is being cancellable while waiting, which `ActionCtx::sleep(d)` (a `condition_variable_any` wait on the `stop_token`), `check_cancelled()` and `cancelled()` give on threads. Coroutines would force every Thing author to pick an executor and would make `blocking` and non-blocking actions behave differently. LabThings itself runs actions on threads. The thread pool grows on demand (with a configurable cap) so concurrent invocations never deadlock each other.
+- **Threads only (D5, final).** Rust actions are `async fn`, but what they need from it is being cancellable while waiting, which `ActionCtx::sleep(d)` (a `condition_variable_any` wait on the `stop_token`), `check_cancelled()` and `cancelled()` give on threads. Coroutines were considered and rejected:
+  - lab servers run tens of concurrent invocations, not thousands, so a thread per running action costs nothing;
+  - driver code blocks (vendor SDKs, serial ports), so coroutine actions would still have to move it to threads;
+  - C++20 has no standard task type, executor or cancellation, so coroutines would tie Thing code to Drogon's `Task` or to a scheduler of our own;
+  - references and `this` dangling across a suspension, poor stack traces and compiler differences would cost Thing authors, who know threads;
+  - LabThings runs actions on threads too, and the wire is the same either way.
+
+  The costs of threads are handled: the pool grows on demand (with a high configurable cap), so an action waiting on a nested in-process call never starves the others; streaming (SSE, WebSocket, MJPEG viewers) is callback-driven in the adapter and never holds a thread per client.
 
 A clang-based tool that generates `define()` (and `.doc()` from `///` comments) is a possible later addition, not part of parity.
 
@@ -445,7 +452,7 @@ Unit tests ported from `teta-wot`; compile-fail tests; ASan/UBSan/TSan builds; l
 | # | Question | Answer | Where it lands |
 |---|---|---|---|
 | 1 | Language level | **C++20** | D2 |
-| 2 | Concurrency | **Actions on threads only** | D5, §2.3 |
+| 2 | Concurrency | **Actions on threads only** (confirmed after weighing coroutines) | D5, §2.3 |
 | 3 | Package manager | **vcpkg** | D3 |
 | 4 | Reference | **`teta-wot` tag `v0.1.0`** | D1, §3 |
 | 5 | Rust reference twins | **In this repository** (`conformance/reference-rs/`) | Phase 0, §8 |
