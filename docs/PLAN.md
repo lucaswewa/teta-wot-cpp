@@ -1,6 +1,6 @@
 # Architecture and Implementation Plan: teta-wot-cpp
 
-Status: **draft for review** (2026-10-21; revised the same day with the answers to the open questions, §11). This plan implements [goals.md](goals.md). No library code is written until the plan is approved.
+Status: **approved** (2026-10-21), with the answers to the open questions in §11. This plan implements [goals.md](goals.md). Work starts with Phase 0.
 
 The goals, restated:
 
