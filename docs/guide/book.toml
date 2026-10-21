@@ -1,0 +1,5 @@
+[book]
+title = "teta-wot-cpp"
+authors = ["Lucas Wang"]
+language = "en"
+src = "src"
