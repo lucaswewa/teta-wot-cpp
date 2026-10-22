@@ -46,6 +46,7 @@ pub fn server(names: &[&str]) -> anyhow::Result<ThingServerBuilder> {
             "ws_probe" => builder.thing(name, ThingWithProperties::default()),
             "blob_probe" => builder.thing(name, BlobProbe::default()),
             "ndarray_probe" => builder.thing(name, NDArrayProbe::default()),
+            "event_probe" => builder.thing(name, EventProbe::default()),
             other => anyhow::bail!("no twin named `{other}`"),
         };
     }
@@ -81,6 +82,7 @@ pub fn registry() -> ThingRegistry {
         ])
         .register_as::<BlobProbe>(&["twins.blob_probe:BlobProbe", "twins:BlobProbe"])
         .register_as::<NDArrayProbe>(&["twins.ndarray_probe:NDArrayProbe", "twins:NDArrayProbe"])
+        .register_as::<EventProbe>(&["twins.event_probe:EventProbe", "twins:EventProbe"])
 }
 
 // ---- MyThing (labthings_fastapi.example_things) ----------------------------
@@ -694,5 +696,51 @@ impl NDArrayProbe {
     #[action]
     async fn total(&self, arr: NdArray) -> f64 {
         arr.sum()
+    }
+}
+
+// ---- EventProbe (teta-wot-cpp's own: none of the `wot` twins has events) ---
+
+/// What happened.
+#[derive(Debug, Clone, Serialize, JsonSchema)]
+pub struct Happening {
+    /// What it was.
+    what: String,
+    /// How many times it happened.
+    times: i64,
+}
+
+/// A Thing whose actions emit events.
+#[derive(Thing)]
+pub struct EventProbe {
+    /// Something happened.
+    ///
+    /// Emitted by `happen`.
+    #[event]
+    happened: Event<Happening>,
+
+    /// A count, one event per step.
+    #[event]
+    counted: Event<i64>,
+
+    /// A number, observable.
+    #[property(default = 0)]
+    level: Prop<i64>,
+}
+
+#[thing_impl]
+impl EventProbe {
+    /// Emit `happened`.
+    #[action]
+    async fn happen(&self, what: String) {
+        self.happened.emit(Happening { what, times: 1 });
+    }
+
+    /// Emit `counted` from 1 to `to`.
+    #[action]
+    async fn count(&self, to: i64) {
+        for n in 1..=to {
+            self.counted.emit(n);
+        }
     }
 }

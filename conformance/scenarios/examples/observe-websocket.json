@@ -1,0 +1,91 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 5000,
+  "steps": [
+    {
+      "name": "td",
+      "method": "GET",
+      "path": "/oven/"
+    },
+    {
+      "name": "open",
+      "websocket": "/oven/ws",
+      "socket": "a"
+    },
+    {
+      "name": "observe_temperature",
+      "socket": "a",
+      "send": {
+        "messageType": "addPropertyObservation",
+        "data": {
+          "temperature": true
+        }
+      }
+    },
+    {
+      "name": "observe_heat_to",
+      "socket": "a",
+      "send": {
+        "messageType": "addActionObservation",
+        "data": {
+          "heat_to": true
+        }
+      }
+    },
+    {
+      "name": "observe_safe_to_open",
+      "socket": "a",
+      "send": {
+        "messageType": "addPropertyObservation",
+        "data": {
+          "safe_to_open": true
+        }
+      }
+    },
+    {
+      "name": "refused",
+      "socket": "a",
+      "receive": 1
+    },
+    {
+      "name": "heat_to",
+      "method": "POST",
+      "path": "/oven/heat_to",
+      "json": {
+        "target": 40
+      },
+      "wait": true
+    },
+    {
+      "name": "heating",
+      "socket": "a",
+      "receive": 5
+    },
+    {
+      "name": "safe_to_open",
+      "method": "GET",
+      "path": "/oven/safe_to_open"
+    },
+    {
+      "name": "temperature_stream",
+      "events": "/oven/temperature",
+      "stream": "t"
+    },
+    {
+      "name": "cool_down",
+      "method": "POST",
+      "path": "/oven/heat_to",
+      "json": {
+        "target": 30
+      },
+      "wait": true
+    },
+    {
+      "name": "cooling",
+      "stream": "t",
+      "receive": 1
+    }
+  ]
+}

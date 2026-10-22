@@ -43,7 +43,8 @@ tw::ThingRegistry registry() {
         .add<TypesThing>({"twins.types_probe:TypesThing", "twins:TypesThing"})
         .add<HttpProbe>({"twins.http_probe:HttpProbe", "twins:HttpProbe"})
         .add<SettingsProbe>({"twins.settings_probe:SettingsProbe", "twins:SettingsProbe"})
-        .add<ThingWithProperties>({"twins.ws_probe:ThingWithProperties", "twins:ThingWithProperties"});
+        .add<ThingWithProperties>({"twins.ws_probe:ThingWithProperties", "twins:ThingWithProperties"})
+        .add<EventProbe>({"twins.event_probe:EventProbe", "twins:EventProbe"});
     return registry;
 }
 
@@ -341,6 +342,33 @@ void ThingWithProperties::define(tw::ThingSpec<ThingWithProperties>& t) {
         .doc("Raise an exception to test for error status.");
     t.action("cancel_myself", &ThingWithProperties::cancel_myself)
         .doc("Increment the data property, then pretend to be cancelled.");
+}
+
+// ---- EventProbe ---------------------------------------------------------------------------
+
+void Happening::describe(tw::StructInfo<Happening>& s) {
+    s.description("What happened.");
+    s.field("what").description("What it was.");
+    s.field("times").description("How many times it happened.");
+}
+
+void EventProbe::happen(std::string what) {
+    happened.emit(Happening{std::move(what), 1});
+}
+
+void EventProbe::count(std::int64_t to) {
+    for (std::int64_t n = 1; n <= to; ++n) {
+        counted.emit(n);
+    }
+}
+
+void EventProbe::define(tw::ThingSpec<EventProbe>& t) {
+    t.doc("A Thing whose actions emit events.");
+    t.event("happened", &EventProbe::happened).doc("Something happened.\n\nEmitted by `happen`.");
+    t.event("counted", &EventProbe::counted).doc("A count, one event per step.");
+    t.property("level", &EventProbe::level).doc("A number, observable.");
+    t.action<"what">("happen", &EventProbe::happen).doc("Emit `happened`.");
+    t.action<"to">("count", &EventProbe::count).doc("Emit `counted` from 1 to `to`.");
 }
 
 }  // namespace twins

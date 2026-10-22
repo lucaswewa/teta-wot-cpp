@@ -38,6 +38,11 @@ class SseStream : public std::enable_shared_from_this<SseStream> {
         : owner_(std::move(owner)), subscription_(std::move(subscription)), named_(named) {}
 
     void start(std::shared_ptr<StreamSink> sink) {
+        sink->set_resume([weak = weak_from_this()] {
+            if (auto self = weak.lock()) {
+                self->pump();
+            }
+        });
         {
             std::lock_guard lock(mutex_);
             sink_ = std::move(sink);
@@ -54,14 +59,18 @@ class SseStream : public std::enable_shared_from_this<SseStream> {
         pump();  // what came before, or a broker already closed
     }
 
-    // Sends what is buffered; ends the stream when the broker is closed or
-    // the client has gone.
+    // Sends what is buffered while the client keeps up; ends the stream when
+    // the broker is closed or the client has gone.
     void pump() {
         std::unique_lock lock(mutex_);
         if (!sink_) {
             return;
         }
-        while (auto message = subscription_.try_recv()) {
+        while (sink_->ready()) {
+            auto message = subscription_.try_recv();
+            if (!message) {
+                break;
+            }
             std::string event = "data: " + json::dump(message->payload) + "\n";
             if (named_) {
                 event += "event: " + message->affordance + "\nid: " + rfc3339(message->time, 9) + "\n";

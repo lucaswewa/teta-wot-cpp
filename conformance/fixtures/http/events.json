@@ -1,0 +1,687 @@
+{
+  "config": {
+    "things": {
+      "event_probe": "twins.event_probe:EventProbe"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/event_probe/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "EventProbe",
+          "properties": {
+            "level": {
+              "description": "A number, observable.",
+              "title": "A number, observable.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": 0,
+              "type": "integer",
+              "forms": [
+                {
+                  "href": "/event_probe/level",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/event_probe/level",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/event_probe/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "count": {
+              "description": "Emit `counted` from 1 to `to`.",
+              "title": "Emit `counted` from 1 to `to`.",
+              "forms": [
+                {
+                  "href": "/event_probe/count",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "count_input",
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "to"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "count_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "happen": {
+              "description": "Emit `happened`.",
+              "title": "Emit `happened`.",
+              "forms": [
+                {
+                  "href": "/event_probe/happen",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "happen_input",
+                "type": "object",
+                "properties": {
+                  "what": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "what"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "happen_output",
+                "type": "null"
+              },
+              "synchronous": false
+            }
+          },
+          "events": {
+            "counted": {
+              "description": "A count, one event per step.",
+              "title": "A count, one event per step.",
+              "forms": [
+                {
+                  "href": "/event_probe/counted",
+                  "op": [
+                    "subscribeevent",
+                    "unsubscribeevent"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/event_probe/ws",
+                  "op": [
+                    "subscribeevent"
+                  ]
+                }
+              ],
+              "data": {
+                "type": "integer"
+              }
+            },
+            "happened": {
+              "description": "Emitted by `happen`.",
+              "title": "Something happened.",
+              "forms": [
+                {
+                  "href": "/event_probe/happened",
+                  "op": [
+                    "subscribeevent",
+                    "unsubscribeevent"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/event_probe/ws",
+                  "op": [
+                    "subscribeevent"
+                  ]
+                }
+              ],
+              "data": {
+                "description": "What happened.",
+                "type": "object",
+                "properties": {
+                  "what": {
+                    "description": "What it was.",
+                    "type": "string"
+                  },
+                  "times": {
+                    "description": "How many times it happened.",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "what",
+                  "times"
+                ]
+              }
+            }
+          },
+          "description": "A Thing whose actions emit events.",
+          "forms": [
+            {
+              "href": "/event_probe/properties",
+              "op": [
+                "readallproperties",
+                "writemultipleproperties"
+              ]
+            },
+            {
+              "href": "/event_probe/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/event_probe/actions",
+              "op": [
+                "queryallactions"
+              ]
+            },
+            {
+              "href": "/event_probe/events",
+              "op": [
+                "subscribeallevents",
+                "unsubscribeallevents"
+              ],
+              "subprotocol": "sse"
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"EventProbe\",\"properties\":{\"level\":{\"description\":\"A number, observable.\",\"title\":\"A number, observable.\",\"writeOnly\":false,\"readOnly\":false,\"default\":0,\"type\":\"integer\",\"forms\":[{\"href\":\"/event_probe/level\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/event_probe/level\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/event_probe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"count\":{\"description\":\"Emit `counted` from 1 to `to`.\",\"title\":\"Emit `counted` from 1 to `to`.\",\"forms\":[{\"href\":\"/event_probe/count\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"count_input\",\"type\":\"object\",\"properties\":{\"to\":{\"type\":\"integer\"}},\"required\":[\"to\"],\"additionalProperties\":false},\"output\":{\"title\":\"count_output\",\"type\":\"null\"},\"synchronous\":false},\"happen\":{\"description\":\"Emit `happened`.\",\"title\":\"Emit `happened`.\",\"forms\":[{\"href\":\"/event_probe/happen\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"happen_input\",\"type\":\"object\",\"properties\":{\"what\":{\"type\":\"string\"}},\"required\":[\"what\"],\"additionalProperties\":false},\"output\":{\"title\":\"happen_output\",\"type\":\"null\"},\"synchronous\":false}},\"events\":{\"counted\":{\"description\":\"A count, one event per step.\",\"title\":\"A count, one event per step.\",\"forms\":[{\"href\":\"/event_probe/counted\",\"op\":[\"subscribeevent\",\"unsubscribeevent\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/event_probe/ws\",\"op\":[\"subscribeevent\"]}],\"data\":{\"type\":\"integer\"}},\"happened\":{\"description\":\"Emitted by `happen`.\",\"title\":\"Something happened.\",\"forms\":[{\"href\":\"/event_probe/happened\",\"op\":[\"subscribeevent\",\"unsubscribeevent\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/event_probe/ws\",\"op\":[\"subscribeevent\"]}],\"data\":{\"description\":\"What happened.\",\"type\":\"object\",\"properties\":{\"what\":{\"description\":\"What it was.\",\"type\":\"string\"},\"times\":{\"description\":\"How many times it happened.\",\"type\":\"integer\"}},\"required\":[\"what\",\"times\"]}}},\"description\":\"A Thing whose actions emit events.\",\"forms\":[{\"href\":\"/event_probe/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/event_probe/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/event_probe/actions\",\"op\":[\"queryallactions\"]},{\"href\":\"/event_probe/events\",\"op\":[\"subscribeallevents\",\"unsubscribeallevents\"],\"subprotocol\":\"sse\"}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "open",
+        "websocket": "/event_probe/ws",
+        "socket": "a"
+      },
+      "status": 101
+    },
+    {
+      "step": {
+        "name": "subscribe",
+        "socket": "a",
+        "send": {
+          "messageType": "addEventSubscription",
+          "data": {
+            "happened": true,
+            "counted": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "observe_level",
+        "socket": "a",
+        "send": {
+          "messageType": "addPropertyObservation",
+          "data": {
+            "level": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "sync",
+        "socket": "a",
+        "send": {
+          "messageType": "addEventSubscription",
+          "data": {
+            "nope": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "synced",
+        "socket": "a",
+        "receive": 1
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "response",
+            "operation": "subscribeevent",
+            "name": "nope",
+            "error": {
+              "status": "404",
+              "type": "https://w3c.github.io/web-thing-protocol/errors#not-found",
+              "title": "Not Found",
+              "detail": "No event found with the name 'nope'."
+            }
+          },
+          "text": "{\"messageType\":\"response\",\"operation\":\"subscribeevent\",\"name\":\"nope\",\"error\":{\"status\":\"404\",\"type\":\"https://w3c.github.io/web-thing-protocol/errors#not-found\",\"title\":\"Not Found\",\"detail\":\"No event found with the name 'nope'.\"}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "happen",
+        "method": "POST",
+        "path": "/event_probe/happen",
+        "json": {
+          "what": "a test"
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:1>",
+          "action": "/event_probe/happen",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "what": "a test"
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:1>",
+          "action": "/event_probe/happen",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "what": "a test"
+          },
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:1>\",\"action\":\"/event_probe/happen\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"what\":\"a test\"},\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "happened",
+        "socket": "a",
+        "receive": 1
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "event",
+            "data": {
+              "happened": {
+                "data": {
+                  "what": "a test",
+                  "times": 1
+                },
+                "timestamp": "<utc-datetime>"
+              }
+            }
+          },
+          "text": "{\"messageType\":\"event\",\"data\":{\"happened\":{\"data\":{\"what\":\"a test\",\"times\":1},\"timestamp\":\"<utc-datetime>\"}}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "count",
+        "method": "POST",
+        "path": "/event_probe/count",
+        "json": {
+          "to": 2
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:2>",
+          "action": "/event_probe/count",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "to": 2
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:2>",
+          "action": "/event_probe/count",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "to": 2
+          },
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/event_probe/count\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"to\":2},\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "counted",
+        "socket": "a",
+        "receive": 2
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "event",
+            "data": {
+              "counted": {
+                "data": 1,
+                "timestamp": "<utc-datetime>"
+              }
+            }
+          },
+          "text": "{\"messageType\":\"event\",\"data\":{\"counted\":{\"data\":1,\"timestamp\":\"<utc-datetime>\"}}}"
+        },
+        {
+          "body": {
+            "messageType": "event",
+            "data": {
+              "counted": {
+                "data": 2,
+                "timestamp": "<utc-datetime>"
+              }
+            }
+          },
+          "text": "{\"messageType\":\"event\",\"data\":{\"counted\":{\"data\":2,\"timestamp\":\"<utc-datetime>\"}}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "write_level",
+        "method": "PUT",
+        "path": "/event_probe/level",
+        "json": 4
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "level",
+        "socket": "a",
+        "receive": 1
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "propertyStatus",
+            "data": {
+              "level": 4
+            }
+          },
+          "text": "{\"messageType\":\"propertyStatus\",\"data\":{\"level\":4}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "nothing_more",
+        "socket": "a",
+        "quiet": 0.3
+      },
+      "messages": []
+    },
+    {
+      "step": {
+        "name": "close",
+        "socket": "a",
+        "close": true
+      }
+    },
+    {
+      "step": {
+        "name": "happen_after_close",
+        "method": "POST",
+        "path": "/event_probe/happen",
+        "json": {
+          "what": "unseen"
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:3>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:3>",
+          "action": "/event_probe/happen",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "what": "unseen"
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:3>",
+          "action": "/event_probe/happen",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "what": "unseen"
+          },
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:3>\",\"action\":\"/event_probe/happen\",\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:3>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"what\":\"unseen\"},\"output\":null,\"log\":[],\"error\":null}"
+      }
+    }
+  ]
+}

@@ -78,7 +78,8 @@ add_library(teta_wot_http
     http/path_uuid.cpp
     http/render.cpp
     http/routes.cpp
-    http/sse.cpp)
+    http/sse.cpp
+    http/websocket.cpp)
 add_library(teta::wot-http ALIAS teta_wot_http)
 set_target_properties(teta_wot_http PROPERTIES EXPORT_NAME wot-http)
 target_link_libraries(teta_wot_http

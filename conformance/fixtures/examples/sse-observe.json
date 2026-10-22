@@ -1,0 +1,104 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 5000,
+  "steps": [
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/thermometer/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "Thermometer",
+          "properties": {
+            "temperature": {
+              "description": "The latest reading.",
+              "title": "The latest reading.",
+              "writeOnly": false,
+              "readOnly": true,
+              "unit": "degree Celsius",
+              "default": 21.0,
+              "type": "number",
+              "forms": [
+                {
+                  "href": "/thermometer/temperature",
+                  "op": [
+                    "readproperty"
+                  ]
+                },
+                {
+                  "href": "/thermometer/temperature",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/thermometer/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {},
+          "description": "A thermometer that reads a simulated sensor four times a second.",
+          "forms": [
+            {
+              "href": "/thermometer/properties",
+              "op": [
+                "readallproperties"
+              ]
+            },
+            {
+              "href": "/thermometer/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"Thermometer\",\"properties\":{\"temperature\":{\"description\":\"The latest reading.\",\"title\":\"The latest reading.\",\"writeOnly\":false,\"readOnly\":true,\"unit\":\"degree Celsius\",\"default\":21.0,\"type\":\"number\",\"forms\":[{\"href\":\"/thermometer/temperature\",\"op\":[\"readproperty\"]},{\"href\":\"/thermometer/temperature\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/thermometer/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{},\"description\":\"A thermometer that reads a simulated sensor four times a second.\",\"forms\":[{\"href\":\"/thermometer/properties\",\"op\":[\"readallproperties\"]},{\"href\":\"/thermometer/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "stream",
+        "events": "/thermometer/temperature",
+        "stream": "t"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream",
+          "vary": "Origin",
+          "cache-control": "no-cache"
+        },
+        "body": null
+      }
+    }
+  ]
+}

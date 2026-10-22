@@ -1,0 +1,91 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 5000,
+  "steps": [
+    {
+      "name": "td",
+      "method": "GET",
+      "path": "/laser/"
+    },
+    {
+      "name": "trips",
+      "events": "/laser/tripped",
+      "stream": "s"
+    },
+    {
+      "name": "open",
+      "websocket": "/laser/ws",
+      "socket": "a"
+    },
+    {
+      "name": "subscribe",
+      "socket": "a",
+      "send": {
+        "messageType": "addEventSubscription",
+        "data": {
+          "tripped": true
+        }
+      }
+    },
+    {
+      "name": "subscribe_missing",
+      "socket": "a",
+      "send": {
+        "messageType": "addEventSubscription",
+        "data": {
+          "exploded": true
+        }
+      }
+    },
+    {
+      "name": "refused",
+      "socket": "a",
+      "receive": 1
+    },
+    {
+      "name": "start_emission",
+      "method": "POST",
+      "path": "/laser/start_emission",
+      "wait": true
+    },
+    {
+      "name": "emitting",
+      "method": "GET",
+      "path": "/laser/emitting"
+    },
+    {
+      "name": "open_door",
+      "method": "POST",
+      "path": "/laser/open_door",
+      "wait": true
+    },
+    {
+      "name": "tripped_over_websocket",
+      "socket": "a",
+      "receive": 1
+    },
+    {
+      "name": "tripped_over_sse",
+      "stream": "s",
+      "receive": 1
+    },
+    {
+      "name": "not_emitting",
+      "method": "GET",
+      "path": "/laser/emitting"
+    },
+    {
+      "name": "close_door",
+      "method": "POST",
+      "path": "/laser/close_door",
+      "wait": true
+    },
+    {
+      "name": "nothing_more",
+      "socket": "a",
+      "quiet": 0.3
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "config": {
+    "things": {
+      "event_probe": "twins.event_probe:EventProbe"
+    },
+    "server_id": "conformance",
+    "wire_profile": "wot"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "property_stream",
+        "events": "/event_probe/level",
+        "stream": "level"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream",
+          "vary": "Origin",
+          "cache-control": "no-cache"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "event_stream",
+        "events": "/event_probe/happened",
+        "stream": "happened"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream",
+          "vary": "Origin",
+          "cache-control": "no-cache"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "write_level",
+        "method": "PUT",
+        "path": "/event_probe/level",
+        "json": 2
+      },
+      "response": {
+        "status": 204,
+        "headers": {
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "happen",
+        "method": "POST",
+        "path": "/event_probe/happen",
+        "json": {
+          "what": "named"
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:0>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeRequested": "<utc-datetime>"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "level_event",
+        "stream": "level",
+        "receive": 1
+      },
+      "events": [
+        {
+          "event": "level",
+          "id": "<utc-datetime>",
+          "data": 2,
+          "text": "2"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "happened_event",
+        "stream": "happened",
+        "receive": 1
+      },
+      "events": [
+        {
+          "event": "happened",
+          "id": "<utc-datetime>",
+          "data": {
+            "what": "named",
+            "times": 1
+          },
+          "text": "{\"what\":\"named\",\"times\":1}"
+        }
+      ]
+    }
+  ]
+}

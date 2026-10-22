@@ -60,6 +60,13 @@ class StreamSink {
     virtual bool send(std::string_view chunk) = 0;
     /// Ends the body. Later sends are refused.
     virtual void close() = 0;
+    /// Whether the client keeps up: false while the transport holds more
+    /// unsent data than it should. A producer of notifications takes no more
+    /// from the broker until it is ready again (and the broker drops what
+    /// doesn't fit in the subscription's buffer).
+    virtual bool ready() const { return true; }
+    /// Calls `resume` whenever the sink becomes ready again.
+    virtual void set_resume(std::function<void()> resume) { (void)resume; }
 };
 
 /// Starts a streamed body (server-sent events, MJPEG). The transport calls it

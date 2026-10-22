@@ -1,0 +1,45 @@
+{
+  "config": {
+    "things": {
+      "event_probe": "twins.event_probe:EventProbe"
+    },
+    "server_id": "conformance",
+    "wire_profile": "wot"
+  },
+  "steps": [
+    {
+      "name": "property_stream",
+      "events": "/event_probe/level",
+      "stream": "level"
+    },
+    {
+      "name": "event_stream",
+      "events": "/event_probe/happened",
+      "stream": "happened"
+    },
+    {
+      "name": "write_level",
+      "method": "PUT",
+      "path": "/event_probe/level",
+      "json": 2
+    },
+    {
+      "name": "happen",
+      "method": "POST",
+      "path": "/event_probe/happen",
+      "json": {
+        "what": "named"
+      }
+    },
+    {
+      "name": "level_event",
+      "stream": "level",
+      "receive": 1
+    },
+    {
+      "name": "happened_event",
+      "stream": "happened",
+      "receive": 1
+    }
+  ]
+}

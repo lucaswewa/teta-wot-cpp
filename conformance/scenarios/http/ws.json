@@ -1,0 +1,292 @@
+{
+  "config": {
+    "things": {
+      "ws_probe": "twins.ws_probe:ThingWithProperties",
+      "counter": "twins.counter:TestThing"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "name": "open",
+      "websocket": "/ws_probe/ws",
+      "socket": "a"
+    },
+    {
+      "name": "observe_dataprop",
+      "socket": "a",
+      "send": {
+        "messageType": "addPropertyObservation",
+        "data": {
+          "dataprop": true
+        }
+      }
+    },
+    {
+      "name": "observe_actions",
+      "socket": "a",
+      "send": {
+        "messageType": "addActionObservation",
+        "data": {
+          "increment_dataprop": true,
+          "raise_error": true,
+          "cancel_myself": true
+        }
+      }
+    },
+    {
+      "name": "observe_funcprop",
+      "socket": "a",
+      "send": {
+        "messageType": "addPropertyObservation",
+        "data": {
+          "funcprop": true
+        }
+      }
+    },
+    {
+      "name": "funcprop_refused",
+      "socket": "a",
+      "receive": 1
+    },
+    {
+      "name": "write_dataprop",
+      "method": "PUT",
+      "path": "/ws_probe/dataprop",
+      "json": 5
+    },
+    {
+      "name": "dataprop_changed",
+      "socket": "a",
+      "receive": 1
+    },
+    {
+      "name": "increment",
+      "method": "POST",
+      "path": "/ws_probe/increment_dataprop",
+      "wait": true
+    },
+    {
+      "name": "increment_observed",
+      "socket": "a",
+      "receive": 4
+    },
+    {
+      "name": "raise_error",
+      "method": "POST",
+      "path": "/ws_probe/raise_error",
+      "wait": true
+    },
+    {
+      "name": "raise_error_observed",
+      "socket": "a",
+      "receive": 4
+    },
+    {
+      "name": "cancel_myself",
+      "method": "POST",
+      "path": "/ws_probe/cancel_myself",
+      "wait": true
+    },
+    {
+      "name": "cancel_myself_observed",
+      "socket": "a",
+      "receive": 4
+    },
+    {
+      "name": "observe_missing_property",
+      "socket": "a",
+      "send": {
+        "messageType": "addPropertyObservation",
+        "data": {
+          "nope": true
+        }
+      }
+    },
+    {
+      "name": "observe_missing_action",
+      "socket": "a",
+      "send": {
+        "messageType": "addActionObservation",
+        "data": {
+          "nope": true
+        }
+      }
+    },
+    {
+      "name": "subscribe_missing_event",
+      "socket": "a",
+      "send": {
+        "messageType": "addEventSubscription",
+        "data": {
+          "nope": true
+        }
+      }
+    },
+    {
+      "name": "missing_refused",
+      "socket": "a",
+      "receive": 3
+    },
+    {
+      "name": "refusal_skips_the_rest",
+      "socket": "a",
+      "send": {
+        "messageType": "addPropertyObservation",
+        "data": {
+          "funcprop": true,
+          "nope": true
+        }
+      }
+    },
+    {
+      "name": "only_the_first_refused",
+      "socket": "a",
+      "receive": 1
+    },
+    {
+      "name": "not_json",
+      "socket": "a",
+      "send_text": "not json"
+    },
+    {
+      "name": "not_an_object",
+      "socket": "a",
+      "send_text": "[1]"
+    },
+    {
+      "name": "data_not_an_object",
+      "socket": "a",
+      "send": {
+        "messageType": "addPropertyObservation",
+        "data": 5
+      }
+    },
+    {
+      "name": "other_message_type",
+      "socket": "a",
+      "send": {
+        "messageType": "setProperty",
+        "data": {
+          "dataprop": 1
+        }
+      }
+    },
+    {
+      "name": "bad_messages_ignored",
+      "socket": "a",
+      "quiet": 0.3
+    },
+    {
+      "name": "observe_dataprop_again",
+      "socket": "a",
+      "send": {
+        "messageType": "addPropertyObservation",
+        "data": {
+          "dataprop": true
+        }
+      }
+    },
+    {
+      "name": "write_dataprop_again",
+      "method": "PUT",
+      "path": "/ws_probe/dataprop",
+      "json": 9
+    },
+    {
+      "name": "observed_once",
+      "socket": "a",
+      "receive": 1
+    },
+    {
+      "name": "nothing_more",
+      "socket": "a",
+      "quiet": 0.3
+    },
+    {
+      "name": "open_counter",
+      "websocket": "/counter/ws",
+      "socket": "b"
+    },
+    {
+      "name": "observe_counter",
+      "socket": "b",
+      "send": {
+        "messageType": "addPropertyObservation",
+        "data": {
+          "counter": true
+        }
+      }
+    },
+    {
+      "name": "observe_counter_action",
+      "socket": "b",
+      "send": {
+        "messageType": "addActionObservation",
+        "data": {
+          "increment_counter": true
+        }
+      }
+    },
+    {
+      "name": "sync_counter",
+      "socket": "b",
+      "send": {
+        "messageType": "addEventSubscription",
+        "data": {
+          "nope": true
+        }
+      }
+    },
+    {
+      "name": "counter_synced",
+      "socket": "b",
+      "receive": 1
+    },
+    {
+      "name": "increment_counter",
+      "method": "POST",
+      "path": "/counter/increment_counter",
+      "wait": true
+    },
+    {
+      "name": "counter_observed",
+      "socket": "b",
+      "receive": 4
+    },
+    {
+      "name": "other_socket_quiet",
+      "socket": "a",
+      "quiet": 0.3
+    },
+    {
+      "name": "plain_get",
+      "method": "GET",
+      "path": "/ws_probe/ws"
+    },
+    {
+      "name": "no_such_thing",
+      "websocket": "/nope/ws",
+      "socket": "c"
+    },
+    {
+      "name": "upgrade_to_a_property",
+      "websocket": "/ws_probe/dataprop",
+      "socket": "d"
+    },
+    {
+      "name": "shutdown",
+      "restart": true
+    },
+    {
+      "name": "a_closed",
+      "socket": "a",
+      "closed": true
+    },
+    {
+      "name": "b_closed",
+      "socket": "b",
+      "closed": true
+    }
+  ]
+}

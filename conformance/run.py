@@ -50,6 +50,22 @@ created until it has finished, and record its final state) and `poll`
 answer). Paths and bodies may use `{last}` (the
 most recent invocation's ID) and `{inv:N}` (the N-th, from 0).
 
+Observation steps, instead of a request:
+
+- `{"name", "websocket": "/thing/ws", "socket": "a"}` opens a WebSocket
+  (recording 101, or the answer if the server refuses the upgrade); then
+  steps with `"socket": "a"` and `"send": {...}` (JSON) or `"send_text"`
+  send a message, `"receive": N` records the next N messages, `"quiet": S`
+  records what arrives within S seconds (usually nothing), `"closed": true`
+  records how the server closes the socket, and `"close": true` closes it;
+- `{"name", "events": "/thing/property", "stream": "s"}` opens a
+  server-sent events stream (recording the answer's status and headers); then
+  steps with `"stream": "s"` and `"receive": N` record the next N events
+  (`event`, `id`, `data`), and `"ended": true` waits for the stream's end.
+
+The handshake's own headers (`upgrade`, `sec-websocket-accept`, …) are the
+transport's, and aren't recorded.
+
 Settings steps, instead of a request:
 
 - `{"name", "file": "thing/Settings-Class.json"}` records that file of the
@@ -82,6 +98,7 @@ order and escaping part of the comparison.
 """
 
 import argparse
+import base64
 import difflib
 import http.client
 import json
@@ -89,6 +106,7 @@ import os
 import re
 import signal
 import socket
+import struct
 import subprocess
 import sys
 import tempfile
@@ -118,7 +136,7 @@ HEADERS = [
 RUN_STATE = ["status", "timeStarted", "timeCompleted", "timeEnded", "output", "log", "error"]
 
 UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
-NAIVE = r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,6})?"
+NAIVE = r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,9})?"
 UTC = NAIVE + r"(?:Z|\+00:00)"
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
@@ -328,6 +346,146 @@ class Server:
         return request(self.port, method, path, body, headers)
 
 
+class WebSocketClient:
+    """A minimal WebSocket client (RFC 6455): text messages, pings and closes."""
+
+    def __init__(self, port, path, headers):
+        self.sock = socket.create_connection(("127.0.0.1", port), timeout=15)
+        key = base64.b64encode(os.urandom(16)).decode()
+        lines = [f"GET {path} HTTP/1.1", f"Host: {HOST}", "Upgrade: websocket", "Connection: Upgrade",
+                 f"Sec-WebSocket-Key: {key}", "Sec-WebSocket-Version: 13"]
+        lines += [f"{k}: {v}" for k, v in headers.items()]
+        self.sock.sendall(("\r\n".join(lines) + "\r\n\r\n").encode())
+        self.buffer = b""
+        while b"\r\n\r\n" not in self.buffer:
+            chunk = self.sock.recv(65536)
+            if not chunk:
+                break
+            self.buffer += chunk
+        head, _, self.buffer = self.buffer.partition(b"\r\n\r\n")
+        status_line, *header_lines = head.decode("latin-1").split("\r\n")
+        self.status = int(status_line.split()[1])
+        self.headers = {}
+        for line in header_lines:
+            name, _, value = line.partition(":")
+            self.headers[name.strip().lower()] = value.strip()
+        self.body = b""
+        if self.status != 101:
+            length = int(self.headers.get("content-length", "0"))
+            while len(self.buffer) < length:
+                chunk = self.sock.recv(65536)
+                if not chunk:
+                    break
+                self.buffer += chunk
+            self.body = self.buffer[:length]
+            self.sock.close()
+        self.closed = self.status != 101
+
+    def send_frame(self, opcode, payload):
+        mask = os.urandom(4)
+        header = bytes([0x80 | opcode])
+        if len(payload) < 126:
+            header += bytes([0x80 | len(payload)])
+        elif len(payload) < 65536:
+            header += bytes([0x80 | 126]) + struct.pack(">H", len(payload))
+        else:
+            header += bytes([0x80 | 127]) + struct.pack(">Q", len(payload))
+        masked = bytes(b ^ mask[i % 4] for i, b in enumerate(payload))
+        self.sock.sendall(header + mask + masked)
+
+    def send_text(self, text):
+        self.send_frame(0x1, text.encode("utf-8"))
+
+    def read(self, count, deadline):
+        while len(self.buffer) < count:
+            self.sock.settimeout(max(deadline - time.monotonic(), 0.001))
+            try:
+                chunk = self.sock.recv(65536)
+            except socket.timeout:
+                return None
+            if not chunk:
+                raise ConnectionError("closed without a close frame")
+            self.buffer += chunk
+        data, self.buffer = self.buffer[:count], self.buffer[count:]
+        return data
+
+    def receive(self, timeout):
+        """The next text message, `("close", code, reason)`, or None on a
+        timeout."""
+        deadline = time.monotonic() + timeout
+        message = b""
+        while True:
+            head = self.read(2, deadline)
+            if head is None:
+                return None
+            opcode, length = head[0] & 0x0F, head[1] & 0x7F
+            if length == 126:
+                length = struct.unpack(">H", self.read(2, deadline + 5))[0]
+            elif length == 127:
+                length = struct.unpack(">Q", self.read(8, deadline + 5))[0]
+            payload = self.read(length, deadline + 5) if length else b""
+            if opcode == 0x9:
+                self.send_frame(0xA, payload)
+            elif opcode == 0x8:
+                self.closed = True
+                code = struct.unpack(">H", payload[:2])[0] if len(payload) >= 2 else 1005
+                return ("close", code, payload[2:].decode("utf-8"))
+            elif opcode in (0x1, 0x0):
+                message += payload
+                if head[0] & 0x80:
+                    return message.decode("utf-8")
+
+    def close(self):
+        if not self.closed:
+            try:
+                self.send_frame(0x8, struct.pack(">H", 1000))
+            except OSError:
+                pass
+        self.sock.close()
+
+
+# The end of a server-sent events stream.
+END = object()
+
+
+class EventStreamClient:
+    """A server-sent events stream, read line by line."""
+
+    def __init__(self, port, path, headers):
+        self.conn = http.client.HTTPConnection("127.0.0.1", port, timeout=15)
+        self.conn.request("GET", path, headers={"Host": HOST, "Accept": "text/event-stream", **headers})
+        self.response = self.conn.getresponse()
+        self.status = self.response.status
+        self.headers = {k.lower(): v for k, v in self.response.getheaders()}
+
+    def receive(self, timeout):
+        """The next event as `{event, id, data}`, END at the end of the
+        stream, or None on a timeout."""
+        self.conn.sock.settimeout(timeout)
+        fields = {}
+        while True:
+            try:
+                line = self.response.fp.readline()
+            except (socket.timeout, TimeoutError):
+                return None
+            if not line:
+                return END
+            line = line.decode("utf-8").rstrip("\r\n")
+            if line == "":
+                if "data" in fields:
+                    return fields
+                fields = {}
+                continue
+            if line.startswith(":"):
+                continue
+            name, _, value = line.partition(":")
+            value = value[1:] if value.startswith(" ") else value
+            fields[name] = fields[name] + "\n" + value if name == "data" and "data" in fields else value
+
+    def close(self):
+        self.conn.close()
+
+
 def record(status, headers, raw, normaliser, race=False):
     kept = {h: headers[h] for h in HEADERS if h in headers}
     if "allow" in kept:
@@ -371,7 +529,85 @@ def run_steps(server, scenario, prefix):
         value = value.replace("{last}", ids[-1] if ids else NIL)
         return re.sub(r"\{inv:(\d+)\}", lambda m: ids[int(m.group(1))], value)
 
+    sockets = {}
+    streams = {}
+
+    def message(received):
+        if received is None:
+            return "<timeout>"
+        if received is END:
+            return "<end>"
+        if isinstance(received, tuple):
+            return {"close": {"code": received[1], "reason": received[2]}}
+        if isinstance(received, str):
+            return {"body": normaliser.value(json.loads(received)), "text": normaliser.text(received)}
+        data = received["data"]
+        try:
+            parsed = normaliser.value(json.loads(data))
+        except ValueError:
+            parsed = data
+        return {"event": received.get("event"), "id": normaliser.string(received["id"]) if "id" in received else None,
+                "data": parsed, "text": normaliser.text(data)}
+
+    try:
+        return run_step_list(server, scenario, prefix, normaliser, ids, steps, resolve, sockets, streams, message)
+    finally:
+        for client in [*sockets.values(), *streams.values()]:
+            client.close()
+
+
+def run_step_list(server, scenario, prefix, normaliser, ids, steps, resolve, sockets, streams, message):
     for step in scenario["steps"]:
+        if "websocket" in step:
+            ws = WebSocketClient(server.port, resolve(step["websocket"]), step.get("headers", {}))
+            sockets[step["socket"]] = ws
+            if ws.status == 101:
+                steps.append({"step": step, "status": 101})
+            else:
+                steps.append({"step": step, "response": record(ws.status, ws.headers, ws.body, normaliser)})
+            continue
+        if "socket" in step:
+            ws = sockets[step["socket"]]
+            entry = {"step": step}
+            if "send" in step:
+                ws.send_text(json.dumps(resolve(step["send"])))
+            elif "send_text" in step:
+                ws.send_text(step["send_text"])
+            elif "receive" in step:
+                entry["messages"] = [message(ws.receive(10)) for _ in range(step["receive"])]
+            elif "quiet" in step:
+                received = []
+                while (got := ws.receive(step["quiet"])) is not None:
+                    received.append(message(got))
+                    if isinstance(got, tuple):
+                        break
+                entry["messages"] = received
+            elif step.get("closed"):
+                got = ws.receive(10)
+                while isinstance(got, str):
+                    got = ws.receive(10)
+                entry["closed"] = message(got)
+            elif step.get("close"):
+                ws.close()
+            steps.append(entry)
+            continue
+        if "events" in step:
+            stream = EventStreamClient(server.port, resolve(step["events"]), step.get("headers", {}))
+            streams[step["stream"]] = stream
+            steps.append({"step": step, "response": record(stream.status, stream.headers, b"", normaliser)})
+            continue
+        if "stream" in step:
+            stream = streams[step["stream"]]
+            entry = {"step": step}
+            if "receive" in step:
+                entry["events"] = [message(stream.receive(10)) for _ in range(step["receive"])]
+            elif step.get("ended"):
+                got = stream.receive(10)
+                while isinstance(got, dict):
+                    got = stream.receive(10)
+                entry["ended"] = message(got)
+            steps.append(entry)
+            continue
         if "file" in step:
             steps.append({"step": step, "file": server.file(step["file"])})
             continue

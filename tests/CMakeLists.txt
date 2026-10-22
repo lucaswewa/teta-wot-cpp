@@ -18,6 +18,7 @@ add_executable(teta-wot-tests
     http/fixtures_test.cpp
     http/http_test.cpp
     http/options_test.cpp
+    http/websocket_test.cpp
     json/json_test.cpp
     json/parse_test.cpp
     server/cli_test.cpp
@@ -52,7 +53,7 @@ if(Python3_Interpreter_FOUND)
     add_test(NAME conformance.http
         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/conformance/run.py check
             --server $<TARGET_FILE:twin-server>
-            counter validation default locked prefixed wot settings settings-load)
+            counter validation default locked prefixed wot settings settings-load ws sse sse-wot events)
     set_tests_properties(conformance.http PROPERTIES LABELS conformance TIMEOUT 600)
     # The command line: exit codes, output, the fallback server.
     add_test(NAME conformance.cli

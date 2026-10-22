@@ -1,0 +1,18 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 5000,
+  "steps": [
+    {
+      "name": "td",
+      "method": "GET",
+      "path": "/thermometer/"
+    },
+    {
+      "name": "stream",
+      "events": "/thermometer/temperature",
+      "stream": "t"
+    }
+  ]
+}

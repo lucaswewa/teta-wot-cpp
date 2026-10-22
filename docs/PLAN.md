@@ -304,6 +304,8 @@ Slots and interfaces, services and `Dep<S>`, settings persistence, the configura
 
 ### Phase 6: Observation and events (M)
 
+**Done** (2026-10-22): see the [Phase 6 note](notes/phase-06-observation.md). The WebSocket fixtures are `fixtures/http/ws.json` and `events.json`; the SSE ones `sse.json` and `sse-wot.json`.
+
 WebSocket dialect (`addPropertyObservation`, `addActionObservation`, `addEventSubscription`, errors), SSE on properties, all properties and events, broker backpressure.
 
 **Gate:** `fixtures/ws/ws.json` with no deltas; SSE scenarios equal to the Rust server's; `observe-websocket`, `sse-observe`, `events` examples.

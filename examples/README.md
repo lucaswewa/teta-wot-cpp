@@ -27,5 +27,8 @@ Each example teaches one concept with the public API only. Run without arguments
 | [`settings`](settings/README.md) | 5 | Properties saved to disk, files interchangeable with teta-wot's |
 | [`config-and-cli`](config-and-cli/README.md) | 5 | A registry, configuration files, the command line, the fallback server |
 | [`graceful-shutdown`](graceful-shutdown/README.md) | 5 | Cancelling, stopping and closing devices in order |
+| [`observe-websocket`](observe-websocket/README.md) | 6 | A property and an action observed over the WebSocket |
+| [`sse-observe`](sse-observe/README.md) | 6 | A property observed with `EventSource` |
+| [`events`](events/README.md) | 6 | Events from a device thread, over SSE, the WebSocket and C++ |
 
 Add an example with `teta_wot_add_example(<name> SOURCES main.cpp)` in `examples/<name>/CMakeLists.txt`, a `README.md` with **Concept**, **Technologies**, how to run it and what to look for, and a line in `examples/CMakeLists.txt` and here.

@@ -1,0 +1,643 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 5000,
+  "steps": [
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/laser/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "Laser",
+          "properties": {
+            "emitting": {
+              "description": "Whether the laser is emitting.",
+              "title": "Whether the laser is emitting.",
+              "writeOnly": false,
+              "readOnly": true,
+              "type": "boolean",
+              "forms": [
+                {
+                  "href": "/laser/emitting",
+                  "op": [
+                    "readproperty"
+                  ]
+                }
+              ]
+            }
+          },
+          "actions": {
+            "close_door": {
+              "description": "Close the enclosure door.",
+              "title": "Close the enclosure door.",
+              "forms": [
+                {
+                  "href": "/laser/close_door",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "close_door_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "close_door_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "open_door": {
+              "description": "Open the enclosure door (in the simulation), which trips the interlock.",
+              "title": "Open the enclosure door (in the simulation), which trips the interlock.",
+              "forms": [
+                {
+                  "href": "/laser/open_door",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "open_door_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "open_door_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "start_emission": {
+              "description": "Start emitting, if the door is closed.",
+              "title": "Start emitting, if the door is closed.",
+              "forms": [
+                {
+                  "href": "/laser/start_emission",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "start_emission_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "start_emission_output",
+                "type": "boolean"
+              },
+              "synchronous": false
+            }
+          },
+          "events": {
+            "tripped": {
+              "description": "Sent when the enclosure is opened while the interlock is armed.",
+              "title": "The interlock tripped, and emission stopped.",
+              "forms": [
+                {
+                  "href": "/laser/tripped",
+                  "op": [
+                    "subscribeevent",
+                    "unsubscribeevent"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/laser/ws",
+                  "op": [
+                    "subscribeevent"
+                  ]
+                }
+              ],
+              "data": {
+                "description": "Why the interlock tripped.",
+                "type": "object",
+                "properties": {
+                  "input": {
+                    "description": "The input that opened the interlock circuit.",
+                    "type": "string"
+                  },
+                  "was_emitting": {
+                    "description": "The emission's state before it was cut.",
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "input",
+                  "was_emitting"
+                ]
+              }
+            }
+          },
+          "description": "A laser in an enclosure with a safety interlock.",
+          "forms": [
+            {
+              "href": "/laser/properties",
+              "op": [
+                "readallproperties"
+              ]
+            },
+            {
+              "href": "/laser/actions",
+              "op": [
+                "queryallactions"
+              ]
+            },
+            {
+              "href": "/laser/events",
+              "op": [
+                "subscribeallevents",
+                "unsubscribeallevents"
+              ],
+              "subprotocol": "sse"
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"Laser\",\"properties\":{\"emitting\":{\"description\":\"Whether the laser is emitting.\",\"title\":\"Whether the laser is emitting.\",\"writeOnly\":false,\"readOnly\":true,\"type\":\"boolean\",\"forms\":[{\"href\":\"/laser/emitting\",\"op\":[\"readproperty\"]}]}},\"actions\":{\"close_door\":{\"description\":\"Close the enclosure door.\",\"title\":\"Close the enclosure door.\",\"forms\":[{\"href\":\"/laser/close_door\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"close_door_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"close_door_output\",\"type\":\"null\"},\"synchronous\":false},\"open_door\":{\"description\":\"Open the enclosure door (in the simulation), which trips the interlock.\",\"title\":\"Open the enclosure door (in the simulation), which trips the interlock.\",\"forms\":[{\"href\":\"/laser/open_door\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"open_door_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"open_door_output\",\"type\":\"null\"},\"synchronous\":false},\"start_emission\":{\"description\":\"Start emitting, if the door is closed.\",\"title\":\"Start emitting, if the door is closed.\",\"forms\":[{\"href\":\"/laser/start_emission\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"start_emission_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"start_emission_output\",\"type\":\"boolean\"},\"synchronous\":false}},\"events\":{\"tripped\":{\"description\":\"Sent when the enclosure is opened while the interlock is armed.\",\"title\":\"The interlock tripped, and emission stopped.\",\"forms\":[{\"href\":\"/laser/tripped\",\"op\":[\"subscribeevent\",\"unsubscribeevent\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/laser/ws\",\"op\":[\"subscribeevent\"]}],\"data\":{\"description\":\"Why the interlock tripped.\",\"type\":\"object\",\"properties\":{\"input\":{\"description\":\"The input that opened the interlock circuit.\",\"type\":\"string\"},\"was_emitting\":{\"description\":\"The emission's state before it was cut.\",\"type\":\"boolean\"}},\"required\":[\"input\",\"was_emitting\"]}}},\"description\":\"A laser in an enclosure with a safety interlock.\",\"forms\":[{\"href\":\"/laser/properties\",\"op\":[\"readallproperties\"]},{\"href\":\"/laser/actions\",\"op\":[\"queryallactions\"]},{\"href\":\"/laser/events\",\"op\":[\"subscribeallevents\",\"unsubscribeallevents\"],\"subprotocol\":\"sse\"}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "trips",
+        "events": "/laser/tripped",
+        "stream": "s"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream",
+          "vary": "Origin",
+          "cache-control": "no-cache"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "open",
+        "websocket": "/laser/ws",
+        "socket": "a"
+      },
+      "status": 101
+    },
+    {
+      "step": {
+        "name": "subscribe",
+        "socket": "a",
+        "send": {
+          "messageType": "addEventSubscription",
+          "data": {
+            "tripped": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "subscribe_missing",
+        "socket": "a",
+        "send": {
+          "messageType": "addEventSubscription",
+          "data": {
+            "exploded": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "refused",
+        "socket": "a",
+        "receive": 1
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "response",
+            "operation": "subscribeevent",
+            "name": "exploded",
+            "error": {
+              "status": "404",
+              "type": "https://w3c.github.io/web-thing-protocol/errors#not-found",
+              "title": "Not Found",
+              "detail": "No event found with the name 'exploded'."
+            }
+          },
+          "text": "{\"messageType\":\"response\",\"operation\":\"subscribeevent\",\"name\":\"exploded\",\"error\":{\"status\":\"404\",\"type\":\"https://w3c.github.io/web-thing-protocol/errors#not-found\",\"title\":\"Not Found\",\"detail\":\"No event found with the name 'exploded'.\"}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "start_emission",
+        "method": "POST",
+        "path": "/laser/start_emission",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:1>",
+          "action": "/laser/start_emission",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:1>",
+          "action": "/laser/start_emission",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": true,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:1>\",\"action\":\"/laser/start_emission\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":true,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "emitting",
+        "method": "GET",
+        "path": "/laser/emitting"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": true,
+        "text": "true"
+      }
+    },
+    {
+      "step": {
+        "name": "open_door",
+        "method": "POST",
+        "path": "/laser/open_door",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:2>",
+          "action": "/laser/open_door",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:2>",
+          "action": "/laser/open_door",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/laser/open_door\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "tripped_over_websocket",
+        "socket": "a",
+        "receive": 1
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "event",
+            "data": {
+              "tripped": {
+                "data": {
+                  "input": "enclosure door",
+                  "was_emitting": true
+                },
+                "timestamp": "<utc-datetime>"
+              }
+            }
+          },
+          "text": "{\"messageType\":\"event\",\"data\":{\"tripped\":{\"data\":{\"input\":\"enclosure door\",\"was_emitting\":true},\"timestamp\":\"<utc-datetime>\"}}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "tripped_over_sse",
+        "stream": "s",
+        "receive": 1
+      },
+      "events": [
+        {
+          "event": null,
+          "id": null,
+          "data": {
+            "input": "enclosure door",
+            "was_emitting": true
+          },
+          "text": "{\"input\":\"enclosure door\",\"was_emitting\":true}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "not_emitting",
+        "method": "GET",
+        "path": "/laser/emitting"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": false,
+        "text": "false"
+      }
+    },
+    {
+      "step": {
+        "name": "close_door",
+        "method": "POST",
+        "path": "/laser/close_door",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:3>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:3>",
+          "action": "/laser/close_door",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:3>",
+          "action": "/laser/close_door",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:3>\",\"action\":\"/laser/close_door\",\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:3>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "nothing_more",
+        "socket": "a",
+        "quiet": 0.3
+      },
+      "messages": []
+    }
+  ]
+}
