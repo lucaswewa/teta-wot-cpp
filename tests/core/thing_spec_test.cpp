@@ -11,7 +11,8 @@
 
 #include "teta/wot.hpp"
 
-namespace {
+// A named namespace: Boost.PFR refuses types with internal linkage (MSVC).
+namespace thing_spec_test {
 
 namespace tw = teta::wot;
 namespace td = teta::wot::td;
@@ -375,4 +376,4 @@ TEST(ThingSpec, ActionErrorsHaveTitlesFromTheirTypes) {
     }
 }
 
-}  // namespace
+}  // namespace thing_spec_test

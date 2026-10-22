@@ -6,6 +6,7 @@ add_executable(teta-wot-tests
     core/cancel_test.cpp
     core/device_test.cpp
     core/log_test.cpp
+    core/nested_test.cpp
     core/property_test.cpp
     core/runtime_test.cpp
     core/thing_spec_test.cpp
