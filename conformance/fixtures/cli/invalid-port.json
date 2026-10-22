@@ -1,0 +1,13 @@
+{
+  "args": [
+    "--port",
+    "70000"
+  ],
+  "exit": 2,
+  "stdout": [],
+  "stderr": [
+    "error: invalid value '70000' for '--port <PORT>': 70000 is not in 0..=65535",
+    "",
+    "For more information, try '--help'."
+  ]
+}

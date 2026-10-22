@@ -1,0 +1,16 @@
+{
+  "args": [
+    "-j",
+    "{\"things\": {\"counter\": \"twins:TestThing\"}, \"api_prefix\": 5}",
+    "--port",
+    "{port}",
+    "--fallback"
+  ],
+  "steps": [
+    {
+      "name": "page",
+      "method": "GET",
+      "path": "/"
+    }
+  ]
+}

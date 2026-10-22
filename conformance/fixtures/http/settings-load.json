@@ -1,0 +1,148 @@
+{
+  "config": {
+    "things": {
+      "settings_probe": "twins.settings_probe:SettingsProbe",
+      "counter": "twins.counter:TestThing"
+    },
+    "server_id": "conformance"
+  },
+  "files": {
+    "settings_probe/Settings-SettingsProbe.json": "{\n    \"calibration\": {\n        \"offset\": 0.25,\n        \"gain\": 4.0\n    },\n    \"count\": 12,\n    \"enabled\": true,\n    \"exposure\": 33.0,\n    \"label\": \"loaded é\",\n    \"limits\": {\n        \"b\": 1e-7,\n        \"a\": 1.5\n    },\n    \"maybe\": 3,\n    \"ratio\": 0.125,\n    \"tags\": [\n        \"x\"\n    ]\n}"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "no_warnings",
+        "warnings": true
+      },
+      "warnings": []
+    },
+    {
+      "step": {
+        "name": "loaded",
+        "method": "GET",
+        "path": "/settings_probe/properties"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "calibration": {
+            "offset": 0.25,
+            "gain": 4.0
+          },
+          "count": 12,
+          "enabled": true,
+          "exposure": 33.0,
+          "label": "loaded é",
+          "limits": {
+            "b": 1e-07,
+            "a": 1.5
+          },
+          "maybe": 3,
+          "ratio": 0.125,
+          "tags": [
+            "x"
+          ]
+        },
+        "text": "{\"calibration\":{\"offset\":0.25,\"gain\":4.0},\"count\":12,\"enabled\":true,\"exposure\":33.0,\"label\":\"loaded é\",\"limits\":{\"b\":1e-7,\"a\":1.5},\"maybe\":3,\"ratio\":0.125,\"tags\":[\"x\"]}"
+      }
+    },
+    {
+      "step": {
+        "name": "loaded_exposure",
+        "method": "GET",
+        "path": "/settings_probe/exposure"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 33.0,
+        "text": "33.0"
+      }
+    },
+    {
+      "step": {
+        "name": "file_as_written",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": true,
+        "written_by": "scenario",
+        "text": "{\n    \"calibration\": {\n        \"offset\": 0.25,\n        \"gain\": 4.0\n    },\n    \"count\": 12,\n    \"enabled\": true,\n    \"exposure\": 33.0,\n    \"label\": \"loaded é\",\n    \"limits\": {\n        \"b\": 1e-7,\n        \"a\": 1.5\n    },\n    \"maybe\": 3,\n    \"ratio\": 0.125,\n    \"tags\": [\n        \"x\"\n    ]\n}"
+      }
+    },
+    {
+      "step": {
+        "name": "no_file_for_a_thing_without_settings",
+        "file": "counter/Settings-TestThing.json"
+      },
+      "file": {
+        "exists": false
+      }
+    },
+    {
+      "step": {
+        "name": "write_the_same_count",
+        "method": "PUT",
+        "path": "/settings_probe/count",
+        "json": 12
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "rewritten_identically",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": true,
+        "written_by": "server",
+        "native_newlines": true,
+        "text": "{\n    \"calibration\": {\n        \"offset\": 0.25,\n        \"gain\": 4.0\n    },\n    \"count\": 12,\n    \"enabled\": true,\n    \"exposure\": 33.0,\n    \"label\": \"loaded é\",\n    \"limits\": {\n        \"b\": 1e-7,\n        \"a\": 1.5\n    },\n    \"maybe\": 3,\n    \"ratio\": 0.125,\n    \"tags\": [\n        \"x\"\n    ]\n}"
+      }
+    },
+    {
+      "step": {
+        "name": "counter_still_has_no_file",
+        "method": "POST",
+        "path": "/counter/increment",
+        "wait": true
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "no_file_after_an_invocation",
+        "file": "counter/Settings-TestThing.json"
+      },
+      "file": {
+        "exists": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "args": [
+    "-j",
+    "[]"
+  ],
+  "exit": 3,
+  "stdout": [
+    "Error reading configuration:",
+    "1 validation error for ThingServerConfig",
+    "  Input should be a valid dictionary or instance of ThingServerConfig"
+  ],
+  "stderr": []
+}

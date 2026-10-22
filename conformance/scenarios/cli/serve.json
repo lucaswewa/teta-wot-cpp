@@ -1,0 +1,32 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing"
+    },
+    "api_prefix": "/api",
+    "unused": 1
+  },
+  "args": [
+    "-c",
+    "{config}",
+    "--port",
+    "{port}"
+  ],
+  "steps": [
+    {
+      "name": "things",
+      "method": "GET",
+      "path": "/api/things/"
+    },
+    {
+      "name": "td",
+      "method": "GET",
+      "path": "/api/counter/"
+    },
+    {
+      "name": "count",
+      "method": "GET",
+      "path": "/api/counter/counter"
+    }
+  ]
+}

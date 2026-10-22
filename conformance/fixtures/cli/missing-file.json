@@ -1,0 +1,11 @@
+{
+  "args": [
+    "-c",
+    "{config}.missing"
+  ],
+  "exit": 1,
+  "stdout": [],
+  "stderr": [
+    "Error: Could not find configuration file <folder>/config.json.missing (<os error>)"
+  ]
+}

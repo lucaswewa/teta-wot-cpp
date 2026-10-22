@@ -1,0 +1,147 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing",
+      "stage": "labthings_fastapi.example_things:ThingThatCantStart"
+    }
+  },
+  "args": [
+    "-c",
+    "{config}",
+    "--port",
+    "{port}",
+    "--fallback"
+  ],
+  "exit": 3,
+  "stdout": [
+    "listening on http://127.0.0.1:<port>",
+    "Error: Failed to enter 'stage' Thing: This thing can't start",
+    "Starting fallback server.",
+    "listening on http://127.0.0.1:<port>"
+  ],
+  "stderr": [],
+  "steps": [
+    {
+      "step": {
+        "name": "page",
+        "method": "GET",
+        "path": "/"
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "content-type": "text/html; charset=utf-8",
+          "vary": "Origin"
+        },
+        "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\" />\n<title>teta-wot: the server failed to start</title>\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n<style>\nbody { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.5; color: #1f2933; }\nmain { max-width: 900px; margin: 0 auto; }\n.error { padding: 1rem; background: #fee2e2; border: 1px solid #fecaca; border-radius: 6px; color: #7f1d1d; }\npre { background: #f1f5f9; padding: 1rem; border-radius: 6px; white-space: pre-wrap; word-break: break-word; }\n.muted { color: #6b7280; }\n</style>\n</head>\n<body>\n<main>\n<h1>The server couldn't start</h1>\n<p class=\"muted\">The server failed during startup. This is usually caused by an invalid configuration, a missing Thing type, or an error while a Thing started.</p>\n<div class=\"error\">Failed to enter &#x27;stage&#x27; Thing: This thing can&#x27;t start</div>\n<h2>The following Things loaded successfully:</h2>\n<ul>\n<li>counter</li>\n<li>stage</li>\n</ul>\n<h2>Configuration</h2>\n<pre>{\n  &quot;things&quot;: {\n    &quot;counter&quot;: &quot;twins.counter:TestThing&quot;,\n    &quot;stage&quot;: &quot;labthings_fastapi.example_things:ThingThatCantStart&quot;\n  },\n  &quot;settings_folder&quot;: &quot;<folder>/settings&quot;\n}</pre>\n<h2>Error</h2>\n<pre>This thing can&#x27;t start</pre>\n<h2>Logging</h2>\n<p class=\"muted\">No logging information available.</p>\n</main>\n<footer class=\"muted\">teta-wot fallback server</footer>\n</body>\n</html>\n"
+      }
+    },
+    {
+      "step": {
+        "name": "identified",
+        "method": "GET",
+        "path": "/fallback"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": true,
+        "text": "true"
+      }
+    },
+    {
+      "step": {
+        "name": "thing_redirected",
+        "method": "GET",
+        "path": "/stage/"
+      },
+      "response": {
+        "status": 307,
+        "headers": {
+          "location": "/",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "post_redirected",
+        "method": "POST",
+        "path": "/counter/increment"
+      },
+      "response": {
+        "status": 307,
+        "headers": {
+          "location": "/",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "query_redirected",
+        "method": "GET",
+        "path": "/things/?x=1"
+      },
+      "response": {
+        "status": 307,
+        "headers": {
+          "location": "/",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "cors",
+        "method": "GET",
+        "path": "/fallback",
+        "headers": {
+          "Origin": "http://example.com"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://example.com",
+          "access-control-allow-credentials": "true",
+          "vary": "Origin"
+        },
+        "body": true,
+        "text": "true"
+      }
+    },
+    {
+      "step": {
+        "name": "preflight",
+        "method": "OPTIONS",
+        "path": "/anything",
+        "headers": {
+          "Origin": "http://example.com",
+          "Access-Control-Request-Method": "PUT",
+          "Access-Control-Request-Headers": "content-type"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/plain; charset=utf-8",
+          "access-control-allow-origin": "http://example.com",
+          "access-control-allow-credentials": "true",
+          "access-control-allow-methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, QUERY",
+          "access-control-allow-headers": "content-type",
+          "access-control-max-age": "600",
+          "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network"
+        },
+        "body": "OK"
+      }
+    }
+  ]
+}

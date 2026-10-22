@@ -73,6 +73,11 @@ std::optional<WireProfile> wire_profile_from_name(std::string_view name);
 /// `HOSTNAME`), or `localhost`.
 std::string default_server_id();
 
+/// Whether an API prefix is empty or like `/api/v1`: segments of letters,
+/// digits, `_` and `-` (pydantic's `^(\/[\w-]+)*$`; any character beyond
+/// ASCII counts as a letter).
+bool valid_api_prefix(std::string_view prefix);
+
 /// Options of the HTTP binding.
 struct HttpOptions {
     /// A prefix for every route, such as `/api/v1`, or empty.

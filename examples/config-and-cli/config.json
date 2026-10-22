@@ -1,0 +1,13 @@
+{
+    "things": {
+        "counter": {
+            "class": "my_lab.counters:Counter",
+            "kwargs": {"start": 41}
+        },
+        "spare": "my_lab.counters:Counter"
+    },
+    "api_prefix": "/api",
+    "settings_folder": "./settings",
+    "enable_global_lock": true,
+    "application_config": {"lab": "B12"}
+}

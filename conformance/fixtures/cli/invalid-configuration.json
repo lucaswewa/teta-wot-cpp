@@ -1,0 +1,69 @@
+{
+  "config": {
+    "things": {
+      "a": 5,
+      "things": "twins:MyThing",
+      "b c": "twins:MyThing",
+      "d": {
+        "kwargs": 3
+      },
+      "e": {
+        "cls": "twins:MyThing",
+        "thing_slots": {
+          "s": 1
+        }
+      }
+    },
+    "api_prefix": "api",
+    "enable_global_lock": "maybe",
+    "global_lock_log_level": "LOUD",
+    "application_config": [],
+    "server_id": 5,
+    "wire_profile": "x",
+    "security": {
+      "scheme": "basic",
+      "username": ""
+    },
+    "mdns": 2
+  },
+  "args": [
+    "-c",
+    "{config}"
+  ],
+  "exit": 3,
+  "stdout": [
+    "Error reading configuration:",
+    "15 validation errors for ThingServerConfig",
+    "things.a",
+    "  Input should be a Thing class (an import string) or a Thing configuration",
+    "things.things.[key]",
+    "  Value error, things is not allowed as the name for a Thing.",
+    "things.b c.[key]",
+    "  String should match pattern '^([a-zA-Z0-9\\-_]+)$'",
+    "things.d.cls",
+    "  Field required",
+    "things.d.kwargs",
+    "  Input should be a valid dictionary",
+    "things.e.thing_slots.s",
+    "  Input should be a Thing name, a list of names, or null",
+    "api_prefix",
+    "  String should match pattern '^(\\/[\\w-]+)*$'",
+    "enable_global_lock",
+    "  Input should be a valid boolean",
+    "global_lock_log_level",
+    "  Input should be 'DEBUG', 'INFO', 'WARNING' or 'ERROR'",
+    "application_config",
+    "  Input should be a valid dictionary",
+    "server_id",
+    "  Input should be a valid string",
+    "wire_profile",
+    "  Input should be 'tetathing' or 'wot'",
+    "security.username",
+    "  Input should be a non-empty string",
+    "security.password_env",
+    "  Field required",
+    "mdns",
+    "  Input should be a valid boolean"
+  ],
+  "stderr": []
+}

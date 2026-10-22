@@ -11,7 +11,8 @@ set(cases
     "setter_type|a setter takes a value of the property's type"
     "getter_parameters|a property's getter takes nothing"
     "not_a_thing|ThingType"
-    "output_codec|an action's output needs a codec")
+    "output_codec|an action's output needs a codec"
+    "slot_incomplete|must be complete where the slot is declared")
 foreach(entry IN LISTS cases)
     string(REPLACE "|" ";" parts "${entry}")
     list(GET parts 0 name)

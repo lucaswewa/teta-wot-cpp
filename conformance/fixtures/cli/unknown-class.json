@@ -1,0 +1,20 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins:TestThing",
+      "x": "nope:Thing"
+    }
+  },
+  "args": [
+    "-c",
+    "{config}"
+  ],
+  "exit": 3,
+  "stdout": [
+    "Error reading configuration:",
+    "1 validation error for ThingServerConfig",
+    "things.x.cls",
+    "  No Thing type is registered as 'nope:Thing'. Registered: <names>"
+  ],
+  "stderr": []
+}

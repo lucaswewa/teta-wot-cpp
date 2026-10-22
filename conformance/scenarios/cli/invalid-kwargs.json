@@ -1,0 +1,16 @@
+{
+  "config": {
+    "things": {
+      "a": {
+        "cls": "twins:MyThing",
+        "kwargs": {
+          "x": 1
+        }
+      }
+    }
+  },
+  "args": [
+    "-c",
+    "{config}"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "args": [
+    "-j",
+    "{\"things\": "
+  ],
+  "exit": 3,
+  "stdout": [
+    "Error reading configuration:",
+    "1 validation error for ThingServerConfig",
+    "  Invalid JSON: EOF while parsing a value at line 1 column 11"
+  ],
+  "stderr": []
+}

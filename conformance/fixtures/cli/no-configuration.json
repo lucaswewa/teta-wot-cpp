@@ -1,0 +1,8 @@
+{
+  "args": [],
+  "exit": 1,
+  "stdout": [],
+  "stderr": [
+    "Error: No configuration (or empty configuration) provided"
+  ]
+}

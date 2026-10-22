@@ -1,0 +1,15 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing"
+    }
+  },
+  "args": [
+    "-c",
+    "{config}",
+    "--port",
+    "{port}",
+    "--fallback"
+  ],
+  "occupy": true
+}

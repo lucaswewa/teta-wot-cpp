@@ -30,88 +30,21 @@ void add(tw::RuntimeBuilder& builder, std::string_view name) {
     }
 }
 
-// The reference registry's names (conformance/reference-rs, `registry`).
-bool add_class(tw::RuntimeBuilder& builder, const std::string& name, std::string_view cls) {
-    auto is = [&](std::initializer_list<std::string_view> registered) {
-        return std::find(registered.begin(), registered.end(), cls) != registered.end();
-    };
-    if (is({"labthings_fastapi.example_things:MyThing", "twins.mything:MyThing", "twins:MyThing"})) {
-        builder.thing<MyThing>(name);
-    } else if (is({"labthings_fastapi.example_things:ThingWithBrokenAffordances",
-                   "twins.mything:ThingWithBrokenAffordances", "twins:ThingWithBrokenAffordances"})) {
-        builder.thing<ThingWithBrokenAffordances>(name);
-    } else if (is({"labthings_fastapi.example_things:ThingThatCantStart"})) {
-        builder.thing<ThingThatCantStart>(name);
-    } else if (is({"twins.counter:TestThing", "twins:TestThing"})) {
-        builder.thing<TestThing>(name);
-    } else if (is({"twins.types_probe:TypesThing", "twins:TypesThing"})) {
-        builder.thing<TypesThing>(name);
-    } else if (is({"twins.http_probe:HttpProbe", "twins:HttpProbe"})) {
-        builder.thing<HttpProbe>(name);
-    } else if (is({"twins.settings_probe:SettingsProbe", "twins:SettingsProbe"})) {
-        builder.thing<SettingsProbe>(name);
-    } else if (is({"twins.ws_probe:ThingWithProperties", "twins:ThingWithProperties"})) {
-        builder.thing<ThingWithProperties>(name);
-    } else {
-        return false;
-    }
-    return true;
-}
-
-std::vector<std::string> class_names() {
-    return {"labthings_fastapi.example_things:MyThing",
-            "twins.mything:MyThing",
-            "twins:MyThing",
-            "labthings_fastapi.example_things:ThingWithBrokenAffordances",
-            "twins.mything:ThingWithBrokenAffordances",
-            "twins:ThingWithBrokenAffordances",
-            "labthings_fastapi.example_things:ThingThatCantStart",
-            "twins.counter:TestThing",
-            "twins:TestThing",
-            "twins.types_probe:TypesThing",
-            "twins:TypesThing",
-            "twins.http_probe:HttpProbe",
-            "twins:HttpProbe",
-            "twins.settings_probe:SettingsProbe",
-            "twins:SettingsProbe",
-            "twins.ws_probe:ThingWithProperties",
-            "twins:ThingWithProperties"};
-}
-
-tw::ThingServerBuilder server_builder(const tw::json::Value& config) {
-    auto builder = tw::ThingServer::builder();
-    const auto things = config.value("things", tw::json::Value::object());
-    for (const auto& [name, entry] : things.items()) {
-        std::string cls;
-        if (entry.is_string()) {
-            cls = entry.get<std::string>();
-        } else if (entry.is_object() && entry.contains("cls")) {
-            cls = entry["cls"].get<std::string>();
-        } else if (entry.is_object() && entry.contains("class")) {
-            cls = entry["class"].get<std::string>();
-        }
-        if (!add_class(builder.runtime(), name, cls)) {
-            throw std::invalid_argument("things." + name + ".cls: No Thing type is registered as '" + cls +
-                                        "'");
-        }
-    }
-    if (config.contains("server_id")) {
-        builder.server_id(config["server_id"].get<std::string>());
-    }
-    if (config.contains("api_prefix")) {
-        builder.api_prefix(config["api_prefix"].get<std::string>());
-    }
-    if (config.contains("enable_global_lock")) {
-        builder.global_lock(config["enable_global_lock"].get<bool>());
-    }
-    if (config.contains("wire_profile")) {
-        const auto profile = tw::http::wire_profile_from_name(config["wire_profile"].get<std::string>());
-        if (!profile) {
-            throw std::invalid_argument("wire_profile: unknown profile");
-        }
-        builder.wire_profile(*profile);
-    }
-    return builder;
+// The reference registry (conformance/reference-rs, `registry`), in its order.
+tw::ThingRegistry registry() {
+    tw::ThingRegistry registry;
+    registry
+        .add<MyThing>({"labthings_fastapi.example_things:MyThing", "twins.mything:MyThing", "twins:MyThing"})
+        .add<ThingWithBrokenAffordances>({"labthings_fastapi.example_things:ThingWithBrokenAffordances",
+                                          "twins.mything:ThingWithBrokenAffordances",
+                                          "twins:ThingWithBrokenAffordances"})
+        .add<ThingThatCantStart>({"labthings_fastapi.example_things:ThingThatCantStart"})
+        .add<TestThing>({"twins.counter:TestThing", "twins:TestThing"})
+        .add<TypesThing>({"twins.types_probe:TypesThing", "twins:TypesThing"})
+        .add<HttpProbe>({"twins.http_probe:HttpProbe", "twins:HttpProbe"})
+        .add<SettingsProbe>({"twins.settings_probe:SettingsProbe", "twins:SettingsProbe"})
+        .add<ThingWithProperties>({"twins.ws_probe:ThingWithProperties", "twins:ThingWithProperties"});
+    return registry;
 }
 
 void Position::describe(tw::StructInfo<Position>& s) {

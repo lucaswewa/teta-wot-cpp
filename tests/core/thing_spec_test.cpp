@@ -233,13 +233,16 @@ TEST(ThingSpec, ServerAndServicesAreInjected) {
     EXPECT_FALSE(f.runtime.server().thing_ref<Counter>("stage"));
     EXPECT_EQ(f.runtime.server().things_of_type<Stage>().size(), 1u);
 
-    // Without the service, the action fails with a message naming it.
-    auto stage = std::make_shared<Stage>();
-    auto runtime = tw::Runtime::builder().thing("stage", stage).build();
-    const auto invocation =
-        runtime.thing("stage")->action("calibrated")->invoke(Value::parse(R"({"x":1,"y":1})"));
-    EXPECT_EQ(invocation->wait(), tw::InvocationStatus::error);
-    EXPECT_EQ(invocation->error()->detail, "the service `Calibration` isn't registered with the server");
+    // Without the service, the Thing can't be built.
+    try {
+        (void)tw::Runtime::builder().thing("stage", std::make_shared<Stage>()).build();
+        ADD_FAILURE() << "built without the service";
+    } catch (const tw::BuildError& error) {
+        EXPECT_EQ(error.kind(), tw::BuildError::Kind::missing_service);
+        EXPECT_EQ(error.name(), "Calibration");
+        EXPECT_STREQ(error.what(),
+                     "Thing `stage` needs the service `Calibration`, which isn't registered with the server");
+    }
 }
 
 TEST(ThingSpec, InProcessCallsHoldTheLockForTheCallerAndRunInItsInvocation) {

@@ -1,0 +1,33 @@
+{
+  "config": {
+    "things": {
+      "a": 5,
+      "things": "twins:MyThing",
+      "b c": "twins:MyThing",
+      "d": {
+        "kwargs": 3
+      },
+      "e": {
+        "cls": "twins:MyThing",
+        "thing_slots": {
+          "s": 1
+        }
+      }
+    },
+    "api_prefix": "api",
+    "enable_global_lock": "maybe",
+    "global_lock_log_level": "LOUD",
+    "application_config": [],
+    "server_id": 5,
+    "wire_profile": "x",
+    "security": {
+      "scheme": "basic",
+      "username": ""
+    },
+    "mdns": 2
+  },
+  "args": [
+    "-c",
+    "{config}"
+  ]
+}

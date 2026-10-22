@@ -43,33 +43,6 @@ std::optional<std::string> environment(const char* name) {
 #endif
 }
 
-// Whether a prefix is empty or like `/api/v1`: segments of letters, digits,
-// `_` and `-` (any character beyond ASCII counts as a letter).
-bool valid_prefix(std::string_view prefix) {
-    if (prefix.empty()) {
-        return true;
-    }
-    if (prefix.front() != '/') {
-        return false;
-    }
-    for (std::size_t start = 1;;) {
-        const auto end = prefix.find('/', start);
-        const auto segment =
-            prefix.substr(start, end == std::string_view::npos ? std::string_view::npos : end - start);
-        if (segment.empty() || !std::ranges::all_of(segment, [](char c) {
-                const auto b = static_cast<unsigned char>(c);
-                return b >= 0x80 || (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') ||
-                       (c >= 'A' && c <= 'Z') || c == '_' || c == '-';
-            })) {
-            return false;
-        }
-        if (end == std::string_view::npos) {
-            return true;
-        }
-        start = end + 1;
-    }
-}
-
 }  // namespace
 
 std::string problem_type(std::string_view name) {
@@ -645,8 +618,33 @@ struct HttpBinding::State {
     }
 };
 
+bool valid_api_prefix(std::string_view prefix) {
+    if (prefix.empty()) {
+        return true;
+    }
+    if (prefix.front() != '/') {
+        return false;
+    }
+    for (std::size_t start = 1;;) {
+        const auto end = prefix.find('/', start);
+        const auto segment =
+            prefix.substr(start, end == std::string_view::npos ? std::string_view::npos : end - start);
+        if (segment.empty() || !std::ranges::all_of(segment, [](char c) {
+                const auto b = static_cast<unsigned char>(c);
+                return b >= 0x80 || (c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') ||
+                       (c >= 'A' && c <= 'Z') || c == '_' || c == '-';
+            })) {
+            return false;
+        }
+        if (end == std::string_view::npos) {
+            return true;
+        }
+        start = end + 1;
+    }
+}
+
 HttpBinding::HttpBinding(std::shared_ptr<Runtime> runtime, HttpOptions options) {
-    if (!valid_prefix(options.api_prefix)) {
+    if (!valid_api_prefix(options.api_prefix)) {
         throw RouteError(
             RouteError::Kind::invalid_prefix, options.api_prefix,
             "invalid API prefix `" + options.api_prefix + "`: it must be empty or like `/api/v1`");

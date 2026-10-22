@@ -133,6 +133,7 @@ jobs:
       - name: The fixtures are what the reference answers
         run: |
           python3 conformance/run.py capture --server conformance/reference-rs/target/release/reference-server
+          python3 conformance/run.py capture --cli --server conformance/reference-rs/target/release/reference-server
           git diff --exit-code -- conformance/fixtures
       - name: The harness compares two servers
         run: |

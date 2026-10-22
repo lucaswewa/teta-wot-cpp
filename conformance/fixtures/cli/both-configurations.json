@@ -1,0 +1,18 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing"
+    }
+  },
+  "args": [
+    "-c",
+    "{config}",
+    "-j",
+    "{}"
+  ],
+  "exit": 1,
+  "stdout": [],
+  "stderr": [
+    "Error: Can't use both --config and --json simultaneously."
+  ]
+}

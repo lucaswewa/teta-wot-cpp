@@ -1,0 +1,12 @@
+{
+  "args": [
+    "-c"
+  ],
+  "exit": 2,
+  "stdout": [],
+  "stderr": [
+    "error: a value is required for '--config <CONFIG>' but none was supplied",
+    "",
+    "For more information, try '--help'."
+  ]
+}

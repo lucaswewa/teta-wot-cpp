@@ -1,0 +1,7 @@
+{
+    "things": {
+        "counter": "my_lab.counters:Counter",
+        "stage": "my_lab.stages:Stage"
+    },
+    "settings_folder": "./settings"
+}

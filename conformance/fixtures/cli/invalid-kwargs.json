@@ -1,0 +1,21 @@
+{
+  "config": {
+    "things": {
+      "a": {
+        "cls": "twins:MyThing",
+        "kwargs": {
+          "x": 1
+        }
+      }
+    }
+  },
+  "args": [
+    "-c",
+    "{config}"
+  ],
+  "exit": 1,
+  "stdout": [],
+  "stderr": [
+    "Error: the configuration of Thing `a` is invalid: unknown field `x`, there are no fields"
+  ]
+}

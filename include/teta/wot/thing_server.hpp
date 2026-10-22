@@ -1,11 +1,11 @@
 // The server: Things, the HTTP binding, and their lifecycle. A port of
-// teta-wot-server's `ThingServer` (Phase 4: building and serving; the
-// configuration model, registry and command line are Phase 5).
+// teta-wot-server's `ThingServer`.
 //
 // `ThingServer::serve`:
 //
-// 1. starts the Things in order: their devices open, then their start hooks
-//    run. A failure stops what has started and throws StartupError;
+// 1. loads the Things' settings, then starts the Things in order (the Things
+//    a Thing's slots connect to first): their devices open, then their start
+//    hooks run. A failure stops what has started and throws StartupError;
 // 2. serves on Drogon until the stop token is requested (by default, until
 //    the process is asked to stop: `shutdown_signal`);
 // 3. shuts down: refuses new connections and lets requests in progress
@@ -13,8 +13,13 @@
 //    up to the grace period for both, then stops the Things in reverse order
 //    and closes their devices.
 //
+// `ThingServer::from_config` builds a server from a configuration file
+// (config.hpp) with the Thing types of a registry (registry.hpp); cli.hpp
+// adds teta-wot's command line, and `serve_fallback` its error page.
+//
 // Drogon's application is one per process, and runs once: a process can
-// `serve` once. `TestClient` (teta/wot/testing.hpp) needs no server.
+// `serve` (or `serve_fallback`) once. `TestClient` (teta/wot/testing.hpp)
+// needs no server.
 
 #pragma once
 
@@ -23,12 +28,17 @@
 #include <filesystem>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <stop_token>
 #include <string>
 #include <utility>
+#include <vector>
 
+#include "teta/wot/config.hpp"
 #include "teta/wot/http/binding.hpp"
+#include "teta/wot/http/fallback.hpp"
+#include "teta/wot/registry.hpp"
 #include "teta/wot/runtime.hpp"
 
 namespace teta::wot {
@@ -41,6 +51,24 @@ class ServeError : public std::runtime_error {
   public:
     explicit ServeError(const std::string& message) : std::runtime_error("the server failed: " + message) {}
 };
+
+namespace detail {
+
+/// Where a server listens: the IP address its host names, and the address
+/// as text (`127.0.0.1:5000`, `[::1]:5000`).
+struct ListenAddress {
+    std::string ip;
+    std::uint16_t port = 0;
+    std::string text;
+};
+
+/// Checks that `host`:`port` can be listened on, before Drogon (which ends
+/// the process when it can't) tries: resolves the host, then binds a socket
+/// and closes it. Throws std::runtime_error with teta-wot's message (`can't
+/// resolve ...`, `can't listen on ...`).
+ListenAddress check_listen(const std::string& host, std::uint16_t port);
+
+}  // namespace detail
 
 class ThingServer;
 
@@ -60,6 +88,27 @@ class ThingServerBuilder {
         runtime_.thing<T>(std::move(name));
         return *this;
     }
+    /// Adds a Thing built from its configuration (its `kwargs`), read into
+    /// `T::Config` when the server is built.
+    template <FromConfig T>
+    ThingServerBuilder& thing_from_config(std::string name, const json::Value& kwargs) {
+        runtime_.thing_from_config<T>(std::move(name), kwargs);
+        return *this;
+    }
+    /// Adds a Thing built from a configuration file entry's `args` and
+    /// `kwargs` (see RuntimeBuilder::thing_from_args).
+    template <FromConfig T>
+    ThingServerBuilder& thing_from_args(std::string name, std::vector<json::Value> args, json::Value kwargs) {
+        runtime_.thing_from_args<T>(std::move(name), std::move(args), std::move(kwargs));
+        return *this;
+    }
+    /// Overrides where a Thing's slots connect (the configuration's
+    /// `thing_slots`).
+    ThingServerBuilder& thing_slots(const std::string& thing,
+                                    std::vector<std::pair<std::string, SlotSelection>> slots) {
+        runtime_.thing_slots(thing, std::move(slots));
+        return *this;
+    }
     /// Registers a shared service, for `Dep<S>` action parameters.
     template <typename S>
     ThingServerBuilder& service(std::shared_ptr<S> service) {
@@ -71,7 +120,7 @@ class ThingServerBuilder {
         runtime_.application_config(std::move(config));
         return *this;
     }
-    /// Persists settings in `folder` (Phase 5).
+    /// Persists settings in `folder`: each Thing gets `{folder}/{name}/`.
     ThingServerBuilder& settings_folder(std::filesystem::path folder) {
         runtime_.settings_folder(std::move(folder));
         return *this;
@@ -113,6 +162,12 @@ class ThingServerBuilder {
         grace_ = grace;
         return *this;
     }
+    /// Asks for the server to be advertised with DNS-SD over mDNS. teta-wot-cpp
+    /// doesn't advertise yet: a warning is logged when the server starts.
+    ThingServerBuilder& mdns(bool enabled) {
+        mdns_ = enabled;
+        return *this;
+    }
     /// The runtime's builder, for its other options (lock timeout, worker
     /// cap, clock).
     RuntimeBuilder& runtime() { return runtime_; }
@@ -125,12 +180,21 @@ class ThingServerBuilder {
     RuntimeBuilder runtime_;
     http::HttpOptions http_;
     std::chrono::nanoseconds grace_ = default_shutdown_grace;
+    bool mdns_ = false;
 };
 
 /// Things served over HTTP.
 class ThingServer {
   public:
     static ThingServerBuilder builder() { return {}; }
+    /// Starts building a server from a configuration: its Things (built by
+    /// the registry from their `cls`, `args` and `kwargs`, with their
+    /// `thing_slots`), settings folder (`./settings` by default), API prefix,
+    /// global lock, application configuration, server ID and wire profile.
+    /// The builder can still be changed, for example to add services, before
+    /// `build`. Throws ConfigError, for example for a class the registry
+    /// doesn't have.
+    static ThingServerBuilder from_config(const ServerConfig& config, const ThingRegistry& registry);
 
     /// The runtime: Things, invocations, broker, lock.
     const std::shared_ptr<Runtime>& runtime() const { return runtime_; }
@@ -149,13 +213,25 @@ class ThingServer {
   private:
     friend class ThingServerBuilder;
     ThingServer(std::shared_ptr<Runtime> runtime, std::shared_ptr<http::HttpBinding> binding,
-                std::chrono::nanoseconds grace)
-        : runtime_(std::move(runtime)), binding_(std::move(binding)), grace_(grace) {}
+                std::chrono::nanoseconds grace, std::optional<std::string> advertise)
+        : runtime_(std::move(runtime)),
+          binding_(std::move(binding)),
+          grace_(grace),
+          advertise_(std::move(advertise)) {}
 
     std::shared_ptr<Runtime> runtime_;
     std::shared_ptr<http::HttpBinding> binding_;
     std::chrono::nanoseconds grace_;
+    /// The DNS-SD instance name to advertise, if any.
+    std::optional<std::string> advertise_;
 };
+
+/// Serves the fallback server's `page` on `host`:`port` until `stop` is
+/// requested: what the command line serves with `--fallback` when the server
+/// can't start. `listening` is told the port once it listens. Throws
+/// ServeError.
+void serve_fallback(const http::FallbackPage& page, const std::string& host, std::uint16_t port,
+                    std::stop_token stop, std::function<void(std::uint16_t port)> listening = {});
 
 /// A token that is stopped when the process is asked to stop: Ctrl-C,
 /// Ctrl-Break, the console window closing, logging off or shutting down on

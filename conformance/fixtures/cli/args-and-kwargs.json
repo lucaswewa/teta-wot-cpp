@@ -1,0 +1,24 @@
+{
+  "config": {
+    "things": {
+      "a": {
+        "cls": "twins:MyThing",
+        "args": [
+          1
+        ],
+        "kwargs": {
+          "x": 1
+        }
+      }
+    }
+  },
+  "args": [
+    "-c",
+    "{config}"
+  ],
+  "exit": 1,
+  "stdout": [],
+  "stderr": [
+    "Error: the configuration of Thing `a` is invalid: use either args or kwargs, not both: a <language> Thing's configuration is one typed value"
+  ]
+}
