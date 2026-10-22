@@ -91,11 +91,12 @@ jobs:
       - name: Build the reference server
         working-directory: conformance/reference-rs
         run: cargo build --release --locked
-      - name: The serde_json and schema corpora are up to date
+      - name: The serde_json, schema and validation corpora are up to date
         run: |
           conformance/reference-rs/target/release/json-corpus > tests/json/serde_json_corpus.txt
           conformance/reference-rs/target/release/schema-corpus > tests/td/schema_corpus.jsonl
-          git diff --exit-code -- tests/json/serde_json_corpus.txt tests/td/schema_corpus.jsonl
+          conformance/reference-rs/target/release/validation-corpus > tests/validate/validation_corpus.jsonl
+          git diff --exit-code -- tests/json/serde_json_corpus.txt tests/td/schema_corpus.jsonl tests/validate/validation_corpus.jsonl
       - name: The fixtures are what the reference answers
         run: |
           python3 conformance/run.py capture --server conformance/reference-rs/target/release/reference-server

@@ -17,7 +17,7 @@ target_compile_definitions(teta_wot_json PUBLIC JSON_USE_IMPLICIT_CONVERSIONS=0)
 add_library(teta_wot INTERFACE)
 add_library(teta::wot ALIAS teta_wot)
 set_target_properties(teta_wot PROPERTIES EXPORT_NAME wot)
-target_link_libraries(teta_wot INTERFACE teta_wot_json teta_wot_td)
+target_link_libraries(teta_wot INTERFACE teta_wot_json teta_wot_td teta_wot_core)
 
 # teta::wot-td: the TD model, DataSchema conversion, codecs (Phase 1).
 add_library(teta_wot_td
@@ -46,3 +46,11 @@ if(TETA_WOT_TD_VALIDATION)
         PUBLIC teta_wot_td
         PRIVATE nlohmann_json_schema_validator::validator $<BUILD_INTERFACE:teta_wot_warnings>)
 endif()
+
+# teta::wot-core: the runtime (Phase 3); from Phase 2, the validator.
+add_library(teta_wot_core core/validate.cpp)
+add_library(teta::wot-core ALIAS teta_wot_core)
+set_target_properties(teta_wot_core PROPERTIES EXPORT_NAME wot-core)
+target_link_libraries(teta_wot_core
+    PUBLIC teta_wot_td
+    PRIVATE re2::re2 $<BUILD_INTERFACE:teta_wot_warnings>)

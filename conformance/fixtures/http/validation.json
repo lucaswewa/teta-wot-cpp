@@ -1,0 +1,1600 @@
+{
+  "config": {
+    "things": {
+      "types": "twins.types_probe:TypesThing",
+      "mything": "labthings_fastapi.example_things:MyThing"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "int_from_string",
+        "method": "PUT",
+        "path": "/types/bounded_int",
+        "json": "7"
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "int_coerced_read",
+        "method": "GET",
+        "path": "/types/bounded_int"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 7,
+        "text": "7"
+      }
+    },
+    {
+      "step": {
+        "name": "int_from_whole_float",
+        "method": "PUT",
+        "path": "/types/bounded_int",
+        "json": 3.0
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "int_parsing",
+        "method": "PUT",
+        "path": "/types/bounded_int",
+        "json": "seven"
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "int_parsing",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be a valid integer, unable to parse string as an integer",
+              "input": "seven"
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"int_parsing\",\"loc\":[\"body\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"seven\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "int_from_float",
+        "method": "PUT",
+        "path": "/types/bounded_int",
+        "json": 2.5
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "int_from_float",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be a valid integer, got a number with a fractional part",
+              "input": 2.5
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"int_from_float\",\"loc\":[\"body\"],\"msg\":\"Input should be a valid integer, got a number with a fractional part\",\"input\":2.5}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "int_type",
+        "method": "PUT",
+        "path": "/types/bounded_int",
+        "json": null
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body"
+              ],
+              "msg": "Field required",
+              "input": null
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\"],\"msg\":\"Field required\",\"input\":null}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "int_too_big",
+        "method": "PUT",
+        "path": "/types/bounded_int",
+        "json": 11
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "less_than_equal",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be less than or equal to 10",
+              "input": 11,
+              "ctx": {
+                "le": 10
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"less_than_equal\",\"loc\":[\"body\"],\"msg\":\"Input should be less than or equal to 10\",\"input\":11,\"ctx\":{\"le\":10}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "int_too_small",
+        "method": "PUT",
+        "path": "/types/bounded_int",
+        "json": 0
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "greater_than_equal",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be greater than or equal to 1",
+              "input": 0,
+              "ctx": {
+                "ge": 1
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"greater_than_equal\",\"loc\":[\"body\"],\"msg\":\"Input should be greater than or equal to 1\",\"input\":0,\"ctx\":{\"ge\":1}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "multiple_of",
+        "method": "PUT",
+        "path": "/types/step",
+        "json": 12
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "multiple_of",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be a multiple of 5",
+              "input": 12,
+              "ctx": {
+                "multiple_of": 5
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"multiple_of\",\"loc\":[\"body\"],\"msg\":\"Input should be a multiple of 5\",\"input\":12,\"ctx\":{\"multiple_of\":5}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "open_interval_low",
+        "method": "PUT",
+        "path": "/types/open_interval",
+        "json": 0
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "greater_than",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be greater than 0",
+              "input": 0,
+              "ctx": {
+                "gt": 0.0
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"greater_than\",\"loc\":[\"body\"],\"msg\":\"Input should be greater than 0\",\"input\":0,\"ctx\":{\"gt\":0.0}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "open_interval_high",
+        "method": "PUT",
+        "path": "/types/open_interval",
+        "json": "1"
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "less_than",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be less than 1",
+              "input": "1",
+              "ctx": {
+                "lt": 1.0
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"less_than\",\"loc\":[\"body\"],\"msg\":\"Input should be less than 1\",\"input\":\"1\",\"ctx\":{\"lt\":1.0}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "open_interval_ok",
+        "method": "PUT",
+        "path": "/types/open_interval",
+        "json": "0.25"
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "open_interval_read",
+        "method": "GET",
+        "path": "/types/open_interval"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 0.25,
+        "text": "0.25"
+      }
+    },
+    {
+      "step": {
+        "name": "word_too_long",
+        "method": "PUT",
+        "path": "/types/word",
+        "json": "abcdefghi"
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "string_too_long",
+              "loc": [
+                "body"
+              ],
+              "msg": "String should have at most 8 characters",
+              "input": "abcdefghi",
+              "ctx": {
+                "max_length": 8
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"string_too_long\",\"loc\":[\"body\"],\"msg\":\"String should have at most 8 characters\",\"input\":\"abcdefghi\",\"ctx\":{\"max_length\":8}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "word_too_short",
+        "method": "PUT",
+        "path": "/types/word",
+        "json": ""
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "string_too_short",
+              "loc": [
+                "body"
+              ],
+              "msg": "String should have at least 1 character",
+              "input": "",
+              "ctx": {
+                "min_length": 1
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"string_too_short\",\"loc\":[\"body\"],\"msg\":\"String should have at least 1 character\",\"input\":\"\",\"ctx\":{\"min_length\":1}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "word_pattern",
+        "method": "PUT",
+        "path": "/types/word",
+        "json": "ABC"
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "string_pattern_mismatch",
+              "loc": [
+                "body"
+              ],
+              "msg": "String should match pattern '^[a-z]+$'",
+              "input": "ABC",
+              "ctx": {
+                "pattern": "^[a-z]+$"
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"string_pattern_mismatch\",\"loc\":[\"body\"],\"msg\":\"String should match pattern '^[a-z]+$'\",\"input\":\"ABC\",\"ctx\":{\"pattern\":\"^[a-z]+$\"}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "word_type",
+        "method": "PUT",
+        "path": "/types/word",
+        "json": 5
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "string_type",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be a valid string",
+              "input": 5
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"string_type\",\"loc\":[\"body\"],\"msg\":\"Input should be a valid string\",\"input\":5}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "mode_literal",
+        "method": "PUT",
+        "path": "/types/mode",
+        "json": "medium"
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be 'fast' or 'slow'",
+              "input": "medium",
+              "ctx": {
+                "expected": "'fast' or 'slow'"
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"literal_error\",\"loc\":[\"body\"],\"msg\":\"Input should be 'fast' or 'slow'\",\"input\":\"medium\",\"ctx\":{\"expected\":\"'fast' or 'slow'\"}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "mode_ok",
+        "method": "PUT",
+        "path": "/types/mode",
+        "json": "slow"
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "maybe_int_null",
+        "method": "PUT",
+        "path": "/types/maybe_int",
+        "json": null
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body"
+              ],
+              "msg": "Field required",
+              "input": null
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\"],\"msg\":\"Field required\",\"input\":null}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "maybe_int_bad",
+        "method": "PUT",
+        "path": "/types/maybe_int",
+        "json": "x"
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "int_parsing",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be a valid integer, unable to parse string as an integer",
+              "input": "x"
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"int_parsing\",\"loc\":[\"body\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"x\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "tags_too_long",
+        "method": "PUT",
+        "path": "/types/tags",
+        "json": [
+          "a",
+          "b",
+          "c",
+          "d"
+        ]
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "too_long",
+              "loc": [
+                "body"
+              ],
+              "msg": "List should have at most 3 items after validation, not 4",
+              "input": [
+                "a",
+                "b",
+                "c",
+                "d"
+              ],
+              "ctx": {
+                "field_type": "List",
+                "max_length": 3,
+                "actual_length": 4
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"too_long\",\"loc\":[\"body\"],\"msg\":\"List should have at most 3 items after validation, not 4\",\"input\":[\"a\",\"b\",\"c\",\"d\"],\"ctx\":{\"field_type\":\"List\",\"max_length\":3,\"actual_length\":4}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "tags_items",
+        "method": "PUT",
+        "path": "/types/tags",
+        "json": [
+          "a",
+          1,
+          null
+        ]
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "string_type",
+              "loc": [
+                "body",
+                1
+              ],
+              "msg": "Input should be a valid string",
+              "input": 1
+            },
+            {
+              "type": "string_type",
+              "loc": [
+                "body",
+                2
+              ],
+              "msg": "Input should be a valid string",
+              "input": null
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"string_type\",\"loc\":[\"body\",1],\"msg\":\"Input should be a valid string\",\"input\":1},{\"type\":\"string_type\",\"loc\":[\"body\",2],\"msg\":\"Input should be a valid string\",\"input\":null}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "tags_type",
+        "method": "PUT",
+        "path": "/types/tags",
+        "json": "a"
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "list_type",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be a valid list",
+              "input": "a"
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"list_type\",\"loc\":[\"body\"],\"msg\":\"Input should be a valid list\",\"input\":\"a\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "pair_ok",
+        "method": "PUT",
+        "path": "/types/pair",
+        "json": [
+          "2",
+          "b"
+        ]
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "pair_read",
+        "method": "GET",
+        "path": "/types/pair"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          2,
+          "b"
+        ],
+        "text": "[2,\"b\"]"
+      }
+    },
+    {
+      "step": {
+        "name": "pair_short",
+        "method": "PUT",
+        "path": "/types/pair",
+        "json": [
+          1
+        ]
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                1
+              ],
+              "msg": "Field required",
+              "input": [
+                1
+              ]
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",1],\"msg\":\"Field required\",\"input\":[1]}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "pair_long",
+        "method": "PUT",
+        "path": "/types/pair",
+        "json": [
+          1,
+          "a",
+          2
+        ]
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "too_long",
+              "loc": [
+                "body"
+              ],
+              "msg": "Tuple should have at most 2 items after validation, not 3",
+              "input": [
+                1,
+                "a",
+                2
+              ],
+              "ctx": {
+                "field_type": "Tuple",
+                "max_length": 2,
+                "actual_length": 3
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"too_long\",\"loc\":[\"body\"],\"msg\":\"Tuple should have at most 2 items after validation, not 3\",\"input\":[1,\"a\",2],\"ctx\":{\"field_type\":\"Tuple\",\"max_length\":2,\"actual_length\":3}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "lookup_values",
+        "method": "PUT",
+        "path": "/types/lookup",
+        "json": {
+          "a": "1.5",
+          "b": "x",
+          "c": null
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "float_parsing",
+              "loc": [
+                "body",
+                "b"
+              ],
+              "msg": "Input should be a valid number, unable to parse string as a number",
+              "input": "x"
+            },
+            {
+              "type": "float_type",
+              "loc": [
+                "body",
+                "c"
+              ],
+              "msg": "Input should be a valid number",
+              "input": null
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"float_parsing\",\"loc\":[\"body\",\"b\"],\"msg\":\"Input should be a valid number, unable to parse string as a number\",\"input\":\"x\"},{\"type\":\"float_type\",\"loc\":[\"body\",\"c\"],\"msg\":\"Input should be a valid number\",\"input\":null}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "lookup_type",
+        "method": "PUT",
+        "path": "/types/lookup",
+        "json": [
+          1
+        ]
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "dict_type",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be a valid dictionary",
+              "input": [
+                1
+              ]
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"dict_type\",\"loc\":[\"body\"],\"msg\":\"Input should be a valid dictionary\",\"input\":[1]}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "position_missing",
+        "method": "PUT",
+        "path": "/types/position",
+        "json": {
+          "x": 1
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "y"
+              ],
+              "msg": "Field required",
+              "input": {
+                "x": 1
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"y\"],\"msg\":\"Field required\",\"input\":{\"x\":1}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "position_nested",
+        "method": "PUT",
+        "path": "/types/position",
+        "json": {
+          "x": "a",
+          "y": [],
+          "z": "3",
+          "w": 4
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "int_parsing",
+              "loc": [
+                "body",
+                "x"
+              ],
+              "msg": "Input should be a valid integer, unable to parse string as an integer",
+              "input": "a"
+            },
+            {
+              "type": "int_type",
+              "loc": [
+                "body",
+                "y"
+              ],
+              "msg": "Input should be a valid integer",
+              "input": []
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"int_parsing\",\"loc\":[\"body\",\"x\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"a\"},{\"type\":\"int_type\",\"loc\":[\"body\",\"y\"],\"msg\":\"Input should be a valid integer\",\"input\":[]}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "position_type",
+        "method": "PUT",
+        "path": "/types/position",
+        "json": [
+          1,
+          2
+        ]
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "model_attributes_type",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be a valid dictionary or object to extract fields from",
+              "input": [
+                1,
+                2
+              ]
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"model_attributes_type\",\"loc\":[\"body\"],\"msg\":\"Input should be a valid dictionary or object to extract fields from\",\"input\":[1,2]}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "position_ok",
+        "method": "PUT",
+        "path": "/types/position",
+        "json": {
+          "x": "1",
+          "y": 2.0,
+          "extra": true
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "position_read",
+        "method": "GET",
+        "path": "/types/position"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "x": 1,
+          "y": 2,
+          "z": 0
+        },
+        "text": "{\"x\":1,\"y\":2,\"z\":0}"
+      }
+    },
+    {
+      "step": {
+        "name": "move_bad",
+        "method": "POST",
+        "path": "/types/move",
+        "json": {
+          "target": {
+            "x": "left"
+          }
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "int_parsing",
+              "loc": [
+                "body",
+                "target",
+                "x"
+              ],
+              "msg": "Input should be a valid integer, unable to parse string as an integer",
+              "input": "left"
+            },
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "target",
+                "y"
+              ],
+              "msg": "Field required",
+              "input": {
+                "x": "left"
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"int_parsing\",\"loc\":[\"body\",\"target\",\"x\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"left\"},{\"type\":\"missing\",\"loc\":[\"body\",\"target\",\"y\"],\"msg\":\"Field required\",\"input\":{\"x\":\"left\"}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "move_missing",
+        "method": "POST",
+        "path": "/types/move",
+        "json": {}
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "target"
+              ],
+              "msg": "Field required",
+              "input": {}
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"target\"],\"msg\":\"Field required\",\"input\":{}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "plan_route_bad",
+        "method": "POST",
+        "path": "/types/plan_route",
+        "json": {
+          "waypoints": [
+            {
+              "name": 1
+            },
+            {
+              "name": "b",
+              "position": {
+                "x": 1,
+                "y": "y"
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "string_type",
+              "loc": [
+                "body",
+                "waypoints",
+                0,
+                "name"
+              ],
+              "msg": "Input should be a valid string",
+              "input": 1
+            },
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "waypoints",
+                0,
+                "position"
+              ],
+              "msg": "Field required",
+              "input": {
+                "name": 1
+              }
+            },
+            {
+              "type": "int_parsing",
+              "loc": [
+                "body",
+                "waypoints",
+                1,
+                "position",
+                "y"
+              ],
+              "msg": "Input should be a valid integer, unable to parse string as an integer",
+              "input": "y"
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"string_type\",\"loc\":[\"body\",\"waypoints\",0,\"name\"],\"msg\":\"Input should be a valid string\",\"input\":1},{\"type\":\"missing\",\"loc\":[\"body\",\"waypoints\",0,\"position\"],\"msg\":\"Field required\",\"input\":{\"name\":1}},{\"type\":\"int_parsing\",\"loc\":[\"body\",\"waypoints\",1,\"position\",\"y\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"y\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "anaction_bad",
+        "method": "POST",
+        "path": "/mything/anaction",
+        "json": {
+          "repeats": "many",
+          "title": 3
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "int_parsing",
+              "loc": [
+                "body",
+                "repeats"
+              ],
+              "msg": "Input should be a valid integer, unable to parse string as an integer",
+              "input": "many"
+            },
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "undocumented"
+              ],
+              "msg": "Field required",
+              "input": {
+                "repeats": "many",
+                "title": 3
+              }
+            },
+            {
+              "type": "string_type",
+              "loc": [
+                "body",
+                "title"
+              ],
+              "msg": "Input should be a valid string",
+              "input": 3
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"int_parsing\",\"loc\":[\"body\",\"repeats\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"many\"},{\"type\":\"missing\",\"loc\":[\"body\",\"undocumented\"],\"msg\":\"Field required\",\"input\":{\"repeats\":\"many\",\"title\":3}},{\"type\":\"string_type\",\"loc\":[\"body\",\"title\"],\"msg\":\"Input should be a valid string\",\"input\":3}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "slowly_extra_forbidden",
+        "method": "POST",
+        "path": "/mything/slowly_increase_counter",
+        "json": {
+          "increments": 1,
+          "surplus": true
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "extra_forbidden",
+              "loc": [
+                "body",
+                "surplus"
+              ],
+              "msg": "Extra inputs are not permitted",
+              "input": true
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"extra_forbidden\",\"loc\":[\"body\",\"surplus\"],\"msg\":\"Extra inputs are not permitted\",\"input\":true}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "make_a_dict_bad",
+        "method": "POST",
+        "path": "/mything/make_a_dict",
+        "json": {
+          "extra_key": 1
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "string_type",
+              "loc": [
+                "body",
+                "extra_key"
+              ],
+              "msg": "Input should be a valid string",
+              "input": 1
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"string_type\",\"loc\":[\"body\",\"extra_key\"],\"msg\":\"Input should be a valid string\",\"input\":1}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "make_a_dict_ok",
+        "method": "POST",
+        "path": "/mything/make_a_dict",
+        "json": {
+          "extra_key": "k",
+          "extra_value": "v"
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:0>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:0>",
+          "action": "/mything/make_a_dict",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "extra_key": "k",
+            "extra_value": "v"
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:0>",
+          "action": "/mything/make_a_dict",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "extra_key": "k",
+            "extra_value": "v"
+          },
+          "output": {
+            "key": "value",
+            "k": "v"
+          },
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:0>\",\"action\":\"/mything/make_a_dict\",\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:0>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"extra_key\":\"k\",\"extra_value\":\"v\"},\"output\":{\"key\":\"value\",\"k\":\"v\"},\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "make_a_dict_invocation",
+        "method": "GET",
+        "path": "/action_invocations/{last}"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:0>",
+          "action": "/mything/make_a_dict",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "extra_key": "k",
+            "extra_value": "v"
+          },
+          "output": {
+            "key": "value",
+            "k": "v"
+          },
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:0>\",\"action\":\"/mything/make_a_dict\",\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:0>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"extra_key\":\"k\",\"extra_value\":\"v\"},\"output\":{\"key\":\"value\",\"k\":\"v\"},\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "without_arguments_bad",
+        "method": "POST",
+        "path": "/mything/action_without_arguments",
+        "json": {
+          "x": 1
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "extra_forbidden",
+              "loc": [
+                "body",
+                "x"
+              ],
+              "msg": "Extra inputs are not permitted",
+              "input": 1
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"extra_forbidden\",\"loc\":[\"body\",\"x\"],\"msg\":\"Extra inputs are not permitted\",\"input\":1}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "without_arguments_list",
+        "method": "POST",
+        "path": "/mything/action_without_arguments",
+        "json": [
+          1
+        ]
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "model_attributes_type",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be a valid dictionary or object to extract fields from",
+              "input": [
+                1
+              ]
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"model_attributes_type\",\"loc\":[\"body\"],\"msg\":\"Input should be a valid dictionary or object to extract fields from\",\"input\":[1]}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "foo_type",
+        "method": "PUT",
+        "path": "/mything/foo",
+        "json": 3
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "string_type",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be a valid string",
+              "input": 3
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"string_type\",\"loc\":[\"body\"],\"msg\":\"Input should be a valid string\",\"input\":3}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "body_not_json",
+        "method": "PUT",
+        "path": "/types/bounded_int",
+        "body": "{not json",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "json_invalid",
+              "loc": [
+                "body",
+                1
+              ],
+              "msg": "JSON decode error",
+              "input": {},
+              "ctx": {
+                "error": "key must be a string"
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"json_invalid\",\"loc\":[\"body\",1],\"msg\":\"JSON decode error\",\"input\":{},\"ctx\":{\"error\":\"key must be a string\"}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "body_empty",
+        "method": "PUT",
+        "path": "/types/bounded_int",
+        "body": "",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body"
+              ],
+              "msg": "Field required",
+              "input": null
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\"],\"msg\":\"Field required\",\"input\":null}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "invoke_not_json",
+        "method": "POST",
+        "path": "/types/move",
+        "body": "[1,",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "json_invalid",
+              "loc": [
+                "body",
+                2
+              ],
+              "msg": "JSON decode error",
+              "input": {},
+              "ctx": {
+                "error": "EOF while parsing a value"
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"json_invalid\",\"loc\":[\"body\",2],\"msg\":\"JSON decode error\",\"input\":{},\"ctx\":{\"error\":\"EOF while parsing a value\"}}]}"
+      }
+    }
+  ]
+}

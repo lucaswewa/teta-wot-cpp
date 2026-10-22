@@ -29,3 +29,7 @@ path = "src/bin/json_corpus.rs"
 [[bin]]
 name = "schema-corpus"
 path = "src/bin/schema_corpus.rs"
+
+[[bin]]
+name = "validation-corpus"
+path = "src/bin/validation_corpus.rs"

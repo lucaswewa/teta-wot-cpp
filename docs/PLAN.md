@@ -272,6 +272,8 @@ Ports `teta-wot-td`: TD model and builders, DataSchema, forms, security schemes,
 
 ### Phase 2: Validation (M)
 
+**Done** (2026-10-22): see the [Phase 2 note](notes/phase-02-validation.md). The serde-compatible request body parser moves to Phase 4.
+
 Ports `validate.rs`: lax coercions, error types, `loc`, `msg`, `input`, `ctx`, the `value_error` path for Blobs and arrays.
 
 **Gate:** the validation fixtures captured from the reference server (each type's coercions, and the answers to property writes and invocations of a probe Thing) replayed with no deltas; a randomised test comparing the C++ validator with the Rust one on generated inputs.

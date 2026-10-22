@@ -11,4 +11,5 @@
 #include "teta/wot/td/describe.hpp"
 #include "teta/wot/td/form.hpp"
 #include "teta/wot/td/thing.hpp"
+#include "teta/wot/validate.hpp"
 #include "teta/wot/version.hpp"

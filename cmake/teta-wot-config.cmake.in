@@ -3,6 +3,7 @@
 include(CMakeFindDependencyMacro)
 find_dependency(nlohmann_json 3.11 CONFIG)
 find_dependency(boost_pfr CONFIG)
+find_dependency(re2 CONFIG)
 if(@TETA_WOT_TD_VALIDATION@)
     find_dependency(nlohmann_json_schema_validator CONFIG)
 endif()

@@ -8,6 +8,7 @@ How teta-wot-cpp is held to wire-level parity with [teta-wot v0.1.0](https://git
 | `scenarios/http/` | Scripted HTTP scenarios: a server configuration and a list of steps. |
 | `fixtures/http/` | The reference's answers to each scenario, normalised. Generated: never edit by hand. |
 | `reference-rs/src/bin/schema_corpus.rs` | `schema-corpus`: for 54 Rust types, schemars' JSON Schema and teta-wot's DataSchema, written to `tests/td/schema_corpus.jsonl` for the C++ conversion and codec tests. |
+| `reference-rs/src/bin/validation_corpus.rs` | `validation-corpus`: teta-wot's validator run over schemas (primitives, bounds, patterns, arrays, tuples, models, maps, unions, literals, the twins' action inputs) and inputs, each result written to `tests/validate/validation_corpus.jsonl` for the C++ validator's replay. |
 | `run.py` | The harness: `capture`, `check` and `diff` (see its docstring). Python 3, standard library only. |
 
 ## The twins
@@ -34,6 +35,7 @@ They are ported from the `wot` repository's `conformance/twin-server` to teta-wo
 | `counter` | The counter over HTTP: TD, redirect, property read and refused write, an invocation, lists, 404, CORS preflight |
 | `tds` | Every twin's TD (`tetathing` profile) |
 | `tds-wot` | Every twin's TD in the `wot` profile |
+| `validation` | Property writes and invocations with coercible, invalid and malformed bodies (pydantic's 422s) |
 
 ## Running it
 
@@ -44,4 +46,4 @@ python3 conformance/run.py check --server <a server>
 python3 conformance/run.py diff --server conformance/reference-rs/target/release/reference-server --server <a server>
 ```
 
-CI rebuilds the reference, re-captures every fixture and regenerates the serde_json and schema corpora, and fails if anything changed.
+CI rebuilds the reference, re-captures every fixture and regenerates the serde_json, schema and validation corpora, and fails if anything changed.

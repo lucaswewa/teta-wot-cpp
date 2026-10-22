@@ -6,7 +6,8 @@
   "license": "MIT",
   "dependencies": [
     "boost-pfr",
-    "nlohmann-json"
+    "nlohmann-json",
+    "re2"
   ],
   "features": {
     "drogon": {

@@ -8,7 +8,7 @@ A C++ library for serving W3C Web of Things *Things* over HTTP, with functional 
 - [Architecture and implementation plan](docs/PLAN.md) (approved)
 - [Documentation index](docs/README.md): decision records, phase notes, the wire contract, the guide
 
-**Status:** Phases 0 and 1 are done: the build skeleton, the parity harness against the Rust reference, `teta::wot-json`, and `teta::wot-td` (the TD model, DataSchemas from C++ types, W3C validation), whose Thing Descriptions equal teta-wot's byte for byte. See the [phase notes](docs/notes/README.md).
+**Status:** Phases 0 to 2 are done: the build skeleton, the parity harness against the Rust reference, `teta::wot-json`, `teta::wot-td` (the TD model, DataSchemas from C++ types, W3C validation), whose Thing Descriptions equal teta-wot's byte for byte, and the validator in `teta::wot-core`, whose coercions and errors equal teta-wot's (pydantic's lax mode). See the [phase notes](docs/notes/README.md).
 
 ## Building
 
