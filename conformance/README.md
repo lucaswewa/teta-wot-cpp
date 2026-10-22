@@ -31,8 +31,9 @@ Things served by both implementations under the same registry names, so one conf
 | `twins.ws_probe:ThingWithProperties` | `ThingWithProperties` | Observation: observable and functional properties, actions ending in each status |
 | `twins.blob_probe:BlobProbe` | `BlobProbe` | Blobs in and out, and an MJPEG stream |
 | `twins.ndarray_probe:NDArrayProbe` | `NDArrayProbe` | Arrays as properties and action inputs and outputs |
+| `twins.event_probe:EventProbe` | `EventProbe` | Events emitted by actions, and an observable property (teta-wot-cpp's own: none of the `wot` twins has events) |
 
-They are ported from the `wot` repository's `conformance/twin-server` to teta-wot v0.1.0's API (the only changes are the crate paths). The C++ ports (`twins/`) join phase by phase: since Phase 3, seven are C++ Things whose TDs equal the reference's; `blob_probe` and `ndarray_probe` follow with Blobs (Phase 7) and arrays (Phase 10).
+They are ported from the `wot` repository's `conformance/twin-server` to teta-wot v0.1.0's API (the only changes are the crate paths). The C++ ports (`twins/`) join phase by phase: since Phase 3, seven are C++ Things whose TDs equal the reference's; `blob_probe` and `ndarray_probe` follow with Blobs (Phase 7) and arrays (Phase 10). `event_probe` was added in Phase 6, to both implementations, for events.
 
 | Scenario | What it captures |
 |---|---|
@@ -45,6 +46,10 @@ They are ported from the `wot` repository's `conformance/twin-server` to teta-wo
 | `prefixed` | An API prefix (`/api/v1`): every route and URL under it |
 | `wot` | The `wot` profile's answers: 204s, problems, `ActionStatus` |
 | `settings` | Settings files: none before a change, every kind of setting saved (numbers, Unicode, escapes, maps, structs, optionals, a functional setting), refused writes, several at once, resets, loading after restarts, a hand-edited file's warnings, a list, broken JSON, an empty object |
+| `ws` | WebSockets: property and action observation (each ending), refusals (404, 403, the rest of the message skipped), bad messages ignored, duplicate subscriptions, two sockets, an upgrade for another path, the close at shutdown |
+| `sse` | Server-sent events: a property, all properties, an event, all events, `Accept` among other ranges, a functional property read instead, the end at shutdown |
+| `sse-wot` | Named events with `id`s in the `wot` profile |
+| `events` | An event Thing's TD, events over the WebSocket, and a closed socket |
 | `settings-load` | A server started with a settings file already there (as teta-wot writes it): loaded, not rewritten by loading, rewritten identically by the next save; no file for a Thing without settings |
 
 Command-line scenarios (`scenarios/cli/`, run with `--cli`) run the server's command line and record its exit code and output (log lines aside), and, for those that serve, a scripted session: `help`, `unknown-argument`, `missing-value`, `invalid-port`, `repeated-argument`, `no-configuration`, `missing-file`, `both-configurations`, `invalid-json`, `not-an-object`, `invalid-configuration` (every kind of problem at once), `unknown-class`, `invalid-kwargs`, `args-and-kwargs`, `startup-failure`, `startup-failure-fallback` and `configuration-fallback` (the fallback page, its redirects and CORS), `serve`, `serve-json`, `port-in-use` and `port-in-use-fallback`.
@@ -57,6 +62,9 @@ Example scenarios (`scenarios/examples/`, run with `--examples`) compare an exam
 | `light` | The TD, the functional `status` before and after `toggle`, a refused and an accepted brightness, read-only writes, reset, all properties |
 | `counter-server` | The TD, an invocation, the lists |
 | `http-walkthrough` | What `walkthrough.sh` does, plus an unknown field and a completed fade |
+| `observe-websocket` | The oven's TD, its temperature and `heat_to` over the WebSocket, a refusal, the SSE stream |
+| `events` | The laser's TD, a trip over the WebSocket and over SSE, the interlock's state |
+| `sse-observe` | The thermometer's TD and stream (its readings depend on the time, so only the answer's headers) |
 
 `tds` and `tds-wot` need `blob_probe` and `ndarray_probe`, which the C++ twin server serves from Phases 7 and 10; the other scenarios run against it.
 

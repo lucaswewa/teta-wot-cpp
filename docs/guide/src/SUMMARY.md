@@ -7,3 +7,4 @@
 - [Building teta-wot-cpp](building.md)
 - [Your first Thing](first-thing.md)
 - [Settings, slots and configuration files](composing.md)
+- [Observing Things](observing.md)
