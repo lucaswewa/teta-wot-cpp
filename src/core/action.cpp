@@ -16,8 +16,14 @@ namespace {
 // The messages of an exception and of the exceptions nested in it.
 void collect(const std::exception& error, std::vector<std::string>& out) {
     out.emplace_back(error.what());
+    // Not `std::rethrow_if_nested`, which terminates when the nested
+    // exception is null: clang-cl's `std::throw_with_nested` captures none.
+    const auto* nested = dynamic_cast<const std::nested_exception*>(&error);
+    if (!nested || !nested->nested_ptr()) {
+        return;
+    }
     try {
-        std::rethrow_if_nested(error);
+        std::rethrow_exception(nested->nested_ptr());
     } catch (const std::exception& cause) {
         collect(cause, out);
     } catch (...) {

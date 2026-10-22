@@ -40,6 +40,8 @@ Status: **done** (2026-10-22). Plan: [§5, Phase 3](../PLAN.md#phase-3-runtime-c
 - **Error titles** come from the exception's type, as teta-wot's come from the Rust error type: `DeviceError`, `ValidationError`, a Thing's own `MotorJammed`. The standard library's exceptions are `Error`, as an `anyhow::Error` is; `std::throw_with_nested` wraps an exception in a type of its own, so the title is the wrapped exception's. The message joins the causes (`a: b`, anyhow's `{:#}`) and the traceback lists them as anyhow's `{:?}` does.
 - **Panics.** C++ has no panic to catch. `throw "message"` (anything that isn't a `std::exception`) is an action's panic: `Panicked`, "The action panicked: message". In a device call, a `std::exception` is a driver error (the device stays ready) and `DeviceFault` (or a non-`std::exception`) faults it. A crash in driver code can't be caught, unlike a Rust panic (ADR-0009).
 - **Linux keeps 15 bytes of a thread's name**, so `device:<thing>:<name>` is truncated in the operating system; `device_thread_name()` gives the full name on a device thread.
+- **clang-cl's `std::throw_with_nested` captures no cause** (the nested exception is null, and `std::rethrow_if_nested` then terminates). The cause chain is read defensively, so with clang-cl an error's message and traceback have no causes; MSVC, GCC and Clang have them.
+- **Boost.PFR refuses types with internal linkage** with MSVC (structs in an anonymous namespace): codec types go in named namespaces.
 - **TSan and `exception_ptr`**: libstdc++'s reference counting of an exception passed between threads is atomic, but isn't instrumented, so TSan reports the destroying thread's free against the reading thread's load. It is suppressed narrowly.
 
 ## Deviations from the plan

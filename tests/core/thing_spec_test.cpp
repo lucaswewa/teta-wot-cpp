@@ -370,9 +370,23 @@ TEST(ThingSpec, ActionErrorsHaveTitlesFromTheirTypes) {
         }
     } catch (...) {
         const auto error = tw::ActionError::from(std::current_exception());
-        EXPECT_STREQ(error.what(), "can't move: serial port closed");
         EXPECT_EQ(error.title(), "MotorJammed");  // the wrapped exception's, not the wrapper's
-        EXPECT_EQ(error.traceback(), "can't move\n\nCaused by:\n    serial port closed");
+        // clang-cl's std::throw_with_nested captures no cause.
+        const bool captured = [] {
+            try {
+                throw;
+            } catch (const std::nested_exception& nested) {
+                return static_cast<bool>(nested.nested_ptr());
+            } catch (...) {
+                return false;
+            }
+        }();
+        if (captured) {
+            EXPECT_STREQ(error.what(), "can't move: serial port closed");
+            EXPECT_EQ(error.traceback(), "can't move\n\nCaused by:\n    serial port closed");
+        } else {
+            EXPECT_STREQ(error.what(), "can't move");
+        }
     }
 }
 
