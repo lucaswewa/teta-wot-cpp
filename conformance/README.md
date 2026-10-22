@@ -8,8 +8,10 @@ How teta-wot-cpp is held to wire-level parity with [teta-wot v0.1.0](https://git
 | `scenarios/http/` | Scripted HTTP scenarios: a server configuration and a list of steps. |
 | `fixtures/http/` | The reference's answers to each scenario, normalised. Generated: never edit by hand. |
 | `reference-rs/src/bin/schema_corpus.rs` | `schema-corpus`: for 54 Rust types, schemars' JSON Schema and teta-wot's DataSchema, written to `tests/td/schema_corpus.jsonl` for the C++ conversion and codec tests. |
+| `reference-rs/src/bin/wire_corpus.rs` | `wire-corpus`: request bodies through `serde_json::from_slice` and path IDs through `Uuid::parse_str`, as teta-wot reads them, written to `tests/http/wire_corpus.jsonl` for the C++ body parser and ID parser. |
 | `reference-rs/src/bin/validation_corpus.rs` | `validation-corpus`: teta-wot's validator run over schemas (primitives, bounds, patterns, arrays, tuples, models, maps, unions, literals, structs and enums) and inputs, each result written to `tests/validate/validation_corpus.jsonl` for the C++ validator's replay. |
-| `twins/` | The twins as C++ Things (`teta_wot_twins`, defined with `ThingSpec`), for the C++ twin server (Phase 4) and the tests that compare them with the reference: their TDs, and the `validation` scenario in-process. |
+| `twins/` | The twins as C++ Things (`teta_wot_twins`, defined with `ThingSpec`), registered under the reference's class names, for the C++ twin server and the tests that compare them with the reference: their TDs, and every HTTP fixture in-process (`tests/http/fixtures_test.cpp`). |
+| `twin-server-cpp/` | The C++ twin server (`twin-server`): the twins with teta-wot's command line, for `run.py`. CTest runs `run.py check` against it (`conformance.http`). |
 | `run.py` | The harness: `capture`, `check` and `diff` (see its docstring). Python 3, standard library only. |
 
 ## The twins
@@ -37,6 +39,21 @@ They are ported from the `wot` repository's `conformance/twin-server` to teta-wo
 | `tds` | Every twin's TD (`tetathing` profile) |
 | `tds-wot` | Every twin's TD in the `wot` profile |
 | `validation` | Property writes and invocations with coercible, invalid and malformed bodies (pydantic's 422s) |
+| `default` | The HTTP binding: routes, redirects, 404/405 and `allow`, `HEAD`, properties (read, write, reset, all, several), bodies (missing, malformed, too large), invocations (each ending, outputs, lists, cancellation), IDs, CORS, `Host` |
+| `locked` | The global lock: writes, resets and invocations while an action holds it, and after |
+| `prefixed` | An API prefix (`/api/v1`): every route and URL under it |
+| `wot` | The `wot` profile's answers: 204s, problems, `ActionStatus` |
+
+Example scenarios (`scenarios/examples/`, run with `--examples`) compare an example served with `--serve` with its Rust original: its TD and a scripted session. Their fixtures (`fixtures/examples/`) are captured from teta-wot v0.1.0's examples, built from its repository (`cargo build --release -p <example>`); CTest checks the C++ examples against them (`conformance.examples`).
+
+| Example scenario | What it captures |
+|---|---|
+| `quickstart-counter` | The Thing list, the TD, the counter, an invocation, a cancelled one |
+| `light` | The TD, the functional `status` before and after `toggle`, a refused and an accepted brightness, read-only writes, reset, all properties |
+| `counter-server` | The TD, an invocation, the lists |
+| `http-walkthrough` | What `walkthrough.sh` does, plus an unknown field and a completed fade |
+
+`tds` and `tds-wot` need `blob_probe` and `ndarray_probe`, which the C++ twin server serves from Phases 7 and 10; the other scenarios run against it.
 
 ## Running it
 
@@ -45,6 +62,9 @@ cd conformance/reference-rs && cargo build --release --locked && cd ../..
 python3 conformance/run.py capture --server conformance/reference-rs/target/release/reference-server
 python3 conformance/run.py check --server <a server>
 python3 conformance/run.py diff --server conformance/reference-rs/target/release/reference-server --server <a server>
+python3 conformance/run.py check --server build/<preset>/conformance/twin-server-cpp/twin-server counter validation default locked prefixed wot
+python3 conformance/run.py capture --examples --server '<teta-wot>/target/release/{name}'
+python3 conformance/run.py check --examples --server 'build/<preset>/examples/{name}/example-{name}'
 ```
 
 CI rebuilds the reference, re-captures every fixture and regenerates the serde_json, schema and validation corpora, and fails if anything changed.

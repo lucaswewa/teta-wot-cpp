@@ -288,6 +288,8 @@ Ports `teta-wot-core`: `Thing`, `ThingSpec` and `ThingDefinition`; `Prop<T>` and
 
 ### Phase 4: HTTP binding, Drogon adapter and TestClient (L). **First end-to-end milestone.**
 
+**Done** (2026-10-22): see the [Phase 4 note](notes/phase-04-http.md). Server-sent events arrive here, a phase early; OpenAPI, discovery, Blob and stream routes join the table in their phases.
+
 Ports `teta-wot-http` (routes, dispatcher, the `tetathing` renderer, errors, CORS) and the server builder, plus the Drogon adapter and `TestClient`.
 
 **Gate:** the HTTP fixtures (`default`, `locked`, `prefixed` scenarios) replayed through `TestClient` and over real sockets, with no deltas; the differential runner (§8.2) green on the HTTP scenarios; the quickstart, `light`, `counter-server`, `http-walkthrough`, `api-prefix`, `custom-endpoint`, `drogon-integration` examples.

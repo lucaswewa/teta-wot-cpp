@@ -8,7 +8,7 @@ A C++ library for serving W3C Web of Things *Things* over HTTP, with functional 
 - [Architecture and implementation plan](docs/PLAN.md) (approved)
 - [Documentation index](docs/README.md): decision records, phase notes, the wire contract, the guide
 
-**Status:** Phases 0 to 3 are done: the build skeleton, the parity harness against the Rust reference, `teta::wot-json`, `teta::wot-td` (the TD model, DataSchemas from C++ types, W3C validation), and `teta::wot-core`: the validator (pydantic's lax coercions and errors) and the runtime, on threads: Things defined with `ThingSpec`, properties, actions and invocations, cancellation, the global lock, invocation logs, events and device actors. Things run in-process; the HTTP binding is Phase 4. See the [phase notes](docs/notes/README.md).
+**Status:** Phases 0 to 4 are done: the build skeleton, the parity harness against the Rust reference, `teta::wot-json`, `teta::wot-td` (the TD model, DataSchemas from C++ types, W3C validation), `teta::wot-core` (the validator, and the runtime on threads: Things defined with `ThingSpec`, properties, actions and invocations, cancellation, the global lock, invocation logs, events and device actors), and the first end-to-end milestone: `teta::wot-http` (the HTTP binding, answering as teta-wot does byte for byte), its Drogon transport, `ThingServer` and the in-process `TestClient`. See the [phase notes](docs/notes/README.md).
 
 ## Building
 
@@ -18,4 +18,4 @@ cmake --build --preset linux-gcc
 ctest --preset linux-gcc
 ```
 
-See [Building](docs/guide/src/building.md) for the other presets and for building without vcpkg.
+On Windows, `scripts\build.ps1` and `scripts\test.ps1` do the same from any PowerShell window; [scripts/](scripts/README.md) also serves and probes Things for testing by hand. See [Building](docs/guide/src/building.md) for the other presets and for building without vcpkg.
