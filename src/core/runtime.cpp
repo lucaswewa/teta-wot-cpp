@@ -126,8 +126,8 @@ bool is_null_schema(const td::DataSchema& schema) {
 }
 
 void log_at(log::Level level, std::string message) {
-    log::emit({level, std::move(message), std::source_location::current(), std::chrono::system_clock::now(),
-               std::nullopt, std::nullopt});
+    log::emit({level, std::move(message), __FILE__, __LINE__, std::chrono::system_clock::now(), std::nullopt,
+               std::nullopt});
 }
 
 /// Runs an invocation to the end, in its scope.
@@ -159,8 +159,8 @@ void run_invocation(const std::shared_ptr<Invocation>& invocation,
         } else if (error.is_handled()) {
             log_at(log::Level::error, error.what());
         } else {
-            log::emit({log::Level::error, error.what(), std::source_location::current(),
-                       std::chrono::system_clock::now(), error.title(), error.traceback()});
+            log::emit({log::Level::error, error.what(), __FILE__, __LINE__, std::chrono::system_clock::now(),
+                       error.title(), error.traceback()});
         }
         invocation->finish(status, std::nullopt, error.problem());
         return;

@@ -34,7 +34,7 @@ TEST(Log, EventsAreCapturedInTheCurrentScopeAtOrAboveTheCaptureLevel) {
             log::warn("inner");
             EXPECT_EQ(inner->size(), 1u);
         }
-        log::emit({log::Level::warn, "uncaptured", std::source_location::current(), {}, {}, {}}, false);
+        log::emit({log::Level::warn, "uncaptured", __FILE__, __LINE__, {}, {}, {}}, false);
         const auto records = buffer->records();
         ASSERT_EQ(records.size(), 2u);
         EXPECT_EQ(records[0].message, "Moved to 3");

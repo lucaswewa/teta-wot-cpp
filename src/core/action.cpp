@@ -57,18 +57,34 @@ std::string exception_title(const std::exception& error) {
     if (type == typeid(DecodeError)) {
         return "Error";  // serde_json's error
     }
-    std::string name = type.name();
-#if defined(__GNUC__) || defined(__clang__)
-    // Itanium names of `std::` types start with `St` (or `NSt`).
-    if (name.starts_with("St") || name.starts_with("NSt")) {
-        return "Error";
+    std::string name = codec::demangled(type);
+    // `std::throw_with_nested` wraps the exception in a type of its own:
+    // the title is the wrapped exception's.
+    for (std::string_view wrapper :
+         {"std::_Nested_exception<", "std::__nested<", "std::_With_nested_v2<", "std::_With_nested<"}) {
+        if (name.starts_with(wrapper)) {
+            name = name.substr(wrapper.size(), name.rfind('>') - wrapper.size());
+            if (const auto comma = name.find(','); comma != std::string::npos) {
+                name.erase(comma);
+            }
+            break;
+        }
     }
-#else
-    if (name.find(" std::") != std::string::npos) {
-        return "Error";
+    for (std::string_view prefix : {"class ", "struct "}) {
+        if (name.starts_with(prefix)) {
+            name.erase(0, prefix.size());
+        }
     }
-#endif
-    return codec::short_name(type);
+    if (name.starts_with("std::")) {
+        return "Error";  // as an anyhow::Error
+    }
+    if (const auto angle = name.find('<'); angle != std::string::npos) {
+        name.erase(angle);
+    }
+    if (const auto colon = name.rfind("::"); colon != std::string::npos) {
+        name.erase(0, colon + 2);
+    }
+    return name;
 }
 
 }  // namespace detail

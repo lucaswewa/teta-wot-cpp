@@ -18,9 +18,13 @@ jobs:
           - {os: windows-latest, preset: windows-clang-cl}
           - {os: ubuntu-24.04, preset: linux-gcc}
           - {os: ubuntu-24.04, preset: linux-clang-asan}
+          - {os: ubuntu-24.04, preset: linux-clang-tsan}
     env:
       VCPKG_ROOT: ${{ github.workspace }}/../vcpkg
       VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/../vcpkg-cache
+      # The runtime's threads (Phase 3) under ThreadSanitizer; see the file
+      # for why libstdc++'s exception_ptr needs a suppression.
+      TSAN_OPTIONS: suppressions=${{ github.workspace }}/tests/tsan.supp halt_on_error=1
     steps:
       - uses: actions/checkout@v7
       - name: Linux packages
@@ -52,9 +56,9 @@ jobs:
       - name: Test (unit tests and examples)
         run: ctest --preset ${{ matrix.preset }}
       # The cmake-consumer example again, against the installed package (not
-      # for the sanitizer build, whose library needs the sanitizer runtime).
+      # for the sanitizer builds, whose library needs the sanitizer runtime).
       - name: Install, then build cmake-consumer against it
-        if: matrix.preset != 'linux-clang-asan'
+        if: matrix.preset != 'linux-clang-asan' && matrix.preset != 'linux-clang-tsan'
         shell: bash
         run: |
           cmake --install build/${{ matrix.preset }} --prefix "${{ runner.temp }}/teta-wot"

@@ -1,6 +1,7 @@
 #include "teta/wot/invocation.hpp"
 
 #include <algorithm>
+#include <format>
 
 namespace teta::wot {
 
@@ -132,6 +133,48 @@ void Invocation::finish(InvocationStatus status, std::optional<json::Value> outp
 bool Invocation::expired(std::chrono::steady_clock::time_point now) const {
     std::lock_guard lock(mutex_);
     return expires_ && *expires_ <= now;
+}
+
+std::string format_rfc3339(std::chrono::system_clock::time_point time) {
+    using namespace std::chrono;
+    auto nanos = duration_cast<nanoseconds>(time.time_since_epoch()).count() % 1'000'000'000;
+    if (nanos < 0) {
+        nanos += 1'000'000'000;
+    }
+    std::string text = format_utc(time_point_cast<seconds>(time - nanoseconds(nanos)));
+    text.pop_back();  // the `Z`
+    if (nanos % 1'000'000 == 0 && nanos != 0) {
+        text += std::format(".{:03}", nanos / 1'000'000);
+    } else if (nanos % 1'000 == 0 && nanos != 0) {
+        text += std::format(".{:06}", nanos / 1'000);
+    } else if (nanos != 0) {
+        text += std::format(".{:09}", nanos);
+    }
+    return text + "Z";
+}
+
+json::Value to_json(const InvocationRecord& record) {
+    auto time = [](const std::optional<std::chrono::system_clock::time_point>& t) -> json::Value {
+        if (t) {
+            return format_rfc3339(*t);
+        }
+        return nullptr;
+    };
+    json::Value log = json::Value::array();
+    for (const auto& entry : record.log) {
+        log.push_back(to_json(entry));
+    }
+    return {{"status", std::string(to_string(record.status))},
+            {"id", record.id.to_string()},
+            {"thing", record.thing},
+            {"action", record.action},
+            {"time_requested", format_rfc3339(record.time_requested)},
+            {"time_started", time(record.time_started)},
+            {"time_completed", time(record.time_completed)},
+            {"input", record.input},
+            {"output", record.output ? *record.output : json::Value(nullptr)},
+            {"log", std::move(log)},
+            {"error", record.error ? to_json(*record.error) : json::Value(nullptr)}};
 }
 
 // ---- InvocationManager ---------------------------------------------------------------

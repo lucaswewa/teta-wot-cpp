@@ -119,6 +119,11 @@ struct DeviceOptions {
     std::function<void()> thread_init;
 };
 
+/// The name of the device thread this runs on (`device:<name>`), or empty
+/// on other threads. (Operating systems may keep only part of a thread's
+/// name: Linux keeps 15 bytes.)
+std::string device_thread_name();
+
 /// Rust's `Debug` of a Duration: `10s`, `1.5s`, `100ms`, `2µs`, `5ns`.
 std::string rust_debug(std::chrono::nanoseconds duration);
 

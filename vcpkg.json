@@ -20,6 +20,10 @@
         }
       ]
     },
+    "spdlog": {
+      "description": "The spdlog sink (teta/wot/log_spdlog.hpp), used by the invocation-logs example",
+      "dependencies": ["spdlog"]
+    },
     "tests": {
       "description": "Unit tests and fixture replay",
       "dependencies": ["gtest", "json-schema-validator"]

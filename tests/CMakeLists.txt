@@ -25,3 +25,5 @@ target_compile_definitions(teta-wot-tests PRIVATE
     TETA_WOT_FIXTURES="${PROJECT_SOURCE_DIR}/conformance/fixtures"
     TETA_WOT_VALIDATION_CORPUS="${CMAKE_CURRENT_SOURCE_DIR}/validate/validation_corpus.jsonl")
 gtest_discover_tests(teta-wot-tests DISCOVERY_MODE PRE_TEST)
+
+add_subdirectory(compile_fail)

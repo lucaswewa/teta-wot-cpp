@@ -10,6 +10,16 @@
 
 namespace teta::wot {
 
+namespace {
+
+thread_local std::string this_device_thread;
+
+}  // namespace
+
+std::string device_thread_name() {
+    return this_device_thread;
+}
+
 std::string rust_debug(std::chrono::nanoseconds duration) {
     const auto ns = static_cast<std::uint64_t>(duration.count());
     auto fractional = [](std::uint64_t whole, std::uint64_t rest, std::uint64_t unit, const char* suffix) {
@@ -172,7 +182,8 @@ void DeviceCore::create() {
 
 void DeviceCore::run(std::shared_ptr<std::promise<void>> opened) {
     std::string name = this->name();
-    name_thread("device:" + name);
+    this_device_thread = "device:" + name;
+    name_thread(this_device_thread);
     if (options_.thread_init) {
         options_.thread_init();
     }
@@ -213,7 +224,8 @@ void DeviceCore::run(std::shared_ptr<std::promise<void>> opened) {
                     if (auto panic = item.job.run(driver_->get())) {
                         log::emit({log::Level::error,
                                    "device call panicked: " + *panic + " device=" + name,
-                                   std::source_location::current(),
+                                   __FILE__,
+                                   __LINE__,
                                    std::chrono::system_clock::now(),
                                    {},
                                    {}});

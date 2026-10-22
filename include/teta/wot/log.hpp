@@ -21,6 +21,7 @@
 #include <optional>
 #include <source_location>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -90,8 +91,11 @@ std::pair<const char*, std::uint8_t> python_level(Level level);
 struct Event {
     Level level = Level::info;
     std::string message;
-    std::source_location location;
-    std::chrono::system_clock::time_point time;
+    /// Where it was emitted: the source file (with or without its
+    /// directory) and line, or "" and 0 if unknown.
+    std::string_view file;
+    std::uint32_t line = 0;
+    std::chrono::system_clock::time_point time = std::chrono::system_clock::now();
     std::optional<std::string> exception_type;
     std::optional<std::string> traceback;
 };
@@ -147,8 +151,8 @@ struct Format {
 
 template <typename... Args>
 void write(Level level, Format<std::type_identity_t<Args>...> format, Args&&... args) {
-    emit({level, std::format(format.format, std::forward<Args>(args)...), format.location,
-          std::chrono::system_clock::now(), std::nullopt, std::nullopt});
+    emit({level, std::format(format.format, std::forward<Args>(args)...), format.location.file_name(),
+          format.location.line(), std::chrono::system_clock::now(), std::nullopt, std::nullopt});
 }
 
 template <typename... Args>

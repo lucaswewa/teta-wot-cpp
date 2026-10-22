@@ -62,6 +62,15 @@ struct InvocationRecord {
     std::optional<ProblemDetails> error;
 };
 
+/// The record as teta-wot's `InvocationRecord` serialises (times in RFC 3339
+/// UTC, as chrono writes them). The HTTP binding renders invocations its own
+/// way (Phase 4).
+json::Value to_json(const InvocationRecord& record);
+
+/// A UTC time in RFC 3339 as chrono writes it: 0, 3, 6 or 9 fractional
+/// digits, as needed, and a `Z`.
+std::string format_rfc3339(std::chrono::system_clock::time_point time);
+
 /// One invocation of an action.
 class Invocation {
   public:

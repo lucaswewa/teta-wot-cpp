@@ -154,12 +154,11 @@ void MessageBroker::publish(const Message& message) {
     }
     for (std::uint64_t i = 0; i < full; ++i) {
         // Not captured: this isn't part of the publishing invocation's log.
-        log::emit(
-            {log::Level::warn,
-             "Could not pass a notification to a subscriber, as its buffer was full. thing=" + message.thing +
-                 " affordance=" + message.affordance,
-             std::source_location::current(), std::chrono::system_clock::now(), std::nullopt, std::nullopt},
-            false);
+        log::emit({log::Level::warn,
+                   "Could not pass a notification to a subscriber, as its buffer was full. thing=" +
+                       message.thing + " affordance=" + message.affordance,
+                   __FILE__, __LINE__, std::chrono::system_clock::now(), std::nullopt, std::nullopt},
+                  false);
     }
     for (const auto& notify : notifications) {
         notify();

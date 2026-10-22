@@ -153,9 +153,9 @@ void init(bool debug) {
 void emit(Event event, bool capture_it) {
     if (capture_it && current && event.level >= capture.load()) {
         const auto [levelname, levelno] = python_level(event.level);
-        current->push(LogRecord{event.message, levelname, levelno, event.location.line(),
-                                std::string(basename(event.location.file_name())), event.time,
-                                event.exception_type, event.traceback});
+        current->push(LogRecord{event.message, levelname, levelno, event.line,
+                                std::string(basename(event.file)), event.time, event.exception_type,
+                                event.traceback});
     }
     std::shared_lock lock(settings().mutex);
     if (settings().sink && event.level >= settings().sink_level) {

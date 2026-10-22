@@ -167,6 +167,9 @@ std::string unexpected(const json::Value& value);
 /// short type names (`Position` for `geometry::Position`).
 std::string short_name(const std::type_info& type);
 
+/// A type's full name, demangled where the compiler mangles it.
+std::string demangled(const std::type_info& type);
+
 /// serde's "invalid type: {unexpected}, expected {expected}".
 [[noreturn]] void invalid_type(const json::Value& value, std::string_view expected);
 

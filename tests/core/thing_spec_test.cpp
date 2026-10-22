@@ -370,6 +370,7 @@ TEST(ThingSpec, ActionErrorsHaveTitlesFromTheirTypes) {
     } catch (...) {
         const auto error = tw::ActionError::from(std::current_exception());
         EXPECT_STREQ(error.what(), "can't move: serial port closed");
+        EXPECT_EQ(error.title(), "MotorJammed");  // the wrapped exception's, not the wrapper's
         EXPECT_EQ(error.traceback(), "can't move\n\nCaused by:\n    serial port closed");
     }
 }

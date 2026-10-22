@@ -220,15 +220,20 @@ std::string one_of(const std::vector<std::string>& names) {
     return out;
 }
 
-std::string short_name(const std::type_info& type) {
+std::string demangled(const std::type_info& type) {
     std::string name = type.name();
 #if defined(__GNUC__) || defined(__clang__)
     int status = 0;
-    if (char* demangled = abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status); demangled) {
-        name = demangled;
-        std::free(demangled);
+    if (char* readable = abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status); readable) {
+        name = readable;
+        std::free(readable);
     }
 #endif
+    return name;
+}
+
+std::string short_name(const std::type_info& type) {
+    std::string name = demangled(type);
     for (std::string_view prefix : {"struct ", "class ", "enum ", "union "}) {
         if (name.starts_with(prefix)) {
             name.erase(0, prefix.size());
