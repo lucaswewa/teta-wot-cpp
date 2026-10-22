@@ -10,13 +10,14 @@
 // - `power_limit`: `read_only` with a setter, which C++ code may call but
 //   clients may not.
 //
-// The C++ port of teta-wot's `functional-properties` example, in-process: the
-// HTTP requests become calls on the property registry (HTTP comes in Phase 4).
+// The C++ port of teta-wot's `functional-properties` example: the same
+// requests, through TestClient.
 
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
 #include <format>
+#include <functional>
 #include <iostream>
 #include <mutex>
 #include <stdexcept>
@@ -82,37 +83,18 @@ class Controller {
     std::uint8_t power_limit_ = 100;
 };
 
-void step(const std::string& label, const std::string& outcome, const std::string& expected) {
-    std::cout << std::format("{:<38} → {}\n", label, outcome);
-    if (outcome != expected) {
-        throw std::runtime_error("expected " + expected);
-    }
-}
-
-// What a client's write gets: written, or why not.
-std::string outcome(const std::function<void()>& request) {
-    try {
-        request();
-        return "done";
-    } catch (const tw::PropertyError& error) {
-        switch (error.kind()) {
-            case tw::PropertyError::Kind::invalid:
-                return "invalid";
-            case tw::PropertyError::Kind::read_only:
-                return "read-only";
-            default:
-                return error.what();
-        }
+void step(const std::string& label, int status, int expected) {
+    std::cout << std::format("{:<38} → {}\n", label, status);
+    if (status != expected) {
+        throw std::runtime_error("expected " + std::to_string(expected));
     }
 }
 
 void run() {
-    auto runtime = tw::Runtime::builder().thing<Controller>("controller").build();
-    const auto* controller = runtime.thing("controller");
+    const auto server = tw::ThingServer::builder().thing<Controller>("controller").build();
+    const auto client = tw::testing::TestClient::start(server);
 
-    tw::td::TdOptions options;
-    options.path = "/controller/";
-    const auto td = tw::td::to_json(controller->thing_description(options));
+    const auto td = client.get("/controller/").json();
     for (const char* name : {"setpoint", "temperature", "heating", "power_limit"}) {
         const auto& p = td["properties"][name];
         std::cout << std::format("{:<12} readOnly {:<5} default {:<5} unit {}\n", name,
@@ -121,29 +103,31 @@ void run() {
                                  p.contains("unit") ? tw::json::dump(p["unit"]) : "null");
     }
 
-    const auto& setpoint = *controller->property("setpoint");
-    step("write setpoint 25 (setter runs)", outcome([&] { setpoint.write(25); }), "done");
-    std::cout << "read setpoint                          → " << tw::json::dump(setpoint.read()) << "\n";
-    step("write setpoint 40 (above le = 30)", outcome([&] { setpoint.write(40); }), "invalid");
-    step("reset setpoint (resetter runs)", outcome([&] { setpoint.reset(); }), "done");
-    if (setpoint.read() != Value(20.0)) {
+    step("PUT setpoint 25 (setter runs)", client.put_json("/controller/setpoint", 25).status, 201);
+    const auto read = client.get("/controller/setpoint").json();
+    std::cout << "GET setpoint                           → " << tw::json::dump(read) << "\n";
+    if (read != Value(25.0)) {
+        throw std::runtime_error("the setter didn't run");
+    }
+    step("PUT setpoint 40 (above le = 30)", client.put_json("/controller/setpoint", 40).status, 422);
+    step("POST setpoint/reset (resetter runs)", client.post_json("/controller/setpoint/reset").status, 200);
+    if (client.get("/controller/setpoint").json() != Value(20.0)) {
         throw std::runtime_error("the resetter didn't run");
     }
 
-    std::cout << "read temperature (a slow getter)       → "
-              << tw::json::dump(controller->property("temperature")->read()) << "\n";
-    step("write heating (no setter)", outcome([&] { controller->property("heating")->write(true); }),
-         "read-only");
-    step("write power_limit (read-only)", outcome([&] { controller->property("power_limit")->write(50); }),
-         "read-only");
+    std::cout << "GET temperature (a slow getter)        → " << client.get("/controller/temperature").text()
+              << "\n";
+    step("PUT heating (no setter)", client.put_json("/controller/heating", true).status, 405);
+    step("PUT power_limit (readonly)", client.put_json("/controller/power_limit", 50).status, 405);
 
     // The Thing's own code may still use the setter.
-    controller->instance<Controller>()->set_power_limit(50);
-    const auto limit = controller->property("power_limit")->read();
-    std::cout << "set_power_limit(50) from C++, then read power_limit → " << tw::json::dump(limit) << "\n";
+    client.runtime()->thing_ref<Controller>("controller")->thing().set_power_limit(50);
+    const auto limit = client.get("/controller/power_limit").json();
+    std::cout << "set_power_limit(50) from C++, then GET power_limit → " << tw::json::dump(limit) << "\n";
     if (limit != Value(50)) {
         throw std::runtime_error("the setter didn't run");
     }
+    client.stop();
 }
 
 int main() {

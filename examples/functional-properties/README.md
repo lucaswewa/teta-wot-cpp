@@ -2,7 +2,7 @@
 
 **Concept:** Functional properties: a getter, and optionally a setter, a resetter and a default.
 
-**Technologies:** `ThingSpec::property` with a member function, `.setter()`, `.resetter()`, `.default_value()`, constraints checked before the setter, `.read_only()`. The C++ port of teta-wot's `functional-properties`, in-process: the requests the Rust example makes over HTTP are calls on the property registry here (HTTP arrives in Phase 4).
+**Technologies:** `ThingSpec::property` with a member function, `.setter()`, `.resetter()`, `.default_value()`, constraints checked before the setter, `.read_only()`. `TestClient` for the requests. The C++ port of teta-wot's `functional-properties`.
 
 ## Run it
 
@@ -11,7 +11,7 @@ cmake --build --preset linux-gcc --target example-functional-properties
 ./build/linux-gcc/examples/functional-properties/example-functional-properties
 ```
 
-It prints each property's TD entry and what each request gets, and exits with a non-zero status if an outcome isn't the expected one.
+It prints each property's TD entry and the status each request gets, and exits with a non-zero status if one isn't the expected one.
 
 ## What to look for
 

@@ -1,0 +1,30 @@
+{
+  "serve": ["--serve"],
+  "port": 5000,
+  "steps": [
+    {"name": "things", "method": "GET", "path": "/things/"},
+    {"name": "td", "method": "GET", "path": "/lamp/"},
+    {"name": "read_brightness", "method": "GET", "path": "/lamp/brightness"},
+    {"name": "write_coerced", "method": "PUT", "path": "/lamp/brightness", "json": "80"},
+    {"name": "write_too_bright", "method": "PUT", "path": "/lamp/brightness", "json": 150},
+    {"name": "write_is_on", "method": "PUT", "path": "/lamp/is_on", "json": true},
+    {"name": "reset", "method": "POST", "path": "/lamp/brightness/reset"},
+    {"name": "toggle", "method": "POST", "path": "/lamp/toggle", "wait": true},
+    {"name": "toggle_output", "method": "GET", "path": "/action_invocations/{last}/output"},
+    {"name": "toggle_list", "method": "GET", "path": "/lamp/toggle"},
+    {"name": "fade_invalid", "method": "POST", "path": "/lamp/fade", "json": {"to": "high"}},
+    {"name": "fade_unknown_field", "method": "POST", "path": "/lamp/fade", "json": {"to": 60, "speed": 2}},
+    {"name": "fade", "method": "POST", "path": "/lamp/fade", "json": {"to": 100}},
+    {"name": "fade_running", "method": "GET", "path": "/action_invocations/{last}", "poll": true, "until": ["running"]},
+    {"name": "cancel_fade", "method": "DELETE", "path": "/action_invocations/{last}"},
+    {"name": "fade_cancelled", "method": "GET", "path": "/action_invocations/{last}", "poll": true},
+    {"name": "cancel_again", "method": "DELETE", "path": "/action_invocations/{last}"},
+    {"name": "fade_quickly", "method": "POST", "path": "/lamp/fade", "json": {"to": 52, "step_seconds": 0.01}, "wait": true},
+    {"name": "nil_id", "method": "GET", "path": "/action_invocations/00000000-0000-0000-0000-000000000000"},
+    {"name": "bad_id", "method": "GET", "path": "/action_invocations/not-a-uuid"},
+    {"name": "delete_property", "method": "DELETE", "path": "/lamp/brightness"},
+    {"name": "redirect", "method": "GET", "path": "/lamp"},
+    {"name": "preflight", "method": "OPTIONS", "path": "/lamp/brightness", "headers": {"Origin": "http://example.com", "Access-Control-Request-Method": "PUT"}},
+    {"name": "cors_get", "method": "GET", "path": "/lamp/is_on", "headers": {"Origin": "http://example.com"}}
+  ]
+}

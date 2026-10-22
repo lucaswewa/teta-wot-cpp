@@ -1,0 +1,856 @@
+{
+  "config": {
+    "things": {
+      "mything": "labthings_fastapi.example_things:MyThing",
+      "http_probe": "twins.http_probe:HttpProbe",
+      "ws_probe": "twins.ws_probe:ThingWithProperties"
+    },
+    "wire_profile": "wot",
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "write",
+        "method": "PUT",
+        "path": "/http_probe/value",
+        "json": 2
+      },
+      "response": {
+        "status": 204,
+        "headers": {
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "read",
+        "method": "GET",
+        "path": "/http_probe/value"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 2,
+        "text": "2"
+      }
+    },
+    {
+      "step": {
+        "name": "write_invalid",
+        "method": "PUT",
+        "path": "/http_probe/value",
+        "json": "x"
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error",
+          "title": "Validation error",
+          "status": 400,
+          "detail": "1 validation error",
+          "invalid-params": [
+            {
+              "in": "body",
+              "name": "",
+              "reason": "Input should be a valid integer, unable to parse string as an integer",
+              "code": "int_parsing"
+            }
+          ]
+        },
+        "text": "{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error\",\"title\":\"Validation error\",\"status\":400,\"detail\":\"1 validation error\",\"invalid-params\":[{\"in\":\"body\",\"name\":\"\",\"reason\":\"Input should be a valid integer, unable to parse string as an integer\",\"code\":\"int_parsing\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_malformed",
+        "method": "PUT",
+        "path": "/http_probe/value",
+        "body": "{not json"
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error",
+          "title": "Validation error",
+          "status": 400,
+          "detail": "1 validation error",
+          "invalid-params": [
+            {
+              "in": "body",
+              "name": "",
+              "reason": "JSON decode error at character 1: key must be a string",
+              "code": "json_invalid"
+            }
+          ]
+        },
+        "text": "{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error\",\"title\":\"Validation error\",\"status\":400,\"detail\":\"1 validation error\",\"invalid-params\":[{\"in\":\"body\",\"name\":\"\",\"reason\":\"JSON decode error at character 1: key must be a string\",\"code\":\"json_invalid\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_null",
+        "method": "PUT",
+        "path": "/http_probe/value",
+        "json": null
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error",
+          "title": "Validation error",
+          "status": 400,
+          "detail": "1 validation error",
+          "invalid-params": [
+            {
+              "in": "body",
+              "name": "",
+              "reason": "Field required",
+              "code": "missing"
+            }
+          ]
+        },
+        "text": "{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error\",\"title\":\"Validation error\",\"status\":400,\"detail\":\"1 validation error\",\"invalid-params\":[{\"in\":\"body\",\"name\":\"\",\"reason\":\"Field required\",\"code\":\"missing\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_readonly",
+        "method": "PUT",
+        "path": "/mything/counter",
+        "json": 1
+      },
+      "response": {
+        "status": 405,
+        "headers": {
+          "content-type": "application/problem+json",
+          "allow": "GET",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "about:blank",
+          "title": "Method Not Allowed",
+          "status": 405,
+          "detail": "Method Not Allowed"
+        },
+        "text": "{\"type\":\"about:blank\",\"title\":\"Method Not Allowed\",\"status\":405,\"detail\":\"Method Not Allowed\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "reset",
+        "method": "POST",
+        "path": "/http_probe/value/reset"
+      },
+      "response": {
+        "status": 204,
+        "headers": {
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "write_multiple",
+        "method": "PUT",
+        "path": "/http_probe/properties",
+        "json": {
+          "value": 4
+        }
+      },
+      "response": {
+        "status": 204,
+        "headers": {
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "write_multiple_invalid",
+        "method": "PUT",
+        "path": "/mything/properties",
+        "json": {
+          "counter": 1,
+          "foo": [
+            2
+          ],
+          "a/b": 3
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error",
+          "title": "Validation error",
+          "status": 400,
+          "detail": "3 validation errors",
+          "invalid-params": [
+            {
+              "in": "body",
+              "name": "/counter",
+              "reason": "Field is frozen",
+              "code": "frozen_field"
+            },
+            {
+              "in": "body",
+              "name": "/foo",
+              "reason": "Input should be a valid string",
+              "code": "string_type"
+            },
+            {
+              "in": "body",
+              "name": "/a~1b",
+              "reason": "Extra inputs are not permitted",
+              "code": "extra_forbidden"
+            }
+          ]
+        },
+        "text": "{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error\",\"title\":\"Validation error\",\"status\":400,\"detail\":\"3 validation errors\",\"invalid-params\":[{\"in\":\"body\",\"name\":\"/counter\",\"reason\":\"Field is frozen\",\"code\":\"frozen_field\"},{\"in\":\"body\",\"name\":\"/foo\",\"reason\":\"Input should be a valid string\",\"code\":\"string_type\"},{\"in\":\"body\",\"name\":\"/a~1b\",\"reason\":\"Extra inputs are not permitted\",\"code\":\"extra_forbidden\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "not_found",
+        "method": "GET",
+        "path": "/nothing"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "detail": "Not Found"
+        },
+        "text": "{\"type\":\"about:blank\",\"title\":\"Not Found\",\"status\":404,\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "redirect",
+        "method": "GET",
+        "path": "/http_probe"
+      },
+      "response": {
+        "status": 307,
+        "headers": {
+          "location": "http://testserver/http_probe/",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "invoke_zero",
+        "method": "POST",
+        "path": "/http_probe/zero",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:0>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeRequested": "<utc-datetime>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "output": 0,
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeRequested": "<utc-datetime>",
+          "timeEnded": "<utc-datetime>"
+        },
+        "text": "{\"status\":\"completed\",\"output\":0,\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "zero_output",
+        "method": "GET",
+        "path": "/action_invocations/{last}/output"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 0,
+        "text": "0"
+      }
+    },
+    {
+      "step": {
+        "name": "invoke_refuse",
+        "method": "POST",
+        "path": "/http_probe/refuse",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeRequested": "<utc-datetime>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "failed",
+          "error": {
+            "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#failed",
+            "title": "Failed",
+            "status": 500,
+            "detail": "Not now.",
+            "error": "InvocationError"
+          },
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeRequested": "<utc-datetime>",
+          "timeEnded": "<utc-datetime>"
+        },
+        "text": "{\"status\":\"failed\",\"error\":{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#failed\",\"title\":\"Failed\",\"status\":500,\"detail\":\"Not now.\",\"error\":\"InvocationError\"},\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "refuse_output",
+        "method": "GET",
+        "path": "/action_invocations/{last}/output"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#no-output",
+          "title": "No output",
+          "status": 404,
+          "detail": "No result is available for this invocation"
+        },
+        "text": "{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#no-output\",\"title\":\"No output\",\"status\":404,\"detail\":\"No result is available for this invocation\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "invoke_raise",
+        "method": "POST",
+        "path": "/ws_probe/raise_error",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeRequested": "<utc-datetime>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "failed",
+          "error": {
+            "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#failed",
+            "title": "Failed",
+            "status": 500,
+            "detail": "A deliberate failure.",
+            "error": "Error"
+          },
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeRequested": "<utc-datetime>",
+          "timeEnded": "<utc-datetime>"
+        },
+        "text": "{\"status\":\"failed\",\"error\":{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#failed\",\"title\":\"Failed\",\"status\":500,\"detail\":\"A deliberate failure.\",\"error\":\"Error\"},\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "invoke_cancel_myself",
+        "method": "POST",
+        "path": "/ws_probe/cancel_myself",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:3>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeRequested": "<utc-datetime>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "failed",
+          "error": {
+            "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#cancelled",
+            "title": "Cancelled",
+            "status": 503,
+            "detail": "The action was cancelled.",
+            "error": "InvocationCancelledError"
+          },
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeRequested": "<utc-datetime>",
+          "timeEnded": "<utc-datetime>"
+        },
+        "text": "{\"status\":\"failed\",\"error\":{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#cancelled\",\"title\":\"Cancelled\",\"status\":503,\"detail\":\"The action was cancelled.\",\"error\":\"InvocationCancelledError\"},\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "invoke_nothing",
+        "method": "POST",
+        "path": "/mything/action_without_arguments",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:4>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "href": "http://testserver/action_invocations/<uuid:4>",
+          "timeRequested": "<utc-datetime>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "href": "http://testserver/action_invocations/<uuid:4>",
+          "timeRequested": "<utc-datetime>",
+          "timeEnded": "<utc-datetime>"
+        },
+        "text": "{\"status\":\"completed\",\"href\":\"http://testserver/action_invocations/<uuid:4>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "invoke_slow",
+        "method": "POST",
+        "path": "/http_probe/slow",
+        "json": {
+          "seconds": 30
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:5>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "href": "http://testserver/action_invocations/<uuid:5>",
+          "timeRequested": "<utc-datetime>"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "slow_running",
+        "method": "GET",
+        "path": "/action_invocations/{last}",
+        "poll": true,
+        "until": [
+          "running"
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "running",
+          "href": "http://testserver/action_invocations/<uuid:5>",
+          "timeRequested": "<utc-datetime>"
+        },
+        "text": "{\"status\":\"running\",\"href\":\"http://testserver/action_invocations/<uuid:5>\",\"timeRequested\":\"<utc-datetime>\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "cancel_slow",
+        "method": "DELETE",
+        "path": "/action_invocations/{last}"
+      },
+      "response": {
+        "status": 204,
+        "headers": {
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "slow_failed",
+        "method": "GET",
+        "path": "/action_invocations/{last}",
+        "poll": true,
+        "until": [
+          "failed"
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "failed",
+          "error": {
+            "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#cancelled",
+            "title": "Cancelled",
+            "status": 503,
+            "detail": "The action was cancelled.",
+            "error": "InvocationCancelledError"
+          },
+          "href": "http://testserver/action_invocations/<uuid:5>",
+          "timeRequested": "<utc-datetime>",
+          "timeEnded": "<utc-datetime>"
+        },
+        "text": "{\"status\":\"failed\",\"error\":{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#cancelled\",\"title\":\"Cancelled\",\"status\":503,\"detail\":\"The action was cancelled.\",\"error\":\"InvocationCancelledError\"},\"href\":\"http://testserver/action_invocations/<uuid:5>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "cancel_again",
+        "method": "DELETE",
+        "path": "/action_invocations/{last}"
+      },
+      "response": {
+        "status": 409,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#not-cancellable",
+          "title": "Not cancellable",
+          "status": 409,
+          "detail": "The invocation is cancelled and may not be cancelled."
+        },
+        "text": "{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#not-cancellable\",\"title\":\"Not cancellable\",\"status\":409,\"detail\":\"The invocation is cancelled and may not be cancelled.\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "invoke_invalid",
+        "method": "POST",
+        "path": "/http_probe/slow",
+        "json": {
+          "seconds": "soon"
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error",
+          "title": "Validation error",
+          "status": 400,
+          "detail": "1 validation error",
+          "invalid-params": [
+            {
+              "in": "body",
+              "name": "/seconds",
+              "reason": "Input should be a valid number, unable to parse string as a number",
+              "code": "float_parsing"
+            }
+          ]
+        },
+        "text": "{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error\",\"title\":\"Validation error\",\"status\":400,\"detail\":\"1 validation error\",\"invalid-params\":[{\"in\":\"body\",\"name\":\"/seconds\",\"reason\":\"Input should be a valid number, unable to parse string as a number\",\"code\":\"float_parsing\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "list_action",
+        "method": "GET",
+        "path": "/http_probe/zero"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          {
+            "status": "completed",
+            "output": 0,
+            "href": "http://testserver/action_invocations/<uuid:0>",
+            "timeRequested": "<utc-datetime>",
+            "timeEnded": "<utc-datetime>"
+          }
+        ],
+        "text": "[{\"status\":\"completed\",\"output\":0,\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}]"
+      }
+    },
+    {
+      "step": {
+        "name": "query_all_actions",
+        "method": "GET",
+        "path": "/http_probe/actions"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "zero": [
+            {
+              "status": "completed",
+              "output": 0,
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "timeRequested": "<utc-datetime>",
+              "timeEnded": "<utc-datetime>"
+            }
+          ],
+          "slow": [
+            {
+              "status": "failed",
+              "error": {
+                "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#cancelled",
+                "title": "Cancelled",
+                "status": 503,
+                "detail": "The action was cancelled.",
+                "error": "InvocationCancelledError"
+              },
+              "href": "http://testserver/action_invocations/<uuid:5>",
+              "timeRequested": "<utc-datetime>",
+              "timeEnded": "<utc-datetime>"
+            }
+          ],
+          "refuse": [
+            {
+              "status": "failed",
+              "error": {
+                "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#failed",
+                "title": "Failed",
+                "status": 500,
+                "detail": "Not now.",
+                "error": "InvocationError"
+              },
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "timeRequested": "<utc-datetime>",
+              "timeEnded": "<utc-datetime>"
+            }
+          ]
+        },
+        "text": "{\"zero\":[{\"status\":\"completed\",\"output\":0,\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}],\"slow\":[{\"status\":\"failed\",\"error\":{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#cancelled\",\"title\":\"Cancelled\",\"status\":503,\"detail\":\"The action was cancelled.\",\"error\":\"InvocationCancelledError\"},\"href\":\"http://testserver/action_invocations/<uuid:5>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}],\"refuse\":[{\"status\":\"failed\",\"error\":{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#failed\",\"title\":\"Failed\",\"status\":500,\"detail\":\"Not now.\",\"error\":\"InvocationError\"},\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "list_all",
+        "method": "GET",
+        "path": "/action_invocations"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          {
+            "status": "completed",
+            "output": 0,
+            "href": "http://testserver/action_invocations/<uuid:0>",
+            "timeRequested": "<utc-datetime>",
+            "timeEnded": "<utc-datetime>"
+          },
+          {
+            "status": "failed",
+            "error": {
+              "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#failed",
+              "title": "Failed",
+              "status": 500,
+              "detail": "Not now.",
+              "error": "InvocationError"
+            },
+            "href": "http://testserver/action_invocations/<uuid:1>",
+            "timeRequested": "<utc-datetime>",
+            "timeEnded": "<utc-datetime>"
+          },
+          {
+            "status": "failed",
+            "error": {
+              "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#failed",
+              "title": "Failed",
+              "status": 500,
+              "detail": "A deliberate failure.",
+              "error": "Error"
+            },
+            "href": "http://testserver/action_invocations/<uuid:2>",
+            "timeRequested": "<utc-datetime>",
+            "timeEnded": "<utc-datetime>"
+          },
+          {
+            "status": "failed",
+            "error": {
+              "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#cancelled",
+              "title": "Cancelled",
+              "status": 503,
+              "detail": "The action was cancelled.",
+              "error": "InvocationCancelledError"
+            },
+            "href": "http://testserver/action_invocations/<uuid:3>",
+            "timeRequested": "<utc-datetime>",
+            "timeEnded": "<utc-datetime>"
+          },
+          {
+            "status": "completed",
+            "href": "http://testserver/action_invocations/<uuid:4>",
+            "timeRequested": "<utc-datetime>",
+            "timeEnded": "<utc-datetime>"
+          },
+          {
+            "status": "failed",
+            "error": {
+              "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#cancelled",
+              "title": "Cancelled",
+              "status": 503,
+              "detail": "The action was cancelled.",
+              "error": "InvocationCancelledError"
+            },
+            "href": "http://testserver/action_invocations/<uuid:5>",
+            "timeRequested": "<utc-datetime>",
+            "timeEnded": "<utc-datetime>"
+          }
+        ],
+        "text": "[{\"status\":\"completed\",\"output\":0,\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"},{\"status\":\"failed\",\"error\":{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#failed\",\"title\":\"Failed\",\"status\":500,\"detail\":\"Not now.\",\"error\":\"InvocationError\"},\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"},{\"status\":\"failed\",\"error\":{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#failed\",\"title\":\"Failed\",\"status\":500,\"detail\":\"A deliberate failure.\",\"error\":\"Error\"},\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"},{\"status\":\"failed\",\"error\":{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#cancelled\",\"title\":\"Cancelled\",\"status\":503,\"detail\":\"The action was cancelled.\",\"error\":\"InvocationCancelledError\"},\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"},{\"status\":\"completed\",\"href\":\"http://testserver/action_invocations/<uuid:4>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"},{\"status\":\"failed\",\"error\":{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#cancelled\",\"title\":\"Cancelled\",\"status\":503,\"detail\":\"The action was cancelled.\",\"error\":\"InvocationCancelledError\"},\"href\":\"http://testserver/action_invocations/<uuid:5>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}]"
+      }
+    },
+    {
+      "step": {
+        "name": "bad_id",
+        "method": "GET",
+        "path": "/action_invocations/bad-id"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "detail": "No action invocation found with ID bad-id"
+        },
+        "text": "{\"type\":\"about:blank\",\"title\":\"Not Found\",\"status\":404,\"detail\":\"No action invocation found with ID bad-id\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "nil_id",
+        "method": "GET",
+        "path": "/action_invocations/00000000-0000-0000-0000-000000000000"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "detail": "No action invocation found with ID <nil-uuid>"
+        },
+        "text": "{\"type\":\"about:blank\",\"title\":\"Not Found\",\"status\":404,\"detail\":\"No action invocation found with ID <nil-uuid>\"}"
+      }
+    }
+  ]
+}

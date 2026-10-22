@@ -1,0 +1,12 @@
+{
+  "serve": ["--serve"],
+  "port": 5000,
+  "steps": [
+    {"name": "td", "method": "GET", "path": "/counter/"},
+    {"name": "read", "method": "GET", "path": "/counter/counter"},
+    {"name": "invoke", "method": "POST", "path": "/counter/increment_counter", "wait": true},
+    {"name": "read_after", "method": "GET", "path": "/counter/counter"},
+    {"name": "list", "method": "GET", "path": "/counter/increment_counter"},
+    {"name": "actions", "method": "GET", "path": "/counter/actions"}
+  ]
+}

@@ -1,0 +1,755 @@
+{
+  "config": {
+    "things": {
+      "http_probe": "twins.http_probe:HttpProbe",
+      "counter": "twins.counter:TestThing",
+      "ws_probe": "twins.ws_probe:ThingWithProperties"
+    },
+    "enable_global_lock": true,
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "invoke_slow",
+        "method": "POST",
+        "path": "/http_probe/slow",
+        "json": {
+          "seconds": 30
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:0>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:0>",
+          "action": "/http_probe/slow",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "seconds": 30.0
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "slow_running",
+        "method": "GET",
+        "path": "/action_invocations/{inv:0}",
+        "poll": true,
+        "until": [
+          "running"
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "running",
+          "id": "<uuid:0>",
+          "action": "/http_probe/slow",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": null,
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "seconds": 30.0
+          },
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"running\",\"id\":\"<uuid:0>\",\"action\":\"/http_probe/slow\",\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":null,\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:0>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"seconds\":30.0},\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_busy",
+        "method": "PUT",
+        "path": "/http_probe/value",
+        "json": 1
+      },
+      "response": {
+        "status": 409,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "The global lock could not be acquired.",
+          "type": "https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError",
+          "status": 409,
+          "title": "GlobalLockBusyError",
+          "instance": null
+        },
+        "text": "{\"detail\":\"The global lock could not be acquired.\",\"type\":\"https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError\",\"status\":409,\"title\":\"GlobalLockBusyError\",\"instance\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "reset_busy",
+        "method": "POST",
+        "path": "/http_probe/value/reset"
+      },
+      "response": {
+        "status": 409,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "The global lock could not be acquired.",
+          "type": "https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError",
+          "status": 409,
+          "title": "GlobalLockBusyError",
+          "instance": null
+        },
+        "text": "{\"detail\":\"The global lock could not be acquired.\",\"type\":\"https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError\",\"status\":409,\"title\":\"GlobalLockBusyError\",\"instance\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_functional_busy",
+        "method": "PUT",
+        "path": "/ws_probe/funcprop",
+        "json": 1
+      },
+      "response": {
+        "status": 409,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "The global lock could not be acquired.",
+          "type": "https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError",
+          "status": 409,
+          "title": "GlobalLockBusyError",
+          "instance": null
+        },
+        "text": "{\"detail\":\"The global lock could not be acquired.\",\"type\":\"https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError\",\"status\":409,\"title\":\"GlobalLockBusyError\",\"instance\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_multiple_busy",
+        "method": "PUT",
+        "path": "/http_probe/properties",
+        "json": {
+          "value": 2
+        }
+      },
+      "response": {
+        "status": 409,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "The global lock could not be acquired.",
+          "type": "https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError",
+          "status": 409,
+          "title": "GlobalLockBusyError",
+          "instance": null
+        },
+        "text": "{\"detail\":\"The global lock could not be acquired.\",\"type\":\"https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError\",\"status\":409,\"title\":\"GlobalLockBusyError\",\"instance\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_invalid_busy",
+        "method": "PUT",
+        "path": "/http_probe/value",
+        "json": "x"
+      },
+      "response": {
+        "status": 409,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "The global lock could not be acquired.",
+          "type": "https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError",
+          "status": 409,
+          "title": "GlobalLockBusyError",
+          "instance": null
+        },
+        "text": "{\"detail\":\"The global lock could not be acquired.\",\"type\":\"https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError\",\"status\":409,\"title\":\"GlobalLockBusyError\",\"instance\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "read_free",
+        "method": "GET",
+        "path": "/http_probe/value"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 0,
+        "text": "0"
+      }
+    },
+    {
+      "step": {
+        "name": "read_functional_free",
+        "method": "GET",
+        "path": "/ws_probe/funcprop"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 0,
+        "text": "0"
+      }
+    },
+    {
+      "step": {
+        "name": "invoke_busy",
+        "method": "POST",
+        "path": "/http_probe/zero",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:1>",
+          "action": "/http_probe/zero",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "error",
+          "id": "<uuid:1>",
+          "action": "/http_probe/zero",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": null,
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [
+            {
+              "message": "Global lock was busy: didn't run zero.",
+              "levelname": "INFO",
+              "levelno": 20,
+              "lineno": "<lineno>",
+              "filename": "<filename>",
+              "created": "<utc-datetime>",
+              "exception_type": null,
+              "traceback": null
+            }
+          ],
+          "error": {
+            "detail": "The global lock could not be acquired.",
+            "type": "https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError",
+            "status": 409,
+            "title": "GlobalLockBusyError",
+            "instance": null
+          }
+        },
+        "text": "{\"status\":\"error\",\"id\":\"<uuid:1>\",\"action\":\"/http_probe/zero\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":null,\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[{\"message\":\"Global lock was busy: didn't run zero.\",\"levelname\":\"INFO\",\"levelno\":20,\"lineno\":\"<lineno>\",\"filename\":\"<filename>\",\"created\":\"<utc-datetime>\",\"exception_type\":null,\"traceback\":null}],\"error\":{\"detail\":\"The global lock could not be acquired.\",\"type\":\"https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError\",\"status\":409,\"title\":\"GlobalLockBusyError\",\"instance\":null}}"
+      }
+    },
+    {
+      "step": {
+        "name": "busy_output",
+        "method": "GET",
+        "path": "/action_invocations/{last}/output"
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "No result is available for this invocation"
+        },
+        "text": "{\"detail\":\"No result is available for this invocation\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "invoke_other_thing_busy",
+        "method": "POST",
+        "path": "/counter/increment_counter",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:2>",
+          "action": "/counter/increment_counter",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "error",
+          "id": "<uuid:2>",
+          "action": "/counter/increment_counter",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": null,
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [
+            {
+              "message": "Global lock was busy: didn't run increment_counter.",
+              "levelname": "INFO",
+              "levelno": 20,
+              "lineno": "<lineno>",
+              "filename": "<filename>",
+              "created": "<utc-datetime>",
+              "exception_type": null,
+              "traceback": null
+            }
+          ],
+          "error": {
+            "detail": "The global lock could not be acquired.",
+            "type": "https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError",
+            "status": 409,
+            "title": "GlobalLockBusyError",
+            "instance": null
+          }
+        },
+        "text": "{\"status\":\"error\",\"id\":\"<uuid:2>\",\"action\":\"/counter/increment_counter\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":null,\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[{\"message\":\"Global lock was busy: didn't run increment_counter.\",\"levelname\":\"INFO\",\"levelno\":20,\"lineno\":\"<lineno>\",\"filename\":\"<filename>\",\"created\":\"<utc-datetime>\",\"exception_type\":null,\"traceback\":null}],\"error\":{\"detail\":\"The global lock could not be acquired.\",\"type\":\"https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.GlobalLockBusyError\",\"status\":409,\"title\":\"GlobalLockBusyError\",\"instance\":null}}"
+      }
+    },
+    {
+      "step": {
+        "name": "invocations_busy",
+        "method": "GET",
+        "path": "/action_invocations"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          {
+            "status": "running",
+            "id": "<uuid:0>",
+            "action": "/http_probe/slow",
+            "href": "http://testserver/action_invocations/<uuid:0>",
+            "timeStarted": "<naive-datetime>",
+            "timeRequested": "<naive-datetime>",
+            "timeCompleted": null,
+            "links": [
+              {
+                "href": "http://testserver/action_invocations/<uuid:0>",
+                "type": null,
+                "rel": "self",
+                "anchor": null
+              },
+              {
+                "href": "http://testserver/action_invocations/<uuid:0>/output",
+                "type": null,
+                "rel": "output",
+                "anchor": null
+              }
+            ]
+          },
+          {
+            "status": "error",
+            "id": "<uuid:1>",
+            "action": "/http_probe/zero",
+            "href": "http://testserver/action_invocations/<uuid:1>",
+            "timeStarted": null,
+            "timeRequested": "<naive-datetime>",
+            "timeCompleted": "<naive-datetime>",
+            "links": [
+              {
+                "href": "http://testserver/action_invocations/<uuid:1>",
+                "type": null,
+                "rel": "self",
+                "anchor": null
+              },
+              {
+                "href": "http://testserver/action_invocations/<uuid:1>/output",
+                "type": null,
+                "rel": "output",
+                "anchor": null
+              }
+            ]
+          },
+          {
+            "status": "error",
+            "id": "<uuid:2>",
+            "action": "/counter/increment_counter",
+            "href": "http://testserver/action_invocations/<uuid:2>",
+            "timeStarted": null,
+            "timeRequested": "<naive-datetime>",
+            "timeCompleted": "<naive-datetime>",
+            "links": [
+              {
+                "href": "http://testserver/action_invocations/<uuid:2>",
+                "type": null,
+                "rel": "self",
+                "anchor": null
+              },
+              {
+                "href": "http://testserver/action_invocations/<uuid:2>/output",
+                "type": null,
+                "rel": "output",
+                "anchor": null
+              }
+            ]
+          }
+        ],
+        "text": "[{\"status\":\"running\",\"id\":\"<uuid:0>\",\"action\":\"/http_probe/slow\",\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":null,\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:0>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}]},{\"status\":\"error\",\"id\":\"<uuid:1>\",\"action\":\"/http_probe/zero\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":null,\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}]},{\"status\":\"error\",\"id\":\"<uuid:2>\",\"action\":\"/counter/increment_counter\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":null,\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}]}]"
+      }
+    },
+    {
+      "step": {
+        "name": "cancel_slow",
+        "method": "DELETE",
+        "path": "/action_invocations/{inv:0}"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "slow_cancelled",
+        "method": "GET",
+        "path": "/action_invocations/{inv:0}",
+        "poll": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "cancelled",
+          "id": "<uuid:0>",
+          "action": "/http_probe/slow",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "seconds": 30.0
+          },
+          "output": null,
+          "log": [
+            {
+              "message": "Invocation <uuid:0> was cancelled.",
+              "levelname": "INFO",
+              "levelno": 20,
+              "lineno": "<lineno>",
+              "filename": "<filename>",
+              "created": "<utc-datetime>",
+              "exception_type": null,
+              "traceback": null
+            }
+          ],
+          "error": {
+            "detail": "The action was cancelled.",
+            "type": "https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.InvocationCancelledError",
+            "status": 500,
+            "title": "InvocationCancelledError",
+            "instance": null
+          }
+        },
+        "text": "{\"status\":\"cancelled\",\"id\":\"<uuid:0>\",\"action\":\"/http_probe/slow\",\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:0>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"seconds\":30.0},\"output\":null,\"log\":[{\"message\":\"Invocation <uuid:0> was cancelled.\",\"levelname\":\"INFO\",\"levelno\":20,\"lineno\":\"<lineno>\",\"filename\":\"<filename>\",\"created\":\"<utc-datetime>\",\"exception_type\":null,\"traceback\":null}],\"error\":{\"detail\":\"The action was cancelled.\",\"type\":\"https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.InvocationCancelledError\",\"status\":500,\"title\":\"InvocationCancelledError\",\"instance\":null}}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_free",
+        "method": "PUT",
+        "path": "/http_probe/value",
+        "json": 1
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "reset_free",
+        "method": "POST",
+        "path": "/http_probe/value/reset"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "invoke_free",
+        "method": "POST",
+        "path": "/http_probe/zero",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:3>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:3>",
+          "action": "/http_probe/zero",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:3>",
+          "action": "/http_probe/zero",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": 0,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:3>\",\"action\":\"/http_probe/zero\",\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:3>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":0,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "counter_free",
+        "method": "GET",
+        "path": "/counter/counter"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 0,
+        "text": "0"
+      }
+    }
+  ]
+}

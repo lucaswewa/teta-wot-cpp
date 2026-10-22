@@ -17,6 +17,8 @@ tracing = "0.1.41"
 serde_json = { version = "1.0.151", features = ["preserve_order"] }
 teta-wot = { git = "https://github.com/lucaswewa/teta-wot", tag = "v0.1.0", features = ["ndarray"] }
 tokio = { version = "1.47", features = ["macros", "rt-multi-thread"] }
+# The version teta-wot v0.1.0 locks, for `wire-corpus`.
+uuid = "1.26"
 
 [[bin]]
 name = "reference-server"
@@ -33,3 +35,7 @@ path = "src/bin/schema_corpus.rs"
 [[bin]]
 name = "validation-corpus"
 path = "src/bin/validation_corpus.rs"
+
+[[bin]]
+name = "wire-corpus"
+path = "src/bin/wire_corpus.rs"

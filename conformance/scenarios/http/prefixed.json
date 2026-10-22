@@ -1,0 +1,42 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing",
+      "http_probe": "twins.http_probe:HttpProbe"
+    },
+    "api_prefix": "/api/v1",
+    "server_id": "conformance"
+  },
+  "steps": [
+    {"name": "things", "method": "GET", "path": "/api/v1/things/"},
+    {"name": "thing_descriptions", "method": "GET", "path": "/api/v1/thing_descriptions/"},
+    {"name": "td", "method": "GET", "path": "/api/v1/counter/"},
+    {"name": "td_redirect", "method": "GET", "path": "/api/v1/counter?x=1"},
+    {"name": "property_redirect", "method": "GET", "path": "/api/v1/counter/counter/"},
+    {"name": "unprefixed_td", "method": "GET", "path": "/counter/"},
+    {"name": "unprefixed_things", "method": "GET", "path": "/things/"},
+    {"name": "prefix_alone", "method": "GET", "path": "/api/v1"},
+    {"name": "prefix_slash", "method": "GET", "path": "/api/v1/"},
+    {"name": "half_prefix", "method": "GET", "path": "/api/counter/"},
+    {"name": "read", "method": "GET", "path": "/api/v1/counter/counter"},
+    {"name": "write_readonly", "method": "PUT", "path": "/api/v1/counter/counter", "json": 2},
+    {"name": "write", "method": "PUT", "path": "/api/v1/http_probe/value", "json": 3},
+    {"name": "read_all", "method": "GET", "path": "/api/v1/http_probe/properties"},
+    {"name": "invoke", "method": "POST", "path": "/api/v1/counter/increment_counter", "wait": true},
+    {"name": "get_invocation", "method": "GET", "path": "/api/v1/action_invocations/{last}"},
+    {"name": "invocation_output", "method": "GET", "path": "/api/v1/action_invocations/{last}/output"},
+    {"name": "invoke_zero", "method": "POST", "path": "/api/v1/http_probe/zero", "wait": true},
+    {"name": "zero_output", "method": "GET", "path": "/api/v1/action_invocations/{last}/output"},
+    {"name": "list_action", "method": "GET", "path": "/api/v1/counter/increment_counter"},
+    {"name": "query_all_actions", "method": "GET", "path": "/api/v1/counter/actions"},
+    {"name": "list_all", "method": "GET", "path": "/api/v1/action_invocations"},
+    {"name": "invocations_slash", "method": "GET", "path": "/api/v1/action_invocations/"},
+    {"name": "unprefixed_invocations", "method": "GET", "path": "/action_invocations"},
+    {"name": "unprefixed_invocation", "method": "GET", "path": "/action_invocations/{last}"},
+    {"name": "bad_id", "method": "GET", "path": "/api/v1/action_invocations/bad-id"},
+    {"name": "cancel_completed", "method": "DELETE", "path": "/api/v1/action_invocations/{last}"},
+    {"name": "host_header", "method": "GET", "path": "/api/v1/things/", "headers": {"Host": "lab-pc.local:8000"}},
+    {"name": "host_header_invocation", "method": "GET", "path": "/api/v1/action_invocations/{last}", "headers": {"Host": "lab-pc.local:8000"}},
+    {"name": "cors_preflight", "method": "OPTIONS", "path": "/api/v1/counter/counter", "headers": {"Origin": "http://example.com", "Access-Control-Request-Method": "GET"}}
+  ]
+}

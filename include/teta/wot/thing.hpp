@@ -27,7 +27,8 @@
 // `t.action<"x", "y">("move_to", &Stage::move_to)`. Parameters of type
 // `ActionCtx&`, `Server` and `Dep<S>` are supplied by the server and aren't
 // named. `t.action("set", &T::set, tw::whole_input)` makes the one parameter
-// the whole input.
+// the whole input. `t.endpoint("GET", "readings.csv", &Logger::readings_csv)`
+// adds an HTTP route outside the Thing Description.
 
 #pragma once
 
@@ -56,6 +57,7 @@
 #include "teta/wot/context.hpp"
 #include "teta/wot/device.hpp"
 #include "teta/wot/event.hpp"
+#include "teta/wot/http/message.hpp"
 #include "teta/wot/property.hpp"
 #include "teta/wot/runtime_shared.hpp"
 #include "teta/wot/td/constraints.hpp"
@@ -245,6 +247,14 @@ template <typename>
 inline constexpr bool is_dep = false;
 template <typename S>
 inline constexpr bool is_dep<Dep<S>> = true;
+
+/// What a custom endpoint may take: the request, or nothing.
+template <typename Args>
+inline constexpr bool endpoint_args = false;
+template <>
+inline constexpr bool endpoint_args<TypeList<>> = true;
+template <>
+inline constexpr bool endpoint_args<TypeList<const http::Request&>> = true;
 
 enum class ParamKind { data, ctx, server, dep };
 
@@ -581,6 +591,47 @@ class ActionOptions : public Described<ActionOptions> {
 /// An event's options.
 class EventOptions : public Described<EventOptions> {};
 
+/// How a custom endpoint is listed in the Thing Description's `links`.
+struct EndpointLink {
+    std::string rel;
+    std::optional<std::string> media_type;
+};
+
+/// What a custom endpoint says about itself.
+struct EndpointMeta {
+    std::optional<std::string> description;
+    std::optional<std::string> name;
+    std::optional<EndpointLink> link;
+};
+
+/// A custom endpoint's options (teta-wot's `Endpoint`).
+class EndpointOptions {
+  public:
+    /// The description, shown in the OpenAPI document.
+    EndpointOptions& description(std::string text) {
+        meta_.description = std::move(text);
+        return *this;
+    }
+    /// The description, from a doc comment.
+    EndpointOptions& doc(std::string text) { return description(std::move(text)); }
+    /// The name its OpenAPI `operationId` is made from (by default its path).
+    EndpointOptions& name(std::string name) {
+        meta_.name = std::move(name);
+        return *this;
+    }
+    /// Lists the endpoint in the TD's `links`, with a relation and a media
+    /// type.
+    EndpointOptions& link(std::string rel, std::optional<std::string> media_type = std::nullopt) {
+        meta_.link = EndpointLink{std::move(rel), std::move(media_type)};
+        return *this;
+    }
+
+    const EndpointMeta& meta() const { return meta_; }
+
+  private:
+    EndpointMeta meta_;
+};
+
 // ---- Action handlers ----------------------------------------------------------------
 
 /// The type-erased operations of one action of one Thing (internal).
@@ -903,6 +954,12 @@ class ThingSpec {
         std::function<void(T&, const std::string& name)> open;
         std::function<void(T&)> close;
     };
+    struct EndpointSlot {
+        std::string method;
+        std::string path;
+        EndpointOptions* options;
+        std::function<http::EndpointHandler(const std::shared_ptr<T>&)> build;
+    };
 
     ThingSpec() : title_(codec::short_name(typeid(T))) {}
     ThingSpec(const ThingSpec&) = delete;
@@ -940,7 +997,7 @@ class ThingSpec {
     /// A data property: a Prop member of the Thing.
     template <typename C, typename V>
         requires std::is_base_of_v<C, T>
-    DataPropertyOptions& property(std::string name, Prop<V> C::*member) {
+    DataPropertyOptions& property(std::string name, Prop<V> C::* member) {
         auto options = keep(std::make_unique<DataPropertyOptions>());
         properties_.push_back(
             {std::move(name), [options] { return options->meta(); }, [] { return false; },
@@ -1010,7 +1067,7 @@ class ThingSpec {
     /// An event: an Event member of the Thing.
     template <typename C, typename V>
         requires std::is_base_of_v<C, T>
-    EventOptions& event(std::string name, Event<V> C::*member) {
+    EventOptions& event(std::string name, Event<V> C::* member) {
         auto options = keep(std::make_unique<EventOptions>());
         std::string event_name = name;
         events_.push_back({std::move(name), options,
@@ -1026,12 +1083,44 @@ class ThingSpec {
     /// `<thing>:<name>`) before the Thing starts and closed after it stops.
     template <typename C, typename D>
         requires std::is_base_of_v<C, T>
-    ThingSpec& device(std::string name, Device<D> C::*member) {
+    ThingSpec& device(std::string name, Device<D> C::* member) {
         devices_.push_back(
             {std::move(name),
              [member](T& thing, const std::string& device_name) { (thing.*member).open(device_name); },
              [member](T& thing) { (thing.*member).close(); }});
         return *this;
+    }
+
+    /// A custom endpoint: an HTTP route at `{thing}/{path}`, outside the
+    /// Thing Description, answered by `handler`: a member function (or a
+    /// function of the Thing) taking the `http::Request` or nothing, and
+    /// returning an `http::Response`. It runs on a worker thread. `method` is
+    /// any method (`GET`, `post`); `path` is relative, such as
+    /// `readings.csv` or `files/latest`.
+    template <typename F>
+        requires detail::FunctionOf<T, F>
+    EndpointOptions& endpoint(std::string method, std::string path, F handler) {
+        using Function = detail::ThingFunction<T, F>;
+        using Args = typename Function::args;
+        static_assert(std::is_same_v<std::remove_cvref_t<typename Function::result>, http::Response>,
+                      "an endpoint returns a tw::http::Response");
+        static_assert(detail::endpoint_args<Args>, "an endpoint takes a const tw::http::Request& or nothing");
+        std::ranges::transform(method, method.begin(), [](char c) {
+            return c >= 'a' && c <= 'z' ? static_cast<char>(c - 'a' + 'A') : c;
+        });
+        auto options = keep(std::make_unique<EndpointOptions>());
+        endpoints_.push_back({std::move(method), std::move(path), options,
+                              [handler](const std::shared_ptr<T>& thing) -> http::EndpointHandler {
+                                  return [thing, handler](const http::Request& request) mutable {
+                                      if constexpr (Args::size == 0) {
+                                          (void)request;
+                                          return detail::invoke_on(handler, *thing);
+                                      } else {
+                                          return detail::invoke_on(handler, *thing, request);
+                                      }
+                                  };
+                              }});
+        return *options;
     }
 
     /// Runs when the server starts, after the Thing's devices are open: a
@@ -1070,6 +1159,7 @@ class ThingSpec {
     std::vector<ActionSlot>& actions() { return actions_; }
     std::vector<EventSlot>& events() { return events_; }
     std::vector<DeviceSlot>& devices() { return devices_; }
+    std::vector<EndpointSlot>& endpoints() { return endpoints_; }
     const std::function<void(T&, ThingCtx&)>& start_hook() const { return on_start_; }
     const std::function<void(T&, ThingCtx&)>& stop_hook() const { return on_stop_; }
     const std::function<json::Value(T&)>& state_function() const { return thing_state_; }
@@ -1129,6 +1219,7 @@ class ThingSpec {
     std::vector<ActionSlot> actions_;
     std::vector<EventSlot> events_;
     std::vector<DeviceSlot> devices_;
+    std::vector<EndpointSlot> endpoints_;
     std::function<void(T&, ThingCtx&)> on_start_;
     std::function<void(T&, ThingCtx&)> on_stop_;
     std::function<json::Value(T&)> thing_state_;

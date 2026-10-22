@@ -17,10 +17,18 @@
 //
 // `tests/json/serde_json_corpus.txt`, written by `serde_json` itself
 // (`conformance/reference-rs`, `json-corpus`), is the specification.
+//
+// `parse` reads JSON as `serde_json::from_slice` does, which is how teta-wot
+// reads request bodies: the same values (`-0` a float, integers beyond 64
+// bits as floats, serde_json's own decimal arithmetic) and the same errors,
+// at the same positions. `tests/http/wire_corpus.jsonl` (`wire-corpus`) is
+// its specification.
 
 #pragma once
 
+#include <cstddef>
 #include <nlohmann/json.hpp>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 
@@ -45,5 +53,35 @@ void append_double(std::string& out, double value);
 
 /// Appends a string as a JSON string literal, as `serde_json` writes it.
 void append_string(std::string& out, std::string_view text);
+
+/// A text `parse` refuses, with serde_json's message and position.
+class ParseError : public std::runtime_error {
+  public:
+    ParseError(std::string message, std::size_t line, std::size_t column);
+
+    /// serde_json's message, without the position (`expected value`).
+    const std::string& message() const { return message_; }
+    /// The 1-based line, and the byte in it (0 before its first byte).
+    std::size_t line() const { return line_; }
+    std::size_t column() const { return column_; }
+
+  private:
+    std::string message_;
+    std::size_t line_;
+    std::size_t column_;
+};
+
+/// Parses a JSON text (any bytes) as `serde_json::from_slice::<Value>`:
+/// positive integers that fit 64 bits are unsigned, negative ones that fit
+/// are signed, and other numbers are doubles (`-0` too); a repeated key
+/// keeps its first place and its last value; nesting stops at 128 levels.
+/// Throws ParseError.
+Value parse(std::string_view text);
+
+/// Where teta-wot locates a parse error in its 422: the character offset of
+/// `line` and `column` in `text`, counting characters of `text` read as UTF-8
+/// (each invalid sequence one character) in the lines before, and bytes in
+/// the line (teta-wot-http's `char_offset`).
+std::size_t character_offset(std::string_view text, std::size_t line, std::size_t column);
 
 }  // namespace teta::wot::json

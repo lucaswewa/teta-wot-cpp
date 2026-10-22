@@ -1,5 +1,6 @@
 // teta-wot-cpp: W3C Web of Things Things over HTTP, with wire-level parity
-// with teta-wot. Applications include this header and link `teta::wot`.
+// with teta-wot. Applications include this header and link `teta::wot`;
+// <teta/wot/drogon.hpp> serves Things from an application's own Drogon.
 
 #pragma once
 
@@ -10,6 +11,8 @@
 #include "teta/wot/context.hpp"
 #include "teta/wot/device.hpp"
 #include "teta/wot/event.hpp"
+#include "teta/wot/http/binding.hpp"
+#include "teta/wot/http/message.hpp"
 #include "teta/wot/invocation.hpp"
 #include "teta/wot/json.hpp"
 #include "teta/wot/lock.hpp"
@@ -25,7 +28,9 @@
 #include "teta/wot/td/describe.hpp"
 #include "teta/wot/td/form.hpp"
 #include "teta/wot/td/thing.hpp"
+#include "teta/wot/testing.hpp"
 #include "teta/wot/thing.hpp"
+#include "teta/wot/thing_server.hpp"
 #include "teta/wot/uuid.hpp"
 #include "teta/wot/validate.hpp"
 #include "teta/wot/version.hpp"

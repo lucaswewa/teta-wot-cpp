@@ -1,0 +1,954 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 5000,
+  "steps": [
+    {
+      "step": {
+        "name": "things",
+        "method": "GET",
+        "path": "/things/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "lamp": "http://testserver/lamp/"
+        },
+        "text": "{\"lamp\":\"http://testserver/lamp/\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/lamp/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "Lamp",
+          "properties": {
+            "brightness": {
+              "description": "Brightness, 0 to 100.",
+              "title": "Brightness, 0 to 100.",
+              "writeOnly": false,
+              "readOnly": false,
+              "unit": "percent",
+              "default": 50,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "forms": [
+                {
+                  "href": "/lamp/brightness",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/lamp/brightness",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/lamp/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            },
+            "is_on": {
+              "description": "Whether the lamp is on.",
+              "title": "Whether the lamp is on.",
+              "writeOnly": false,
+              "readOnly": true,
+              "default": false,
+              "type": "boolean",
+              "forms": [
+                {
+                  "href": "/lamp/is_on",
+                  "op": [
+                    "readproperty"
+                  ]
+                },
+                {
+                  "href": "/lamp/is_on",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/lamp/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "fade": {
+              "description": "Fade to a brightness, one step at a time.",
+              "title": "Fade to a brightness, one step at a time.",
+              "forms": [
+                {
+                  "href": "/lamp/fade",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "fade_input",
+                "type": "object",
+                "properties": {
+                  "to": {
+                    "description": "Target brightness.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  },
+                  "step_seconds": {
+                    "description": "Seconds per step.",
+                    "default": 0.1,
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "to"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "fade_output",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "synchronous": false
+            },
+            "toggle": {
+              "description": "Returns whether it is now on.",
+              "title": "Switch the lamp on or off.",
+              "forms": [
+                {
+                  "href": "/lamp/toggle",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "toggle_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "toggle_output",
+                "type": "boolean"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A dimmable lamp.",
+          "forms": [
+            {
+              "href": "/lamp/properties",
+              "op": [
+                "readallproperties",
+                "writemultipleproperties"
+              ]
+            },
+            {
+              "href": "/lamp/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/lamp/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"Lamp\",\"properties\":{\"brightness\":{\"description\":\"Brightness, 0 to 100.\",\"title\":\"Brightness, 0 to 100.\",\"writeOnly\":false,\"readOnly\":false,\"unit\":\"percent\",\"default\":50,\"type\":\"integer\",\"minimum\":0,\"maximum\":100,\"forms\":[{\"href\":\"/lamp/brightness\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/lamp/brightness\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/lamp/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true},\"is_on\":{\"description\":\"Whether the lamp is on.\",\"title\":\"Whether the lamp is on.\",\"writeOnly\":false,\"readOnly\":true,\"default\":false,\"type\":\"boolean\",\"forms\":[{\"href\":\"/lamp/is_on\",\"op\":[\"readproperty\"]},{\"href\":\"/lamp/is_on\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/lamp/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"fade\":{\"description\":\"Fade to a brightness, one step at a time.\",\"title\":\"Fade to a brightness, one step at a time.\",\"forms\":[{\"href\":\"/lamp/fade\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"fade_input\",\"type\":\"object\",\"properties\":{\"to\":{\"description\":\"Target brightness.\",\"type\":\"integer\",\"minimum\":0,\"maximum\":255},\"step_seconds\":{\"description\":\"Seconds per step.\",\"default\":0.1,\"type\":\"number\"}},\"required\":[\"to\"],\"additionalProperties\":false},\"output\":{\"title\":\"fade_output\",\"type\":\"integer\",\"minimum\":0,\"maximum\":255},\"synchronous\":false},\"toggle\":{\"description\":\"Returns whether it is now on.\",\"title\":\"Switch the lamp on or off.\",\"forms\":[{\"href\":\"/lamp/toggle\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"toggle_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"toggle_output\",\"type\":\"boolean\"},\"synchronous\":false}},\"description\":\"A dimmable lamp.\",\"forms\":[{\"href\":\"/lamp/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/lamp/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/lamp/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "read_brightness",
+        "method": "GET",
+        "path": "/lamp/brightness"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 50,
+        "text": "50"
+      }
+    },
+    {
+      "step": {
+        "name": "write_coerced",
+        "method": "PUT",
+        "path": "/lamp/brightness",
+        "json": "80"
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "write_too_bright",
+        "method": "PUT",
+        "path": "/lamp/brightness",
+        "json": 150
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "less_than_equal",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be less than or equal to 100",
+              "input": 150,
+              "ctx": {
+                "le": 100
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"less_than_equal\",\"loc\":[\"body\"],\"msg\":\"Input should be less than or equal to 100\",\"input\":150,\"ctx\":{\"le\":100}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_is_on",
+        "method": "PUT",
+        "path": "/lamp/is_on",
+        "json": true
+      },
+      "response": {
+        "status": 405,
+        "headers": {
+          "content-type": "application/json",
+          "allow": "GET",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Method Not Allowed"
+        },
+        "text": "{\"detail\":\"Method Not Allowed\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "reset",
+        "method": "POST",
+        "path": "/lamp/brightness/reset"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "toggle",
+        "method": "POST",
+        "path": "/lamp/toggle",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:1>",
+          "action": "/lamp/toggle",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:1>",
+          "action": "/lamp/toggle",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": true,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:1>\",\"action\":\"/lamp/toggle\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":true,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "toggle_output",
+        "method": "GET",
+        "path": "/action_invocations/{last}/output"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": true,
+        "text": "true"
+      }
+    },
+    {
+      "step": {
+        "name": "toggle_list",
+        "method": "GET",
+        "path": "/lamp/toggle"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          {
+            "status": "completed",
+            "id": "<uuid:1>",
+            "action": "/lamp/toggle",
+            "href": "http://testserver/action_invocations/<uuid:1>",
+            "timeStarted": "<naive-datetime>",
+            "timeRequested": "<naive-datetime>",
+            "timeCompleted": "<naive-datetime>",
+            "links": [
+              {
+                "href": "http://testserver/action_invocations/<uuid:1>",
+                "type": null,
+                "rel": "self",
+                "anchor": null
+              },
+              {
+                "href": "http://testserver/action_invocations/<uuid:1>/output",
+                "type": null,
+                "rel": "output",
+                "anchor": null
+              }
+            ]
+          }
+        ],
+        "text": "[{\"status\":\"completed\",\"id\":\"<uuid:1>\",\"action\":\"/lamp/toggle\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}]}]"
+      }
+    },
+    {
+      "step": {
+        "name": "fade_invalid",
+        "method": "POST",
+        "path": "/lamp/fade",
+        "json": {
+          "to": "high"
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "int_parsing",
+              "loc": [
+                "body",
+                "to"
+              ],
+              "msg": "Input should be a valid integer, unable to parse string as an integer",
+              "input": "high"
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"int_parsing\",\"loc\":[\"body\",\"to\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"high\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "fade_unknown_field",
+        "method": "POST",
+        "path": "/lamp/fade",
+        "json": {
+          "to": 60,
+          "speed": 2
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "extra_forbidden",
+              "loc": [
+                "body",
+                "speed"
+              ],
+              "msg": "Extra inputs are not permitted",
+              "input": 2
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"extra_forbidden\",\"loc\":[\"body\",\"speed\"],\"msg\":\"Extra inputs are not permitted\",\"input\":2}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "fade",
+        "method": "POST",
+        "path": "/lamp/fade",
+        "json": {
+          "to": 100
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:2>",
+          "action": "/lamp/fade",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "to": 100,
+            "step_seconds": 0.1
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "fade_running",
+        "method": "GET",
+        "path": "/action_invocations/{last}",
+        "poll": true,
+        "until": [
+          "running"
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "running",
+          "id": "<uuid:2>",
+          "action": "/lamp/fade",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": null,
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "to": 100,
+            "step_seconds": 0.1
+          },
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"running\",\"id\":\"<uuid:2>\",\"action\":\"/lamp/fade\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":null,\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"to\":100,\"step_seconds\":0.1},\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "cancel_fade",
+        "method": "DELETE",
+        "path": "/action_invocations/{last}"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "fade_cancelled",
+        "method": "GET",
+        "path": "/action_invocations/{last}",
+        "poll": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "cancelled",
+          "id": "<uuid:2>",
+          "action": "/lamp/fade",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "to": 100,
+            "step_seconds": 0.1
+          },
+          "output": null,
+          "log": [
+            {
+              "message": "Invocation <uuid:2> was cancelled.",
+              "levelname": "INFO",
+              "levelno": 20,
+              "lineno": "<lineno>",
+              "filename": "<filename>",
+              "created": "<utc-datetime>",
+              "exception_type": null,
+              "traceback": null
+            }
+          ],
+          "error": {
+            "detail": "The action was cancelled.",
+            "type": "https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.InvocationCancelledError",
+            "status": 500,
+            "title": "InvocationCancelledError",
+            "instance": null
+          }
+        },
+        "text": "{\"status\":\"cancelled\",\"id\":\"<uuid:2>\",\"action\":\"/lamp/fade\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"to\":100,\"step_seconds\":0.1},\"output\":null,\"log\":[{\"message\":\"Invocation <uuid:2> was cancelled.\",\"levelname\":\"INFO\",\"levelno\":20,\"lineno\":\"<lineno>\",\"filename\":\"<filename>\",\"created\":\"<utc-datetime>\",\"exception_type\":null,\"traceback\":null}],\"error\":{\"detail\":\"The action was cancelled.\",\"type\":\"https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.InvocationCancelledError\",\"status\":500,\"title\":\"InvocationCancelledError\",\"instance\":null}}"
+      }
+    },
+    {
+      "step": {
+        "name": "cancel_again",
+        "method": "DELETE",
+        "path": "/action_invocations/{last}"
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "The invocation is cancelled and may not be cancelled."
+        },
+        "text": "{\"detail\":\"The invocation is cancelled and may not be cancelled.\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "fade_quickly",
+        "method": "POST",
+        "path": "/lamp/fade",
+        "json": {
+          "to": 52,
+          "step_seconds": 0.01
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:3>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:3>",
+          "action": "/lamp/fade",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "to": 52,
+            "step_seconds": 0.01
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:3>",
+          "action": "/lamp/fade",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "to": 52,
+            "step_seconds": 0.01
+          },
+          "output": 52,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:3>\",\"action\":\"/lamp/fade\",\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:3>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"to\":52,\"step_seconds\":0.01},\"output\":52,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "nil_id",
+        "method": "GET",
+        "path": "/action_invocations/00000000-0000-0000-0000-000000000000"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "No action invocation found with ID <nil-uuid>"
+        },
+        "text": "{\"detail\":\"No action invocation found with ID <nil-uuid>\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "bad_id",
+        "method": "GET",
+        "path": "/action_invocations/not-a-uuid"
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "uuid_parsing",
+              "loc": [
+                "path",
+                "id"
+              ],
+              "msg": "Input should be a valid UUID, invalid character: found `n` at 0",
+              "input": "not-a-uuid",
+              "ctx": {
+                "error": "invalid character: found `n` at 0"
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"uuid_parsing\",\"loc\":[\"path\",\"id\"],\"msg\":\"Input should be a valid UUID, invalid character: found `n` at 0\",\"input\":\"not-a-uuid\",\"ctx\":{\"error\":\"invalid character: found `n` at 0\"}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "delete_property",
+        "method": "DELETE",
+        "path": "/lamp/brightness"
+      },
+      "response": {
+        "status": 405,
+        "headers": {
+          "content-type": "application/json",
+          "allow": "PUT",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Method Not Allowed"
+        },
+        "text": "{\"detail\":\"Method Not Allowed\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "redirect",
+        "method": "GET",
+        "path": "/lamp"
+      },
+      "response": {
+        "status": 307,
+        "headers": {
+          "location": "http://testserver/lamp/",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "preflight",
+        "method": "OPTIONS",
+        "path": "/lamp/brightness",
+        "headers": {
+          "Origin": "http://example.com",
+          "Access-Control-Request-Method": "PUT"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/plain; charset=utf-8",
+          "access-control-allow-origin": "http://example.com",
+          "access-control-allow-credentials": "true",
+          "access-control-allow-methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, QUERY",
+          "access-control-max-age": "600",
+          "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network"
+        },
+        "body": "OK"
+      }
+    },
+    {
+      "step": {
+        "name": "cors_get",
+        "method": "GET",
+        "path": "/lamp/is_on",
+        "headers": {
+          "Origin": "http://example.com"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "access-control-allow-origin": "http://example.com",
+          "access-control-allow-credentials": "true",
+          "vary": "Origin"
+        },
+        "body": true,
+        "text": "true"
+      }
+    }
+  ]
+}
