@@ -3,8 +3,9 @@
 #include <charconv>
 #include <cstdlib>
 #include <format>
-#if defined(__GNUC__) || defined(__clang__)
+#if __has_include(<cxxabi.h>)
 #include <cxxabi.h>
+#define TETA_WOT_ITANIUM_DEMANGLE 1
 #endif
 
 namespace teta::wot {
@@ -222,7 +223,7 @@ std::string one_of(const std::vector<std::string>& names) {
 
 std::string demangled(const std::type_info& type) {
     std::string name = type.name();
-#if defined(__GNUC__) || defined(__clang__)
+#ifdef TETA_WOT_ITANIUM_DEMANGLE
     int status = 0;
     if (char* readable = abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status); readable) {
         name = readable;

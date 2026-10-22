@@ -143,19 +143,21 @@ struct TypeList {
 template <typename F, typename = void>
 struct Signature;
 
-#define TETA_WOT_MEMBER_SIGNATURE(QUALIFIERS)        \
-    template <typename R, typename C, typename... A> \
-    struct Signature<R (C::*)(A...) QUALIFIERS> {    \
-        using result = R;                            \
-        using args = TypeList<A...>;                 \
-        using object = C;                            \
-        static constexpr bool member = true;         \
-    };
-TETA_WOT_MEMBER_SIGNATURE()
-TETA_WOT_MEMBER_SIGNATURE(const)
-TETA_WOT_MEMBER_SIGNATURE(noexcept)
-TETA_WOT_MEMBER_SIGNATURE(const noexcept)
-#undef TETA_WOT_MEMBER_SIGNATURE
+template <typename R, typename C, typename... A>
+struct MemberSignature {
+    using result = R;
+    using args = TypeList<A...>;
+    using object = C;
+    static constexpr bool member = true;
+};
+template <typename R, typename C, typename... A>
+struct Signature<R (C::*)(A...)> : MemberSignature<R, C, A...> {};
+template <typename R, typename C, typename... A>
+struct Signature<R (C::*)(A...) const> : MemberSignature<R, C, A...> {};
+template <typename R, typename C, typename... A>
+struct Signature<R (C::*)(A...) noexcept> : MemberSignature<R, C, A...> {};
+template <typename R, typename C, typename... A>
+struct Signature<R (C::*)(A...) const noexcept> : MemberSignature<R, C, A...> {};
 
 template <typename R, typename... A>
 struct Signature<R (*)(A...)> {
@@ -169,19 +171,21 @@ struct Signature<R (*)(A...) noexcept> : Signature<R (*)(A...)> {};
 
 template <typename Call>
 struct CallOperator;
-#define TETA_WOT_CALL_SIGNATURE(QUALIFIERS)          \
-    template <typename R, typename C, typename... A> \
-    struct CallOperator<R (C::*)(A...) QUALIFIERS> { \
-        using result = R;                            \
-        using args = TypeList<A...>;                 \
-        using object = void;                         \
-        static constexpr bool member = false;        \
-    };
-TETA_WOT_CALL_SIGNATURE()
-TETA_WOT_CALL_SIGNATURE(const)
-TETA_WOT_CALL_SIGNATURE(noexcept)
-TETA_WOT_CALL_SIGNATURE(const noexcept)
-#undef TETA_WOT_CALL_SIGNATURE
+template <typename R, typename... A>
+struct FunctorSignature {
+    using result = R;
+    using args = TypeList<A...>;
+    using object = void;
+    static constexpr bool member = false;
+};
+template <typename R, typename C, typename... A>
+struct CallOperator<R (C::*)(A...)> : FunctorSignature<R, A...> {};
+template <typename R, typename C, typename... A>
+struct CallOperator<R (C::*)(A...) const> : FunctorSignature<R, A...> {};
+template <typename R, typename C, typename... A>
+struct CallOperator<R (C::*)(A...) noexcept> : FunctorSignature<R, A...> {};
+template <typename R, typename C, typename... A>
+struct CallOperator<R (C::*)(A...) const noexcept> : FunctorSignature<R, A...> {};
 
 template <typename F>
 struct Signature<F, std::void_t<decltype(&F::operator())>> : CallOperator<decltype(&F::operator())> {};
