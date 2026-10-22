@@ -22,5 +22,10 @@ Each example teaches one concept with the public API only. Run without arguments
 | [`api-prefix`](api-prefix/README.md) | 4 | Serving under `/api/v1` |
 | [`custom-endpoint`](custom-endpoint/README.md) | 4 | Routes outside the TD |
 | [`drogon-integration`](drogon-integration/README.md) | 4 | Serving Things inside an application that already uses Drogon |
+| [`thing-slots`](thing-slots/README.md) | 5 | Composing Things: slots, interfaces, `thing_slots` |
+| [`dependency-injection`](dependency-injection/README.md) | 5 | Shared services as `Dep<S>`, and the `Server` |
+| [`settings`](settings/README.md) | 5 | Properties saved to disk, files interchangeable with teta-wot's |
+| [`config-and-cli`](config-and-cli/README.md) | 5 | A registry, configuration files, the command line, the fallback server |
+| [`graceful-shutdown`](graceful-shutdown/README.md) | 5 | Cancelling, stopping and closing devices in order |
 
 Add an example with `teta_wot_add_example(<name> SOURCES main.cpp)` in `examples/<name>/CMakeLists.txt`, a `README.md` with **Concept**, **Technologies**, how to run it and what to look for, and a line in `examples/CMakeLists.txt` and here.

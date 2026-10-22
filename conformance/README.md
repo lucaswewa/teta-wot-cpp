@@ -11,7 +11,8 @@ How teta-wot-cpp is held to wire-level parity with [teta-wot v0.1.0](https://git
 | `reference-rs/src/bin/wire_corpus.rs` | `wire-corpus`: request bodies through `serde_json::from_slice` and path IDs through `Uuid::parse_str`, as teta-wot reads them, written to `tests/http/wire_corpus.jsonl` for the C++ body parser and ID parser. |
 | `reference-rs/src/bin/validation_corpus.rs` | `validation-corpus`: teta-wot's validator run over schemas (primitives, bounds, patterns, arrays, tuples, models, maps, unions, literals, structs and enums) and inputs, each result written to `tests/validate/validation_corpus.jsonl` for the C++ validator's replay. |
 | `twins/` | The twins as C++ Things (`teta_wot_twins`, defined with `ThingSpec`), registered under the reference's class names, for the C++ twin server and the tests that compare them with the reference: their TDs, and every HTTP fixture in-process (`tests/http/fixtures_test.cpp`). |
-| `twin-server-cpp/` | The C++ twin server (`twin-server`): the twins with teta-wot's command line, for `run.py`. CTest runs `run.py check` against it (`conformance.http`). |
+| `twin-server-cpp/` | The C++ twin server (`twin-server`): the twins' registry with teta-wot-cpp's command line (`tw::cli::serve_from_cli`), for `run.py`. CTest runs `run.py check` against it (`conformance.http`, `conformance.cli`). |
+| `scenarios/cli/`, `fixtures/cli/` | The command line: arguments, configurations, exit codes, output and the fallback server (`run.py --cli`). |
 | `run.py` | The harness: `capture`, `check` and `diff` (see its docstring). Python 3, standard library only. |
 
 ## The twins
@@ -43,6 +44,10 @@ They are ported from the `wot` repository's `conformance/twin-server` to teta-wo
 | `locked` | The global lock: writes, resets and invocations while an action holds it, and after |
 | `prefixed` | An API prefix (`/api/v1`): every route and URL under it |
 | `wot` | The `wot` profile's answers: 204s, problems, `ActionStatus` |
+| `settings` | Settings files: none before a change, every kind of setting saved (numbers, Unicode, escapes, maps, structs, optionals, a functional setting), refused writes, several at once, resets, loading after restarts, a hand-edited file's warnings, a list, broken JSON, an empty object |
+| `settings-load` | A server started with a settings file already there (as teta-wot writes it): loaded, not rewritten by loading, rewritten identically by the next save; no file for a Thing without settings |
+
+Command-line scenarios (`scenarios/cli/`, run with `--cli`) run the server's command line and record its exit code and output (log lines aside), and, for those that serve, a scripted session: `help`, `unknown-argument`, `missing-value`, `invalid-port`, `repeated-argument`, `no-configuration`, `missing-file`, `both-configurations`, `invalid-json`, `not-an-object`, `invalid-configuration` (every kind of problem at once), `unknown-class`, `invalid-kwargs`, `args-and-kwargs`, `startup-failure`, `startup-failure-fallback` and `configuration-fallback` (the fallback page, its redirects and CORS), `serve`, `serve-json`, `port-in-use` and `port-in-use-fallback`.
 
 Example scenarios (`scenarios/examples/`, run with `--examples`) compare an example served with `--serve` with its Rust original: its TD and a scripted session. Their fixtures (`fixtures/examples/`) are captured from teta-wot v0.1.0's examples, built from its repository (`cargo build --release -p <example>`); CTest checks the C++ examples against them (`conformance.examples`).
 
@@ -62,7 +67,9 @@ cd conformance/reference-rs && cargo build --release --locked && cd ../..
 python3 conformance/run.py capture --server conformance/reference-rs/target/release/reference-server
 python3 conformance/run.py check --server <a server>
 python3 conformance/run.py diff --server conformance/reference-rs/target/release/reference-server --server <a server>
-python3 conformance/run.py check --server build/<preset>/conformance/twin-server-cpp/twin-server counter validation default locked prefixed wot
+python3 conformance/run.py check --server build/<preset>/conformance/twin-server-cpp/twin-server counter validation default locked prefixed wot settings settings-load
+python3 conformance/run.py capture --cli --server conformance/reference-rs/target/release/reference-server
+python3 conformance/run.py check --cli --server build/<preset>/conformance/twin-server-cpp/twin-server
 python3 conformance/run.py capture --examples --server '<teta-wot>/target/release/{name}'
 python3 conformance/run.py check --examples --server 'build/<preset>/examples/{name}/example-{name}'
 ```

@@ -296,6 +296,8 @@ Ports `teta-wot-http` (routes, dispatcher, the `tetathing` renderer, errors, COR
 
 ### Phase 5: Composition, settings, configuration, lifecycle (M–L)
 
+**Done** (2026-10-22): see the [Phase 5 note](notes/phase-05-composition.md). The settings fixtures are `fixtures/http/settings.json` and `settings-load.json`; the command line's are `fixtures/cli/`.
+
 Slots and interfaces, services and `Dep<S>`, settings persistence, the configuration model and registry, the command line and exit codes, the fallback server, start order and the shutdown sequence (Ctrl-C/console events on Windows, SIGINT/SIGTERM on Linux).
 
 **Gate:** `fixtures/settings/settings.json` byte-identical; settings files interchangeable with the Rust server's both ways; the command line's exit codes and the fallback page equal to the reference's; `thing-slots`, `dependency-injection`, `settings`, `config-and-cli`, `graceful-shutdown` examples.

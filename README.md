@@ -8,7 +8,7 @@ A C++ library for serving W3C Web of Things *Things* over HTTP, with functional 
 - [Architecture and implementation plan](docs/PLAN.md) (approved)
 - [Documentation index](docs/README.md): decision records, phase notes, the wire contract, the guide
 
-**Status:** Phases 0 to 4 are done: the build skeleton, the parity harness against the Rust reference, `teta::wot-json`, `teta::wot-td` (the TD model, DataSchemas from C++ types, W3C validation), `teta::wot-core` (the validator, and the runtime on threads: Things defined with `ThingSpec`, properties, actions and invocations, cancellation, the global lock, invocation logs, events and device actors), and the first end-to-end milestone: `teta::wot-http` (the HTTP binding, answering as teta-wot does byte for byte), its Drogon transport, `ThingServer` and the in-process `TestClient`. See the [phase notes](docs/notes/README.md).
+**Status:** Phases 0 to 5 are done: the build skeleton, the parity harness against the Rust reference, `teta::wot-json`, `teta::wot-td` (the TD model, DataSchemas from C++ types, W3C validation), `teta::wot-core` (the validator, and the runtime on threads: Things defined with `ThingSpec`, properties, actions and invocations, cancellation, the global lock, invocation logs, events and device actors), the first end-to-end milestone: `teta::wot-http` (the HTTP binding, answering as teta-wot does byte for byte), its Drogon transport, `ThingServer` and the in-process `TestClient`; and composition: settings files interchangeable with teta-wot's, slots and interfaces, services, configuration files, the registry, teta-wot's command line and its fallback server. See the [phase notes](docs/notes/README.md).
 
 ## Building
 
