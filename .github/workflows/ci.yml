@@ -22,8 +22,6 @@ jobs:
           # - {os: ubuntu-24.04, preset: linux-clang-asan}
           # - {os: ubuntu-24.04, preset: linux-clang-tsan}
     env:
-      VCPKG_ROOT: ${{ github.workspace }}/../vcpkg
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/../vcpkg-cache
       # The runtime's threads (Phase 3) under ThreadSanitizer; see the file
       # for why libstdc++'s exception_ptr needs a suppression.
       TSAN_OPTIONS: suppressions=${{ github.workspace }}/tests/tsan.supp halt_on_error=1
@@ -32,6 +30,16 @@ jobs:
       - name: Linux packages
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - name: Developer command prompt
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+      # After the developer prompt, which sets VCPKG_ROOT to Visual Studio's
+      # own vcpkg. Absolute paths: actions/cache refuses paths with `..`.
+      - name: vcpkg paths
+        shell: bash
+        run: |
+          echo "VCPKG_ROOT=$RUNNER_TEMP/vcpkg" >> "$GITHUB_ENV"
+          echo "VCPKG_DEFAULT_BINARY_CACHE=$RUNNER_TEMP/vcpkg-cache" >> "$GITHUB_ENV"
       # vcpkg at the baseline in vcpkg-configuration.json.
       - name: vcpkg
         shell: bash
@@ -50,9 +58,6 @@ jobs:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
           key: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
           restore-keys: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-
-      - name: Developer command prompt
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
       - name: Configure
         run: cmake --preset ${{ matrix.preset }}
       # Saved once the dependencies are built, even if the build or the tests
