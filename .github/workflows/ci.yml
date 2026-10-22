@@ -68,7 +68,16 @@ jobs:
         run: |
           d=build/${{ matrix.preset }}/vcpkg_installed
           for f in $(find "$d" -name vcpkg_abi_info.txt | sort); do echo "== $f"; cat "$f"; done
-          echo "== cache"; find "$VCPKG_DEFAULT_BINARY_CACHE" -type f | sort
+          echo "== cache"
+          python3 - "$VCPKG_DEFAULT_BINARY_CACHE" <<'PY'
+          import pathlib, sys, zipfile
+          for z in sorted(pathlib.Path(sys.argv[1]).rglob("*.zip")):
+              with zipfile.ZipFile(z) as f:
+                  for n in f.namelist():
+                      if n.endswith("vcpkg_abi_info.txt"):
+                          print("== cached", z.name, n)
+                          print(f.read(n).decode())
+          PY
       # Saved once the dependencies are built, even if the build or the tests
       # fail later, so the next run doesn't build them again.
       - name: Save the vcpkg binary cache
