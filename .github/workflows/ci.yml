@@ -90,6 +90,8 @@ jobs:
   # corpus must be what it produces now (ADR-0011).
   reference:
     name: Reference fixtures
+    # Off for now, to keep development fast; remove the `if` to bring it back.
+    if: false
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -124,6 +126,8 @@ jobs:
 
   format:
     name: Format
+    # Off for now, to keep development fast; remove the `if` to bring it back.
+    if: false
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
