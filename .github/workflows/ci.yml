@@ -40,6 +40,7 @@ jobs:
         run: |
           echo "VCPKG_ROOT=$RUNNER_TEMP/vcpkg" >> "$GITHUB_ENV"
           echo "VCPKG_DEFAULT_BINARY_CACHE=$RUNNER_TEMP/vcpkg-cache" >> "$GITHUB_ENV"
+          echo "RUNNER_IMAGE=${ImageOS:-unknown}-${ImageVersion:-unknown}" >> "$GITHUB_ENV"
       # vcpkg at the baseline in vcpkg-configuration.json.
       - name: vcpkg
         shell: bash
@@ -51,33 +52,18 @@ jobs:
           git -C "$VCPKG_ROOT" checkout FETCH_HEAD
           mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
           if [ "$RUNNER_OS" = Windows ]; then "$VCPKG_ROOT/bootstrap-vcpkg.bat" -disableMetrics; else "$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics; fi
+      # Keyed by the runner image too: a new image brings a new compiler,
+      # CMake or PowerShell, which changes every package's ABI hash. The
+      # older entry is still restored, for whatever it still matches.
       - name: Restore the vcpkg binary cache
         id: vcpkg-cache
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+          key: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-${{ env.RUNNER_IMAGE }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
           restore-keys: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-
       - name: Configure
         run: cmake --preset ${{ matrix.preset }}
-      # TEMPORARY: what goes into the vcpkg ABI hashes, to find why the
-      # binary cache misses between runs.
-      - name: vcpkg ABI inputs
-        if: always()
-        shell: bash
-        run: |
-          d=build/${{ matrix.preset }}/vcpkg_installed
-          for f in $(find "$d" -name vcpkg_abi_info.txt | sort); do echo "== $f"; cat "$f"; done
-          echo "== cache"
-          python3 - "$VCPKG_DEFAULT_BINARY_CACHE" <<'PY'
-          import pathlib, sys, zipfile
-          for z in sorted(pathlib.Path(sys.argv[1]).rglob("*.zip")):
-              with zipfile.ZipFile(z) as f:
-                  for n in f.namelist():
-                      if n.endswith("vcpkg_abi_info.txt"):
-                          print("== cached", z.name, n)
-                          print(f.read(n).decode())
-          PY
       # Saved once the dependencies are built, even if the build or the tests
       # fail later, so the next run doesn't build them again.
       - name: Save the vcpkg binary cache
@@ -85,7 +71,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+          key: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-${{ env.RUNNER_IMAGE }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
       - name: Test (unit tests and examples)
