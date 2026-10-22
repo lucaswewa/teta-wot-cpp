@@ -29,7 +29,11 @@ class SerialInstrument {
     explicit SerialInstrument(std::shared_ptr<std::atomic<bool>> busy) : busy_until_abort(std::move(busy)) {}
 
     std::string query(const std::string& command) {
-        std::this_thread::sleep_for(2ms);
+        // 2 ms of work. Not `sleep_for`: Windows sleeps in steps of about
+        // 15 ms, which would make 20 queued commands outlast the timeout.
+        const auto until = std::chrono::steady_clock::now() + 2ms;
+        while (std::chrono::steady_clock::now() < until) {
+        }
         transcript.push_back(command);
         return command + ": ok (#" + std::to_string(transcript.size()) + ")";
     }
@@ -61,14 +65,14 @@ void run() {
     device.open("example:serial");
 
     // 1. Many callers: the mailbox serialises them.
-    std::vector<std::thread> callers;
+    std::vector<std::future<std::string>> callers;
     for (int i = 0; i < 20; ++i) {
-        callers.emplace_back([&device, i] {
-            device.call([i](SerialInstrument& d) { return d.query("READ? " + std::to_string(i)); });
-        });
+        callers.push_back(std::async(std::launch::async, [&device, i] {
+            return device.call([i](SerialInstrument& d) { return d.query("READ? " + std::to_string(i)); });
+        }));
     }
     for (auto& caller : callers) {
-        caller.join();
+        caller.get();  // rethrows a caller's error here
     }
     const auto count = device.call([](SerialInstrument& d) { return d.transcript.size(); });
     std::cout << "20 concurrent callers → " << count << " commands, one at a time\n";
