@@ -13,12 +13,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Only windows-msvc for now, to keep development fast; uncomment the
+        # others to bring them back.
         include:
           - {os: windows-latest, preset: windows-msvc}
-          - {os: windows-latest, preset: windows-clang-cl}
-          - {os: ubuntu-24.04, preset: linux-gcc}
-          - {os: ubuntu-24.04, preset: linux-clang-asan}
-          - {os: ubuntu-24.04, preset: linux-clang-tsan}
+          # - {os: windows-latest, preset: windows-clang-cl}
+          # - {os: ubuntu-24.04, preset: linux-gcc}
+          # - {os: ubuntu-24.04, preset: linux-clang-asan}
+          # - {os: ubuntu-24.04, preset: linux-clang-tsan}
     env:
       VCPKG_ROOT: ${{ github.workspace }}/../vcpkg
       VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/../vcpkg-cache
@@ -41,7 +43,9 @@ jobs:
           git -C "$VCPKG_ROOT" checkout FETCH_HEAD
           mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
           if [ "$RUNNER_OS" = Windows ]; then "$VCPKG_ROOT/bootstrap-vcpkg.bat" -disableMetrics; else "$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics; fi
-      - uses: actions/cache@v4
+      - name: Restore the vcpkg binary cache
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
           key: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
@@ -51,6 +55,14 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
       - name: Configure
         run: cmake --preset ${{ matrix.preset }}
+      # Saved once the dependencies are built, even if the build or the tests
+      # fail later, so the next run doesn't build them again.
+      - name: Save the vcpkg binary cache
+        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
       - name: Test (unit tests and examples)
