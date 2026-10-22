@@ -60,6 +60,15 @@ jobs:
           restore-keys: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-
       - name: Configure
         run: cmake --preset ${{ matrix.preset }}
+      # TEMPORARY: what goes into the vcpkg ABI hashes, to find why the
+      # binary cache misses between runs.
+      - name: vcpkg ABI inputs
+        if: always()
+        shell: bash
+        run: |
+          d=build/${{ matrix.preset }}/vcpkg_installed
+          for f in $(find "$d" -name vcpkg_abi_info.txt | sort); do echo "== $f"; cat "$f"; done
+          echo "== cache"; find "$VCPKG_DEFAULT_BINARY_CACHE" -type f | sort
       # Saved once the dependencies are built, even if the build or the tests
       # fail later, so the next run doesn't build them again.
       - name: Save the vcpkg binary cache
