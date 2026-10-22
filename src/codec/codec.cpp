@@ -1,6 +1,11 @@
 #include "teta/wot/codec.hpp"
 
 #include <charconv>
+#include <cstdlib>
+#include <format>
+#if defined(__GNUC__) || defined(__clang__)
+#include <cxxabi.h>
+#endif
 
 namespace teta::wot {
 
@@ -147,5 +152,97 @@ json::Value Codec<NoInput>::json_schema() {
                              {{"type", "null"}}})},
     };
 }
+
+}  // namespace teta::wot
+
+namespace teta::wot {
+
+NoInput Codec<NoInput>::decode(const json::Value& value) {
+    if (value.is_null()) {
+        return {false};
+    }
+    if (value.is_object()) {
+        if (!value.empty()) {
+            throw DecodeError("unknown field `" + value.begin().key() + "`, there are no fields");
+        }
+        return {true};
+    }
+    codec::invalid_type(value, "null or an empty object");
+}
+
+namespace codec {
+
+std::string unexpected(const json::Value& value) {
+    switch (value.type()) {
+        case json::Value::value_t::null:
+            return "unit value";
+        case json::Value::value_t::boolean:
+            return value.get<bool>() ? "boolean `true`" : "boolean `false`";
+        case json::Value::value_t::number_unsigned:
+            return "integer `" + std::to_string(value.get<std::uint64_t>()) + "`";
+        case json::Value::value_t::number_integer:
+            return "integer `" + std::to_string(value.get<std::int64_t>()) + "`";
+        case json::Value::value_t::number_float: {
+            std::string text = std::format("{}", value.get<double>());
+            if (text.find_first_of(".eEna") == std::string::npos) {
+                text += ".0";
+            }
+            return "floating point `" + text + "`";
+        }
+        case json::Value::value_t::string:
+            return "string " + json::dump(value);
+        case json::Value::value_t::array:
+            return "sequence";
+        default:
+            return "map";
+    }
+}
+
+void invalid_type(const json::Value& value, std::string_view expected) {
+    throw DecodeError("invalid type: " + unexpected(value) + ", expected " + std::string(expected));
+}
+
+std::string one_of(const std::vector<std::string>& names) {
+    switch (names.size()) {
+        case 0:
+            return "there are none";
+        case 1:
+            return "expected `" + names[0] + "`";
+        case 2:
+            return "expected `" + names[0] + "` or `" + names[1] + "`";
+        default:
+            break;
+    }
+    std::string out = "expected one of ";
+    for (std::size_t i = 0; i < names.size(); ++i) {
+        out += (i ? ", `" : "`") + names[i] + "`";
+    }
+    return out;
+}
+
+std::string short_name(const std::type_info& type) {
+    std::string name = type.name();
+#if defined(__GNUC__) || defined(__clang__)
+    int status = 0;
+    if (char* demangled = abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status); demangled) {
+        name = demangled;
+        std::free(demangled);
+    }
+#endif
+    for (std::string_view prefix : {"struct ", "class ", "enum ", "union "}) {
+        if (name.starts_with(prefix)) {
+            name.erase(0, prefix.size());
+        }
+    }
+    if (const auto angle = name.find('<'); angle != std::string::npos) {
+        name.erase(angle);
+    }
+    if (const auto colon = name.rfind("::"); colon != std::string::npos) {
+        name.erase(0, colon + 2);
+    }
+    return name;
+}
+
+}  // namespace codec
 
 }  // namespace teta::wot

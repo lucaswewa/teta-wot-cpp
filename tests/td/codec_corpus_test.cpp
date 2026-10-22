@@ -284,4 +284,48 @@ TEST(Codec, EncodesAsSerde) {
     EXPECT_EQ(tw::json::dump(tw::encode(tw::NoInput{})), "null");
 }
 
+TEST(Codec, DecodesAsSerde) {
+    using tw::decode;
+    EXPECT_EQ(decode<Position>(Value::parse(R"({"x":1,"y":2})")).z, 0);
+    EXPECT_EQ(decode<Waypoint>(tw::encode(Waypoint{"a", {1, 2, 3}, Position{4, 5, 6}})).fallback->z, 6);
+    EXPECT_EQ(decode<Mode>("slow"), Mode::slow);
+    EXPECT_EQ((decode<std::tuple<std::int64_t, std::string>>(Value::parse(R"([1,"a"])"))),
+              (std::tuple<std::int64_t, std::string>{1, "a"}));
+    EXPECT_EQ((decode<std::array<std::int64_t, 2>>(Value::parse("[1,2]"))),
+              (std::array<std::int64_t, 2>{1, 2}));
+    EXPECT_EQ((decode<std::map<std::string, double>>(Value::parse(R"({"a":1})")).at("a")), 1.0);
+    EXPECT_EQ(decode<std::optional<std::int64_t>>(nullptr), std::nullopt);
+    EXPECT_EQ(decode<double>(2), 2.0);
+    EXPECT_EQ(decode<tw::NoInput>(Value::object()), tw::NoInput{true});
+    EXPECT_EQ(decode<tw::NoInput>(nullptr), tw::NoInput{false});
+    EXPECT_EQ(decode<std::uint8_t>(255), 255);
+}
+
+TEST(Codec, DecodeErrorsAreSerdes) {
+    auto message = [](auto decode) {
+        try {
+            decode();
+        } catch (const tw::DecodeError& error) {
+            return std::string(error.what());
+        }
+        return std::string("decoded");
+    };
+    EXPECT_EQ(message([] { tw::decode<std::int64_t>("x"); }), R"(invalid type: string "x", expected i64)");
+    EXPECT_EQ(message([] { tw::decode<std::int64_t>(1.5); }),
+              "invalid type: floating point `1.5`, expected i64");
+    EXPECT_EQ(message([] { tw::decode<std::uint8_t>(300); }), "invalid value: integer `300`, expected u8");
+    EXPECT_EQ(message([] { tw::decode<bool>(nullptr); }), "invalid type: unit value, expected a boolean");
+    EXPECT_EQ(message([] { tw::decode<Position>(Value::parse(R"({"x":1})")); }), "missing field `y`");
+    EXPECT_EQ(message([] { tw::decode<Documented>(Value::parse(R"({"count":1,"w":2})")); }),
+              "unknown field `w`, expected one of `count`, `label`, `level`, `flags`");
+    EXPECT_EQ(message([] { tw::decode<Mode>("medium"); }),
+              "unknown variant `medium`, expected `fast` or `slow`");
+    EXPECT_EQ(message([] { tw::decode<std::pair<std::uint8_t, std::uint8_t>>(Value::parse("[1]")); }),
+              "invalid length 1, expected a tuple of size 2");
+    EXPECT_EQ(message([] { tw::decode<Position>(Value::array()); }),
+              "invalid type: sequence, expected struct Position");
+    EXPECT_EQ(message([] { tw::decode<tw::NoInput>(Value::parse(R"({"a":1})")); }),
+              "unknown field `a`, there are no fields");
+}
+
 }  // namespace

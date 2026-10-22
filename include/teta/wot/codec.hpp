@@ -9,7 +9,9 @@
 // - `static constexpr bool referenced`: whether schemars would refer to the
 //   schema (`$ref`) rather than inline it, which changes how an optional is
 //   described (structs and enums are referenced);
-// - `static json::Value encode(const T&)`: the value as serde writes it.
+// - `static json::Value encode(const T&)`: the value as serde writes it;
+// - `static T decode(const json::Value&)`: the value from JSON, as serde
+//   reads it (for properties and action inputs; throws DecodeError).
 //
 // Built in: `bool`, integers, `float` and `double`, `std::string`,
 // `std::monostate` (Rust's `()`), `json::Value` (any value),
@@ -63,6 +65,19 @@ concept Encodable = requires(const T& value) {
     { Codec<T>::referenced } -> std::convertible_to<bool>;
 };
 
+/// Types whose codec can also read them from JSON.
+template <typename T>
+concept Decodable = Encodable<T> && requires(const json::Value& value) {
+    { Codec<T>::decode(value) } -> std::same_as<T>;
+};
+
+/// A JSON value doesn't fit a C++ type. The message is serde's for the same
+/// mismatch, such as "invalid type: string \"x\", expected i64".
+class DecodeError : public std::runtime_error {
+  public:
+    using std::runtime_error::runtime_error;
+};
+
 namespace codec {
 
 /// The schema being generated on this thread, so that a struct that contains
@@ -112,6 +127,12 @@ json::Value encode(const T& value) {
     return Codec<T>::encode(value);
 }
 
+/// A value from JSON, as serde reads it; throws DecodeError.
+template <Decodable T>
+T decode(const json::Value& value) {
+    return Codec<T>::decode(value);
+}
+
 // ---- Schema helpers -------------------------------------------------------------
 
 namespace codec {
@@ -137,6 +158,20 @@ struct Field {
 /// The JSON Schema schemars makes for a struct with these fields.
 json::Value object_schema(const std::vector<Field>& fields, const std::optional<std::string>& description,
                           bool deny_unknown_fields);
+
+/// How serde names a JSON value it didn't expect: "string \"x\"",
+/// "integer `5`", "sequence", ...
+std::string unexpected(const json::Value& value);
+
+/// A type's name without namespaces or template arguments, as Rust's
+/// short type names (`Position` for `geometry::Position`).
+std::string short_name(const std::type_info& type);
+
+/// serde's "invalid type: {unexpected}, expected {expected}".
+[[noreturn]] void invalid_type(const json::Value& value, std::string_view expected);
+
+/// serde's "expected `a`", "expected `a` or `b`", "expected one of `a`, `b`, `c`".
+std::string one_of(const std::vector<std::string>& names);
 
 }  // namespace codec
 
@@ -291,6 +326,12 @@ struct Codec<bool> {
     static constexpr bool referenced = false;
     static json::Value json_schema() { return {{"type", "boolean"}}; }
     static json::Value encode(bool value) { return value; }
+    static bool decode(const json::Value& value) {
+        if (!value.is_boolean()) {
+            codec::invalid_type(value, "a boolean");
+        }
+        return value.get<bool>();
+    }
 };
 
 /// Integers, as schemars describes Rust's of the same size: a `format`
@@ -325,6 +366,26 @@ struct Codec<T> {
             return static_cast<std::uint64_t>(value);
         }
     }
+    static T decode(const json::Value& value) {
+        const std::string expected =
+            std::string(std::is_signed_v<T> ? "i" : "u") + std::to_string(sizeof(T) * 8);
+        if (value.is_number_unsigned()) {
+            const auto n = value.get<std::uint64_t>();
+            if (n > static_cast<std::uint64_t>(std::numeric_limits<T>::max())) {
+                throw DecodeError("invalid value: integer `" + std::to_string(n) + "`, expected " + expected);
+            }
+            return static_cast<T>(n);
+        }
+        if (value.is_number_integer()) {
+            const auto n = value.get<std::int64_t>();
+            if (std::cmp_less(n, std::numeric_limits<T>::min()) ||
+                std::cmp_greater(n, std::numeric_limits<T>::max())) {
+                throw DecodeError("invalid value: integer `" + std::to_string(n) + "`, expected " + expected);
+            }
+            return static_cast<T>(n);
+        }
+        codec::invalid_type(value, expected);
+    }
 };
 
 template <>
@@ -332,6 +393,12 @@ struct Codec<double> {
     static constexpr bool referenced = false;
     static json::Value json_schema() { return {{"type", "number"}, {"format", "double"}}; }
     static json::Value encode(double value) { return value; }
+    static double decode(const json::Value& value) {
+        if (!value.is_number()) {
+            codec::invalid_type(value, "f64");
+        }
+        return value.get<double>();
+    }
 };
 
 template <>
@@ -341,6 +408,12 @@ struct Codec<float> {
     /// The shortest decimal that reads back as the same `float`, as serde
     /// writes an `f32` (so 0.1f is 0.1, not 0.10000000149011612).
     static json::Value encode(float value);
+    static float decode(const json::Value& value) {
+        if (!value.is_number()) {
+            codec::invalid_type(value, "f32");
+        }
+        return static_cast<float>(value.get<double>());
+    }
 };
 
 template <>
@@ -348,6 +421,12 @@ struct Codec<std::string> {
     static constexpr bool referenced = false;
     static json::Value json_schema() { return {{"type", "string"}}; }
     static json::Value encode(const std::string& value) { return value; }
+    static std::string decode(const json::Value& value) {
+        if (!value.is_string()) {
+            codec::invalid_type(value, "a string");
+        }
+        return value.get<std::string>();
+    }
 };
 
 /// Rust's `()`: `null`.
@@ -356,6 +435,12 @@ struct Codec<std::monostate> {
     static constexpr bool referenced = false;
     static json::Value json_schema() { return {{"type", "null"}}; }
     static json::Value encode(std::monostate) { return nullptr; }
+    static std::monostate decode(const json::Value& value) {
+        if (!value.is_null()) {
+            codec::invalid_type(value, "unit");
+        }
+        return {};
+    }
 };
 
 /// Any JSON value (Rust's `serde_json::Value`): the schema `true`.
@@ -364,6 +449,7 @@ struct Codec<json::Value> {
     static constexpr bool referenced = false;
     static json::Value json_schema() { return true; }
     static json::Value encode(const json::Value& value) { return value; }
+    static json::Value decode(const json::Value& value) { return value; }
 };
 
 // ---- Containers ---------------------------------------------------------------------
@@ -377,6 +463,14 @@ struct Codec<std::optional<T>> {
     static json::Value encode(const std::optional<T>& value) {
         return value ? Codec<T>::encode(*value) : json::Value(nullptr);
     }
+    static std::optional<T> decode(const json::Value& value)
+        requires Decodable<T>
+    {
+        if (value.is_null()) {
+            return std::nullopt;
+        }
+        return Codec<T>::decode(value);
+    }
 };
 
 template <Encodable T>
@@ -387,6 +481,19 @@ struct Codec<std::vector<T>> {
         json::Value out = json::Value::array();
         for (const auto& value : values) {
             out.push_back(Codec<T>::encode(value));
+        }
+        return out;
+    }
+    static std::vector<T> decode(const json::Value& value)
+        requires Decodable<T>
+    {
+        if (!value.is_array()) {
+            codec::invalid_type(value, "a sequence");
+        }
+        std::vector<T> out;
+        out.reserve(value.size());
+        for (const auto& item : value) {
+            out.push_back(Codec<T>::decode(item));
         }
         return out;
     }
@@ -402,6 +509,22 @@ struct Codec<std::array<T, N>> {
         json::Value out = json::Value::array();
         for (const auto& value : values) {
             out.push_back(Codec<T>::encode(value));
+        }
+        return out;
+    }
+    static std::array<T, N> decode(const json::Value& value)
+        requires Decodable<T> && std::default_initializable<T>
+    {
+        const std::string expected = "an array of length " + std::to_string(N);
+        if (!value.is_array()) {
+            codec::invalid_type(value, expected);
+        }
+        if (value.size() != N) {
+            throw DecodeError("invalid length " + std::to_string(value.size()) + ", expected " + expected);
+        }
+        std::array<T, N> out{};
+        for (std::size_t i = 0; i < N; ++i) {
+            out[i] = Codec<T>::decode(value[i]);
         }
         return out;
     }
@@ -421,6 +544,20 @@ struct Codec<std::tuple<Ts...>> {
         return std::apply([](const auto&... v) { return json::Value::array({Codec<Ts>::encode(v)...}); },
                           values);
     }
+    static std::tuple<Ts...> decode(const json::Value& value)
+        requires(Decodable<Ts> && ...)
+    {
+        const std::string expected = "a tuple of size " + std::to_string(sizeof...(Ts));
+        if (!value.is_array()) {
+            codec::invalid_type(value, expected);
+        }
+        if (value.size() != sizeof...(Ts)) {
+            throw DecodeError("invalid length " + std::to_string(value.size()) + ", expected " + expected);
+        }
+        return [&]<std::size_t... I>(std::index_sequence<I...>) {
+            return std::tuple<Ts...>(Codec<Ts>::decode(value[I])...);
+        }(std::index_sequence_for<Ts...>{});
+    }
 };
 
 template <Encodable A, Encodable B>
@@ -429,6 +566,12 @@ struct Codec<std::pair<A, B>> {
     static json::Value json_schema() { return Codec<std::tuple<A, B>>::json_schema(); }
     static json::Value encode(const std::pair<A, B>& value) {
         return json::Value::array({Codec<A>::encode(value.first), Codec<B>::encode(value.second)});
+    }
+    static std::pair<A, B> decode(const json::Value& value)
+        requires Decodable<A> && Decodable<B>
+    {
+        auto [a, b] = Codec<std::tuple<A, B>>::decode(value);
+        return {std::move(a), std::move(b)};
     }
 };
 
@@ -445,6 +588,18 @@ struct StringMapCodec {
         json::Value out = json::Value::object();
         for (const auto& [key, value] : map) {
             out[key] = Codec<V>::encode(value);
+        }
+        return out;
+    }
+    static Map decode(const json::Value& value)
+        requires Decodable<V>
+    {
+        if (!value.is_object()) {
+            invalid_type(value, "a map");
+        }
+        Map out;
+        for (const auto& [key, item] : value.items()) {
+            out[key] = Codec<V>::decode(item);
         }
         return out;
     }
@@ -508,6 +663,21 @@ struct Codec<E> {
         }
         throw std::invalid_argument("an enum value with no name");
     }
+    static E decode(const json::Value& value) {
+        if (!value.is_string()) {
+            codec::invalid_type(value, "variant identifier");
+        }
+        const auto name = value.get<std::string>();
+        const auto info = codec::enum_info<E>();
+        std::vector<std::string> names;
+        for (const auto& [v, n] : info.values()) {
+            if (n == name) {
+                return v;
+            }
+            names.push_back(n);
+        }
+        throw DecodeError("unknown variant `" + name + "`, " + codec::one_of(names));
+    }
 };
 
 // ---- Structs ------------------------------------------------------------------------
@@ -547,6 +717,43 @@ struct Codec<T> {
         boost::pfr::for_each_field(value, [&](const auto& member, std::size_t index) {
             using M = std::remove_cvref_t<decltype(member)>;
             out[std::string(names[index])] = Codec<M>::encode(member);
+        });
+        return out;
+    }
+
+    /// Reads the fields by name. A missing field takes its value in a
+    /// default-constructed struct if it is `defaulted` or an optional; an
+    /// unknown member is refused if the struct denies unknown fields.
+    static T decode(const json::Value& value) {
+        constexpr auto names = boost::pfr::names_as_array<T>();
+        const std::string type_name = "struct " + codec::short_name(typeid(T));
+        if (!value.is_object()) {
+            codec::invalid_type(value, type_name);
+        }
+        const auto info = codec::struct_info<T>();
+        if (info.denies_unknown_fields()) {
+            for (const auto& [key, item] : value.items()) {
+                if (std::ranges::find(names, std::string_view(key)) == names.end()) {
+                    std::vector<std::string> expected(names.begin(), names.end());
+                    throw DecodeError("unknown field `" + key + "`, " + codec::one_of(expected));
+                }
+            }
+        }
+        T out{};
+        boost::pfr::for_each_field(out, [&](auto& member, std::size_t index) {
+            using M = std::remove_cvref_t<decltype(member)>;
+            static_assert(Decodable<M>, "every field of a struct read from JSON needs a codec that decodes");
+            const std::string name(names[index]);
+            const auto it = value.find(name);
+            if (it != value.end()) {
+                member = Codec<M>::decode(*it);
+                return;
+            }
+            const auto* field_info = info.find(names[index]);
+            const bool defaulted = field_info && StructInfo<T>::is_defaulted(*field_info);
+            if (!defaulted && !codec::is_optional<M>) {
+                throw DecodeError("missing field `" + name + "`");
+            }
         });
         return out;
     }
@@ -594,6 +801,7 @@ struct Codec<NoInput> {
     static json::Value encode(const NoInput& value) {
         return value.was_object ? json::Value::object() : json::Value(nullptr);
     }
+    static NoInput decode(const json::Value& value);
 };
 
 }  // namespace teta::wot

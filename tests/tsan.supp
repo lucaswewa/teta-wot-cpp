@@ -1,0 +1,9 @@
+# ThreadSanitizer suppressions (TSAN_OPTIONS=suppressions=tests/tsan.supp).
+#
+# libstdc++ isn't built with ThreadSanitizer: the reference count of an
+# exception passed between threads (std::exception_ptr, through a promise or
+# a child invocation) is atomic there, but looks like a plain read and write.
+race:std::__exception_ptr::exception_ptr::_M_release
+race:std::__exception_ptr::exception_ptr::_M_addref
+race:__cxa_rethrow
+race:__cxa_free_exception

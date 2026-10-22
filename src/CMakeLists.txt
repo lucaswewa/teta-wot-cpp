@@ -47,10 +47,24 @@ if(TETA_WOT_TD_VALIDATION)
         PRIVATE nlohmann_json_schema_validator::validator $<BUILD_INTERFACE:teta_wot_warnings>)
 endif()
 
-# teta::wot-core: the runtime (Phase 3); from Phase 2, the validator.
-add_library(teta_wot_core core/validate.cpp)
+# teta::wot-core: the runtime (Phase 3) and the validator (Phase 2).
+add_library(teta_wot_core
+    core/action.cpp
+    core/broker.cpp
+    core/cancel.cpp
+    core/context.cpp
+    core/device.cpp
+    core/invocation.cpp
+    core/lock.cpp
+    core/log.cpp
+    core/pool.cpp
+    core/problem.cpp
+    core/property.cpp
+    core/runtime.cpp
+    core/uuid.cpp
+    core/validate.cpp)
 add_library(teta::wot-core ALIAS teta_wot_core)
 set_target_properties(teta_wot_core PROPERTIES EXPORT_NAME wot-core)
 target_link_libraries(teta_wot_core
-    PUBLIC teta_wot_td
+    PUBLIC teta_wot_td tl::expected Threads::Threads
     PRIVATE re2::re2 $<BUILD_INTERFACE:teta_wot_warnings>)

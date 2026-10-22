@@ -7,7 +7,8 @@
   "dependencies": [
     "boost-pfr",
     "nlohmann-json",
-    "re2"
+    "re2",
+    "tl-expected"
   ],
   "features": {
     "drogon": {
