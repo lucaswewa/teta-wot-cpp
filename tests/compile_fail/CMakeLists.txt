@@ -21,5 +21,6 @@ foreach(entry IN LISTS cases)
     add_test(NAME compile_fail.${name}
         COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target compile_fail_${name} --config $<CONFIG>)
     set_tests_properties(compile_fail.${name} PROPERTIES
-        PASS_REGULAR_EXPRESSION "${expected}" LABELS compile_fail TIMEOUT 300)
+        PASS_REGULAR_EXPRESSION "${expected}" LABELS compile_fail TIMEOUT 300
+        RESOURCE_LOCK teta_wot_build_tree)
 endforeach()

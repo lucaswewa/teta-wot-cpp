@@ -280,6 +280,8 @@ Ports `validate.rs`: lax coercions, error types, `loc`, `msg`, `input`, `ctx`, t
 
 ### Phase 3: Runtime core (L)
 
+**Done** (2026-10-22): see the [Phase 3 note](notes/phase-03-runtime.md). Settings, slots, endpoints, streams and Blobs join the definition API in their phases.
+
 Ports `teta-wot-core`: `Thing`, `ThingSpec` and `ThingDefinition`; `Prop<T>` and functional properties; actions, invocations (state machine, retention, lazy expiry), `ActionCtx`, cancellation with child invocations; global lock; logs; broker; events; device actors; the worker pool.
 
 **Gate:** `teta-wot-core`'s tests (`property`, `runtime`, `cancel`, `device`, `validate`) ported and passing; TSan clean; the compile-fail suite; the `compile-errors`, `property-cells`, `functional-properties`, `cancellable-action`, `global-lock`, `device-actor`, `invocation-logs`, `builder_thing` examples (in-process).

@@ -58,6 +58,15 @@ std::string exception_title(const std::exception& error) {
         return "Error";  // serde_json's error
     }
     std::string name = codec::demangled(type);
+    // MSVC writes `class ` or `struct ` before a type's name.
+    const auto strip_kind = [](std::string& text) {
+        for (std::string_view prefix : {"class ", "struct "}) {
+            if (text.starts_with(prefix)) {
+                text.erase(0, prefix.size());
+            }
+        }
+    };
+    strip_kind(name);
     // `std::throw_with_nested` wraps the exception in a type of its own:
     // the title is the wrapped exception's.
     for (std::string_view wrapper :
@@ -67,12 +76,8 @@ std::string exception_title(const std::exception& error) {
             if (const auto comma = name.find(','); comma != std::string::npos) {
                 name.erase(comma);
             }
+            strip_kind(name);
             break;
-        }
-    }
-    for (std::string_view prefix : {"class ", "struct "}) {
-        if (name.starts_with(prefix)) {
-            name.erase(0, prefix.size());
         }
     }
     if (name.starts_with("std::")) {

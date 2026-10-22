@@ -17,3 +17,11 @@ teta-wot's actions are `async fn` on tokio. C++20 has coroutines, but no standar
 
 - Thing authors write ordinary functions; `blocking` is accepted for parity but changes nothing.
 - Adding coroutine actions later would need the runtime's internal action interface changed; this was weighed and accepted.
+
+## Implementation (Phase 3)
+
+- **The worker pool** (`WorkerPool`, one per runtime) runs invocations and child invocations; it grows when a task finds no idle thread, up to 1024, and keeps its threads. The HTTP binding will post getters, setters and actions to it (Phase 4).
+- **Invocation scopes** are thread-local: the scope (ID, lock owner, cancel token, log) is entered for the duration of the action's call, and code that starts threads carries it with `scope.run(...)`. Device calls run in their caller's scope on the device thread.
+- **Cancellation is teta-wot's resettable flag**, not `std::stop_token`: observing it consumes it (an action may handle it and carry on, and see a later one), which a stop token can't express. `ActionCtx::sleep` is a condition-variable wait on the token. Waiting for a child invocation or the parent's cancellation, whichever comes first, uses the token's callbacks.
+- **Device actors** are a thread per device with a bounded mailbox; the driver lives and dies on its thread.
+- What were `select!`s and paused clocks in teta-wot's tests are condition variables, an injectable clock (`RuntimeBuilder::clock`) and short real timeouts ([Phase 3 note](../notes/phase-03-runtime.md)).

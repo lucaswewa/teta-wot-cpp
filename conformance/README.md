@@ -8,7 +8,8 @@ How teta-wot-cpp is held to wire-level parity with [teta-wot v0.1.0](https://git
 | `scenarios/http/` | Scripted HTTP scenarios: a server configuration and a list of steps. |
 | `fixtures/http/` | The reference's answers to each scenario, normalised. Generated: never edit by hand. |
 | `reference-rs/src/bin/schema_corpus.rs` | `schema-corpus`: for 54 Rust types, schemars' JSON Schema and teta-wot's DataSchema, written to `tests/td/schema_corpus.jsonl` for the C++ conversion and codec tests. |
-| `reference-rs/src/bin/validation_corpus.rs` | `validation-corpus`: teta-wot's validator run over schemas (primitives, bounds, patterns, arrays, tuples, models, maps, unions, literals, the twins' action inputs) and inputs, each result written to `tests/validate/validation_corpus.jsonl` for the C++ validator's replay. |
+| `reference-rs/src/bin/validation_corpus.rs` | `validation-corpus`: teta-wot's validator run over schemas (primitives, bounds, patterns, arrays, tuples, models, maps, unions, literals, structs and enums) and inputs, each result written to `tests/validate/validation_corpus.jsonl` for the C++ validator's replay. |
+| `twins/` | The twins as C++ Things (`teta_wot_twins`, defined with `ThingSpec`), for the C++ twin server (Phase 4) and the tests that compare them with the reference: their TDs, and the `validation` scenario in-process. |
 | `run.py` | The harness: `capture`, `check` and `diff` (see its docstring). Python 3, standard library only. |
 
 ## The twins
@@ -28,7 +29,7 @@ Things served by both implementations under the same registry names, so one conf
 | `twins.blob_probe:BlobProbe` | `BlobProbe` | Blobs in and out, and an MJPEG stream |
 | `twins.ndarray_probe:NDArrayProbe` | `NDArrayProbe` | Arrays as properties and action inputs and outputs |
 
-They are ported from the `wot` repository's `conformance/twin-server` to teta-wot v0.1.0's API (the only changes are the crate paths). The C++ ports join phase by phase: Phase 1 describes all nine (their TDs); their behaviour follows from Phase 3 on.
+They are ported from the `wot` repository's `conformance/twin-server` to teta-wot v0.1.0's API (the only changes are the crate paths). The C++ ports (`twins/`) join phase by phase: since Phase 3, seven are C++ Things whose TDs equal the reference's; `blob_probe` and `ndarray_probe` follow with Blobs (Phase 7) and arrays (Phase 10).
 
 | Scenario | What it captures |
 |---|---|
