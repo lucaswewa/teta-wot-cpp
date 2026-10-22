@@ -184,6 +184,26 @@ class SettingsProbe {
     double exposure_ = 10.0;
 };
 
+/// What happened.
+struct Happening {
+    std::string what;
+    std::int64_t times = 0;
+    static void describe(tw::StructInfo<Happening>& s);
+};
+
+/// A Thing whose actions emit events (teta-wot-cpp's own: none of the `wot`
+/// twins has events).
+class EventProbe {
+  public:
+    tw::Event<Happening> happened;
+    tw::Event<std::int64_t> counted;
+    tw::Prop<std::int64_t> level{0};
+
+    void happen(std::string what);
+    void count(std::int64_t to);
+    static void define(tw::ThingSpec<EventProbe>& t);
+};
+
 /// A Thing with various different properties and actions.
 class ThingWithProperties {
   public:

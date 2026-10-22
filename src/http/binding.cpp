@@ -13,6 +13,7 @@
 #include "sse.hpp"
 #include "teta/wot/log.hpp"
 #include "teta/wot/td/describe.hpp"
+#include "websocket.hpp"
 
 namespace teta::wot::http {
 
@@ -671,6 +672,19 @@ void HttpBinding::handle(Request request, Respond respond) const {
                         detail::add_cors(response, origin);
                         respond(std::move(response));
                     });
+}
+
+bool HttpBinding::is_websocket(const Request& request) const {
+    return detail::websocket_thing(*state_->runtime, state_->options.api_prefix, request) != nullptr;
+}
+
+std::shared_ptr<WebSocketSession> HttpBinding::open_websocket(const Request& request,
+                                                              std::shared_ptr<WebSocketPeer> peer) const {
+    const auto* thing = detail::websocket_thing(*state_->runtime, state_->options.api_prefix, request);
+    if (!thing) {
+        throw std::invalid_argument("`" + request.path + "` isn't a Thing's WebSocket");
+    }
+    return detail::open_session(state_->runtime->broker(), thing->shared_from_this(), std::move(peer));
 }
 
 const std::shared_ptr<Runtime>& HttpBinding::runtime() const {

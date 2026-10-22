@@ -377,6 +377,9 @@ void ThingServer::serve(const std::string& host, std::uint16_t port, std::stop_t
     }
 
     const auto handler = drogon_adapter::mount(binding_, drogon::app());
+    // The application is the server's alone: every WebSocket request that
+    // isn't a Thing's is answered as teta-wot answers its path.
+    drogon_adapter::answer_upgrades(binding_, drogon::app(), [](const http::Request&) { return true; });
     const bool stopped = run_drogon(
         address, stop,
         [&](std::uint16_t bound) {

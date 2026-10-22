@@ -1,0 +1,127 @@
+{
+  "config": {
+    "things": {
+      "ws_probe": "twins.ws_probe:ThingWithProperties",
+      "event_probe": "twins.event_probe:EventProbe"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "name": "property_stream",
+      "events": "/ws_probe/dataprop",
+      "stream": "p"
+    },
+    {
+      "name": "all_properties_stream",
+      "events": "/ws_probe/properties",
+      "stream": "all"
+    },
+    {
+      "name": "write_dataprop",
+      "method": "PUT",
+      "path": "/ws_probe/dataprop",
+      "json": 3
+    },
+    {
+      "name": "increment",
+      "method": "POST",
+      "path": "/ws_probe/increment_dataprop",
+      "wait": true
+    },
+    {
+      "name": "property_events",
+      "stream": "p",
+      "receive": 2
+    },
+    {
+      "name": "all_properties_events",
+      "stream": "all",
+      "receive": 2
+    },
+    {
+      "name": "functional_property_is_read",
+      "method": "GET",
+      "path": "/ws_probe/funcprop",
+      "headers": {
+        "Accept": "text/event-stream"
+      }
+    },
+    {
+      "name": "accept_among_others",
+      "events": "/event_probe/level",
+      "stream": "level",
+      "headers": {
+        "Accept": "application/json, Text/Event-Stream;q=0.5"
+      }
+    },
+    {
+      "name": "write_level",
+      "method": "PUT",
+      "path": "/event_probe/level",
+      "json": 7
+    },
+    {
+      "name": "level_event",
+      "stream": "level",
+      "receive": 1
+    },
+    {
+      "name": "without_accept",
+      "method": "GET",
+      "path": "/event_probe/level"
+    },
+    {
+      "name": "event_stream",
+      "events": "/event_probe/counted",
+      "stream": "counted"
+    },
+    {
+      "name": "all_events_stream",
+      "events": "/event_probe/events",
+      "stream": "events"
+    },
+    {
+      "name": "count",
+      "method": "POST",
+      "path": "/event_probe/count",
+      "json": {
+        "to": 3
+      },
+      "wait": true
+    },
+    {
+      "name": "happen",
+      "method": "POST",
+      "path": "/event_probe/happen",
+      "json": {
+        "what": "a test"
+      },
+      "wait": true
+    },
+    {
+      "name": "counted_events",
+      "stream": "counted",
+      "receive": 3
+    },
+    {
+      "name": "all_events",
+      "stream": "events",
+      "receive": 4
+    },
+    {
+      "name": "shutdown",
+      "restart": true
+    },
+    {
+      "name": "property_stream_ended",
+      "stream": "p",
+      "ended": true
+    },
+    {
+      "name": "event_stream_ended",
+      "stream": "counted",
+      "ended": true
+    }
+  ]
+}

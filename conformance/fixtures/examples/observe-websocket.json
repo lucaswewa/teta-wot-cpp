@@ -1,0 +1,495 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 5000,
+  "steps": [
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/oven/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "Oven",
+          "properties": {
+            "safe_to_open": {
+              "description": "Whether the oven is cool enough to open. Computed when read, so it\ncan't be observed.",
+              "title": "Whether the oven is cool enough to open. Computed when read, so it",
+              "writeOnly": false,
+              "readOnly": true,
+              "type": "boolean",
+              "forms": [
+                {
+                  "href": "/oven/safe_to_open",
+                  "op": [
+                    "readproperty"
+                  ]
+                }
+              ]
+            },
+            "temperature": {
+              "description": "The temperature inside the oven.",
+              "title": "The temperature inside the oven.",
+              "writeOnly": false,
+              "readOnly": true,
+              "unit": "degree Celsius",
+              "default": 20.0,
+              "type": "number",
+              "forms": [
+                {
+                  "href": "/oven/temperature",
+                  "op": [
+                    "readproperty"
+                  ]
+                },
+                {
+                  "href": "/oven/temperature",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/oven/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "heat_to": {
+              "description": "Heat or cool to a temperature, at most 10 degrees per step.",
+              "title": "Heat or cool to a temperature, at most 10 degrees per step.",
+              "forms": [
+                {
+                  "href": "/oven/heat_to",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "heat_to_input",
+                "type": "object",
+                "properties": {
+                  "target": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "target"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "heat_to_output",
+                "type": "number"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A small oven, heated in steps.",
+          "forms": [
+            {
+              "href": "/oven/properties",
+              "op": [
+                "readallproperties"
+              ]
+            },
+            {
+              "href": "/oven/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/oven/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"Oven\",\"properties\":{\"safe_to_open\":{\"description\":\"Whether the oven is cool enough to open. Computed when read, so it\\ncan't be observed.\",\"title\":\"Whether the oven is cool enough to open. Computed when read, so it\",\"writeOnly\":false,\"readOnly\":true,\"type\":\"boolean\",\"forms\":[{\"href\":\"/oven/safe_to_open\",\"op\":[\"readproperty\"]}]},\"temperature\":{\"description\":\"The temperature inside the oven.\",\"title\":\"The temperature inside the oven.\",\"writeOnly\":false,\"readOnly\":true,\"unit\":\"degree Celsius\",\"default\":20.0,\"type\":\"number\",\"forms\":[{\"href\":\"/oven/temperature\",\"op\":[\"readproperty\"]},{\"href\":\"/oven/temperature\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/oven/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"heat_to\":{\"description\":\"Heat or cool to a temperature, at most 10 degrees per step.\",\"title\":\"Heat or cool to a temperature, at most 10 degrees per step.\",\"forms\":[{\"href\":\"/oven/heat_to\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"heat_to_input\",\"type\":\"object\",\"properties\":{\"target\":{\"type\":\"number\"}},\"required\":[\"target\"],\"additionalProperties\":false},\"output\":{\"title\":\"heat_to_output\",\"type\":\"number\"},\"synchronous\":false}},\"description\":\"A small oven, heated in steps.\",\"forms\":[{\"href\":\"/oven/properties\",\"op\":[\"readallproperties\"]},{\"href\":\"/oven/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/oven/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "open",
+        "websocket": "/oven/ws",
+        "socket": "a"
+      },
+      "status": 101
+    },
+    {
+      "step": {
+        "name": "observe_temperature",
+        "socket": "a",
+        "send": {
+          "messageType": "addPropertyObservation",
+          "data": {
+            "temperature": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "observe_heat_to",
+        "socket": "a",
+        "send": {
+          "messageType": "addActionObservation",
+          "data": {
+            "heat_to": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "observe_safe_to_open",
+        "socket": "a",
+        "send": {
+          "messageType": "addPropertyObservation",
+          "data": {
+            "safe_to_open": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "refused",
+        "socket": "a",
+        "receive": 1
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "response",
+            "operation": "observeproperty",
+            "name": "safe_to_open",
+            "error": {
+              "status": "403",
+              "type": "https://w3c.github.io/web-thing-protocol/errors#not-observable",
+              "title": "Not Observable",
+              "detail": "Property 'safe_to_open' is not observable."
+            }
+          },
+          "text": "{\"messageType\":\"response\",\"operation\":\"observeproperty\",\"name\":\"safe_to_open\",\"error\":{\"status\":\"403\",\"type\":\"https://w3c.github.io/web-thing-protocol/errors#not-observable\",\"title\":\"Not Observable\",\"detail\":\"Property 'safe_to_open' is not observable.\"}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "heat_to",
+        "method": "POST",
+        "path": "/oven/heat_to",
+        "json": {
+          "target": 40
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:1>",
+          "action": "/oven/heat_to",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "target": 40.0
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:1>",
+          "action": "/oven/heat_to",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "target": 40.0
+          },
+          "output": 40.0,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:1>\",\"action\":\"/oven/heat_to\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"target\":40.0},\"output\":40.0,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "heating",
+        "socket": "a",
+        "receive": 5
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "heat_to",
+              "status": "pending"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"heat_to\",\"status\":\"pending\"}}"
+        },
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "heat_to",
+              "status": "running"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"heat_to\",\"status\":\"running\"}}"
+        },
+        {
+          "body": {
+            "messageType": "propertyStatus",
+            "data": {
+              "temperature": 30.0
+            }
+          },
+          "text": "{\"messageType\":\"propertyStatus\",\"data\":{\"temperature\":30.0}}"
+        },
+        {
+          "body": {
+            "messageType": "propertyStatus",
+            "data": {
+              "temperature": 40.0
+            }
+          },
+          "text": "{\"messageType\":\"propertyStatus\",\"data\":{\"temperature\":40.0}}"
+        },
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "heat_to",
+              "status": "completed"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"heat_to\",\"status\":\"completed\"}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "safe_to_open",
+        "method": "GET",
+        "path": "/oven/safe_to_open"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": true,
+        "text": "true"
+      }
+    },
+    {
+      "step": {
+        "name": "temperature_stream",
+        "events": "/oven/temperature",
+        "stream": "t"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream",
+          "vary": "Origin",
+          "cache-control": "no-cache"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "cool_down",
+        "method": "POST",
+        "path": "/oven/heat_to",
+        "json": {
+          "target": 30
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:2>",
+          "action": "/oven/heat_to",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "target": 30.0
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:2>",
+          "action": "/oven/heat_to",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "target": 30.0
+          },
+          "output": 30.0,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/oven/heat_to\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"target\":30.0},\"output\":30.0,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "cooling",
+        "stream": "t",
+        "receive": 1
+      },
+      "events": [
+        {
+          "event": null,
+          "id": null,
+          "data": 30.0,
+          "text": "30.0"
+        }
+      ]
+    }
+  ]
+}

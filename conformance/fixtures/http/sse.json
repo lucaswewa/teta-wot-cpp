@@ -1,0 +1,553 @@
+{
+  "config": {
+    "things": {
+      "ws_probe": "twins.ws_probe:ThingWithProperties",
+      "event_probe": "twins.event_probe:EventProbe"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "property_stream",
+        "events": "/ws_probe/dataprop",
+        "stream": "p"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream",
+          "vary": "Origin",
+          "cache-control": "no-cache"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "all_properties_stream",
+        "events": "/ws_probe/properties",
+        "stream": "all"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream",
+          "vary": "Origin",
+          "cache-control": "no-cache"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "write_dataprop",
+        "method": "PUT",
+        "path": "/ws_probe/dataprop",
+        "json": 3
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "increment",
+        "method": "POST",
+        "path": "/ws_probe/increment_dataprop",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:0>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:0>",
+          "action": "/ws_probe/increment_dataprop",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:0>",
+          "action": "/ws_probe/increment_dataprop",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:0>\",\"action\":\"/ws_probe/increment_dataprop\",\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:0>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "property_events",
+        "stream": "p",
+        "receive": 2
+      },
+      "events": [
+        {
+          "event": null,
+          "id": null,
+          "data": 3,
+          "text": "3"
+        },
+        {
+          "event": null,
+          "id": null,
+          "data": 4,
+          "text": "4"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "all_properties_events",
+        "stream": "all",
+        "receive": 2
+      },
+      "events": [
+        {
+          "event": "dataprop",
+          "id": "<utc-datetime>",
+          "data": 3,
+          "text": "3"
+        },
+        {
+          "event": "dataprop",
+          "id": "<utc-datetime>",
+          "data": 4,
+          "text": "4"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "functional_property_is_read",
+        "method": "GET",
+        "path": "/ws_probe/funcprop",
+        "headers": {
+          "Accept": "text/event-stream"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 0,
+        "text": "0"
+      }
+    },
+    {
+      "step": {
+        "name": "accept_among_others",
+        "events": "/event_probe/level",
+        "stream": "level",
+        "headers": {
+          "Accept": "application/json, Text/Event-Stream;q=0.5"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream",
+          "vary": "Origin",
+          "cache-control": "no-cache"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "write_level",
+        "method": "PUT",
+        "path": "/event_probe/level",
+        "json": 7
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "level_event",
+        "stream": "level",
+        "receive": 1
+      },
+      "events": [
+        {
+          "event": null,
+          "id": null,
+          "data": 7,
+          "text": "7"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "without_accept",
+        "method": "GET",
+        "path": "/event_probe/level"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 7,
+        "text": "7"
+      }
+    },
+    {
+      "step": {
+        "name": "event_stream",
+        "events": "/event_probe/counted",
+        "stream": "counted"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream",
+          "vary": "Origin",
+          "cache-control": "no-cache"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "all_events_stream",
+        "events": "/event_probe/events",
+        "stream": "events"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream",
+          "vary": "Origin",
+          "cache-control": "no-cache"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "count",
+        "method": "POST",
+        "path": "/event_probe/count",
+        "json": {
+          "to": 3
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:1>",
+          "action": "/event_probe/count",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "to": 3
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:1>",
+          "action": "/event_probe/count",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "to": 3
+          },
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:1>\",\"action\":\"/event_probe/count\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"to\":3},\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "happen",
+        "method": "POST",
+        "path": "/event_probe/happen",
+        "json": {
+          "what": "a test"
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:2>",
+          "action": "/event_probe/happen",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "what": "a test"
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:2>",
+          "action": "/event_probe/happen",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "what": "a test"
+          },
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/event_probe/happen\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"what\":\"a test\"},\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "counted_events",
+        "stream": "counted",
+        "receive": 3
+      },
+      "events": [
+        {
+          "event": null,
+          "id": null,
+          "data": 1,
+          "text": "1"
+        },
+        {
+          "event": null,
+          "id": null,
+          "data": 2,
+          "text": "2"
+        },
+        {
+          "event": null,
+          "id": null,
+          "data": 3,
+          "text": "3"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "all_events",
+        "stream": "events",
+        "receive": 4
+      },
+      "events": [
+        {
+          "event": "counted",
+          "id": "<utc-datetime>",
+          "data": 1,
+          "text": "1"
+        },
+        {
+          "event": "counted",
+          "id": "<utc-datetime>",
+          "data": 2,
+          "text": "2"
+        },
+        {
+          "event": "counted",
+          "id": "<utc-datetime>",
+          "data": 3,
+          "text": "3"
+        },
+        {
+          "event": "happened",
+          "id": "<utc-datetime>",
+          "data": {
+            "what": "a test",
+            "times": 1
+          },
+          "text": "{\"what\":\"a test\",\"times\":1}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "shutdown",
+        "restart": true
+      }
+    },
+    {
+      "step": {
+        "name": "property_stream_ended",
+        "stream": "p",
+        "ended": true
+      },
+      "ended": "<end>"
+    },
+    {
+      "step": {
+        "name": "event_stream_ended",
+        "stream": "counted",
+        "ended": true
+      },
+      "ended": "<end>"
+    }
+  ]
+}

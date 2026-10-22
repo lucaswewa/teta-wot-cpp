@@ -19,7 +19,16 @@
 //   64 MiB, as teta-wot does), and held in memory;
 // - Drogon's home page is turned off: otherwise it turns a request for `/`
 //   into one for `/index.html` before the default handler sees it;
-// - no `server` header; a `date` header.
+// - no `server` header; a `date` header;
+// - a regex WebSocket controller (an instance registered with
+//   `registerController` first) serves `{prefix}/(thing|...)/ws`; a
+//   pre-routing advice answers other WebSocket requests as the binding
+//   answers their path, since Drogon would answer them with its own 404 page;
+// - trantor neither says when a connection's output has drained nor lets
+//   other threads read it, so streams and WebSockets count what they send and
+//   check `bytesSent()` on the connection's loop once more than 256 KiB may be
+//   unsent: until less than 64 KiB is, they take no more notifications, and
+//   the broker drops what doesn't fit (backpressure).
 
 #pragma once
 
@@ -29,6 +38,7 @@
 #define NOMINMAX
 #endif
 #include <drogon/HttpAppFramework.h>
+#include <drogon/WebSocketController.h>
 
 #include <atomic>
 #include <cstddef>
@@ -71,12 +81,42 @@ class Handler {
     std::shared_ptr<std::atomic<std::size_t>> in_flight_ = std::make_shared<std::atomic<std::size_t>>(0);
 };
 
-/// Serves `binding` from `app`: sets its default handler, the body size
-/// limit, the `server` and `date` headers, and the advice that lets streams
-/// run on closing connections. Call before `app.run()`. Listeners, threads
-/// and shutdown stay the application's.
+/// Serves the Things' WebSockets (`{prefix}/{thing}/ws`) with a binding: the
+/// WebSocket controller `mount` registers, for the binding's Things.
+class ThingSockets final : public drogon::WebSocketController<ThingSockets, false> {
+  public:
+    explicit ThingSockets(std::shared_ptr<const http::HttpBinding> binding);
+
+    void handleNewConnection(const drogon::HttpRequestPtr& request,
+                             const drogon::WebSocketConnectionPtr& connection) override;
+    void handleNewMessage(const drogon::WebSocketConnectionPtr& connection, std::string&& message,
+                          const drogon::WebSocketMessageType& type) override;
+    void handleConnectionClosed(const drogon::WebSocketConnectionPtr& connection) override;
+
+    WS_PATH_LIST_BEGIN
+    WS_PATH_LIST_END
+
+  private:
+    std::shared_ptr<const http::HttpBinding> binding_;
+};
+
+/// The largest WebSocket message read (tungstenite's limit).
+inline constexpr std::size_t max_websocket_message_size = 64 * 1024 * 1024;
+
+/// Serves `binding` from `app`: sets its default handler, the WebSocket
+/// controller for its Things, the body and message size limits, the `server`
+/// and `date` headers, and the advice that lets streams run on closing
+/// connections. Call before `app.run()`, once per application. Listeners,
+/// threads and shutdown stay the application's.
 std::shared_ptr<Handler> mount(std::shared_ptr<const http::HttpBinding> binding,
                                drogon::HttpAppFramework& app = drogon::app());
+/// Answers the WebSocket requests that `claims` and that aren't a Thing's
+/// WebSocket as `binding` answers their path (as teta-wot does), rather than
+/// with Drogon's 404 page. `mount` claims `{prefix}/{other}/ws`; a server that
+/// owns the whole application (ThingServer) claims every request.
+void answer_upgrades(std::shared_ptr<const http::HttpBinding> binding, drogon::HttpAppFramework& app,
+                     std::function<bool(const http::Request&)> claims);
+
 /// Serves `service` from `app`, as `mount` serves a binding.
 std::shared_ptr<Handler> mount(Service service, drogon::HttpAppFramework& app = drogon::app());
 

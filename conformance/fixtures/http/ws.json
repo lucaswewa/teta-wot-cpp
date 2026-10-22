@@ -1,0 +1,1034 @@
+{
+  "config": {
+    "things": {
+      "ws_probe": "twins.ws_probe:ThingWithProperties",
+      "counter": "twins.counter:TestThing"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "open",
+        "websocket": "/ws_probe/ws",
+        "socket": "a"
+      },
+      "status": 101
+    },
+    {
+      "step": {
+        "name": "observe_dataprop",
+        "socket": "a",
+        "send": {
+          "messageType": "addPropertyObservation",
+          "data": {
+            "dataprop": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "observe_actions",
+        "socket": "a",
+        "send": {
+          "messageType": "addActionObservation",
+          "data": {
+            "increment_dataprop": true,
+            "raise_error": true,
+            "cancel_myself": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "observe_funcprop",
+        "socket": "a",
+        "send": {
+          "messageType": "addPropertyObservation",
+          "data": {
+            "funcprop": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "funcprop_refused",
+        "socket": "a",
+        "receive": 1
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "response",
+            "operation": "observeproperty",
+            "name": "funcprop",
+            "error": {
+              "status": "403",
+              "type": "https://w3c.github.io/web-thing-protocol/errors#not-observable",
+              "title": "Not Observable",
+              "detail": "Property 'funcprop' is not observable."
+            }
+          },
+          "text": "{\"messageType\":\"response\",\"operation\":\"observeproperty\",\"name\":\"funcprop\",\"error\":{\"status\":\"403\",\"type\":\"https://w3c.github.io/web-thing-protocol/errors#not-observable\",\"title\":\"Not Observable\",\"detail\":\"Property 'funcprop' is not observable.\"}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "write_dataprop",
+        "method": "PUT",
+        "path": "/ws_probe/dataprop",
+        "json": 5
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "dataprop_changed",
+        "socket": "a",
+        "receive": 1
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "propertyStatus",
+            "data": {
+              "dataprop": 5
+            }
+          },
+          "text": "{\"messageType\":\"propertyStatus\",\"data\":{\"dataprop\":5}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "increment",
+        "method": "POST",
+        "path": "/ws_probe/increment_dataprop",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:0>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:0>",
+          "action": "/ws_probe/increment_dataprop",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:0>",
+          "action": "/ws_probe/increment_dataprop",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:0>\",\"action\":\"/ws_probe/increment_dataprop\",\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:0>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "increment_observed",
+        "socket": "a",
+        "receive": 4
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "increment_dataprop",
+              "status": "pending"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"increment_dataprop\",\"status\":\"pending\"}}"
+        },
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "increment_dataprop",
+              "status": "running"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"increment_dataprop\",\"status\":\"running\"}}"
+        },
+        {
+          "body": {
+            "messageType": "propertyStatus",
+            "data": {
+              "dataprop": 6
+            }
+          },
+          "text": "{\"messageType\":\"propertyStatus\",\"data\":{\"dataprop\":6}}"
+        },
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "increment_dataprop",
+              "status": "completed"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"increment_dataprop\",\"status\":\"completed\"}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "raise_error",
+        "method": "POST",
+        "path": "/ws_probe/raise_error",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:1>",
+          "action": "/ws_probe/raise_error",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "error",
+          "id": "<uuid:1>",
+          "action": "/ws_probe/raise_error",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [
+            {
+              "message": "A deliberate failure.",
+              "levelname": "ERROR",
+              "levelno": 40,
+              "lineno": "<lineno>",
+              "filename": "<filename>",
+              "created": "<utc-datetime>",
+              "exception_type": "Error",
+              "traceback": "<traceback>"
+            }
+          ],
+          "error": {
+            "detail": "A deliberate failure.",
+            "type": null,
+            "status": 500,
+            "title": "Error",
+            "instance": null
+          }
+        },
+        "text": "{\"status\":\"error\",\"id\":\"<uuid:1>\",\"action\":\"/ws_probe/raise_error\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[{\"message\":\"A deliberate failure.\",\"levelname\":\"ERROR\",\"levelno\":40,\"lineno\":\"<lineno>\",\"filename\":\"<filename>\",\"created\":\"<utc-datetime>\",\"exception_type\":\"Error\",\"traceback\":\"<traceback>\"}],\"error\":{\"detail\":\"A deliberate failure.\",\"type\":null,\"status\":500,\"title\":\"Error\",\"instance\":null}}"
+      }
+    },
+    {
+      "step": {
+        "name": "raise_error_observed",
+        "socket": "a",
+        "receive": 4
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "raise_error",
+              "status": "pending"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"raise_error\",\"status\":\"pending\"}}"
+        },
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "raise_error",
+              "status": "running"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"raise_error\",\"status\":\"running\"}}"
+        },
+        {
+          "body": {
+            "messageType": "propertyStatus",
+            "data": {
+              "dataprop": 7
+            }
+          },
+          "text": "{\"messageType\":\"propertyStatus\",\"data\":{\"dataprop\":7}}"
+        },
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "raise_error",
+              "status": "error"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"raise_error\",\"status\":\"error\"}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "cancel_myself",
+        "method": "POST",
+        "path": "/ws_probe/cancel_myself",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:2>",
+          "action": "/ws_probe/cancel_myself",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "cancelled",
+          "id": "<uuid:2>",
+          "action": "/ws_probe/cancel_myself",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [
+            {
+              "message": "Invocation <uuid:2> was cancelled.",
+              "levelname": "INFO",
+              "levelno": 20,
+              "lineno": "<lineno>",
+              "filename": "<filename>",
+              "created": "<utc-datetime>",
+              "exception_type": null,
+              "traceback": null
+            }
+          ],
+          "error": {
+            "detail": "The action was cancelled.",
+            "type": "https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.InvocationCancelledError",
+            "status": 500,
+            "title": "InvocationCancelledError",
+            "instance": null
+          }
+        },
+        "text": "{\"status\":\"cancelled\",\"id\":\"<uuid:2>\",\"action\":\"/ws_probe/cancel_myself\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[{\"message\":\"Invocation <uuid:2> was cancelled.\",\"levelname\":\"INFO\",\"levelno\":20,\"lineno\":\"<lineno>\",\"filename\":\"<filename>\",\"created\":\"<utc-datetime>\",\"exception_type\":null,\"traceback\":null}],\"error\":{\"detail\":\"The action was cancelled.\",\"type\":\"https://www.tetaprecision.com/api/exceptions/index.html#teta_wot.exceptions.InvocationCancelledError\",\"status\":500,\"title\":\"InvocationCancelledError\",\"instance\":null}}"
+      }
+    },
+    {
+      "step": {
+        "name": "cancel_myself_observed",
+        "socket": "a",
+        "receive": 4
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "cancel_myself",
+              "status": "pending"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"cancel_myself\",\"status\":\"pending\"}}"
+        },
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "cancel_myself",
+              "status": "running"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"cancel_myself\",\"status\":\"running\"}}"
+        },
+        {
+          "body": {
+            "messageType": "propertyStatus",
+            "data": {
+              "dataprop": 8
+            }
+          },
+          "text": "{\"messageType\":\"propertyStatus\",\"data\":{\"dataprop\":8}}"
+        },
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "cancel_myself",
+              "status": "cancelled"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"cancel_myself\",\"status\":\"cancelled\"}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "observe_missing_property",
+        "socket": "a",
+        "send": {
+          "messageType": "addPropertyObservation",
+          "data": {
+            "nope": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "observe_missing_action",
+        "socket": "a",
+        "send": {
+          "messageType": "addActionObservation",
+          "data": {
+            "nope": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "subscribe_missing_event",
+        "socket": "a",
+        "send": {
+          "messageType": "addEventSubscription",
+          "data": {
+            "nope": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "missing_refused",
+        "socket": "a",
+        "receive": 3
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "response",
+            "operation": "observeproperty",
+            "name": "nope",
+            "error": {
+              "status": "404",
+              "type": "https://w3c.github.io/web-thing-protocol/errors#not-found",
+              "title": "Not Found",
+              "detail": "No property found with the name 'nope'."
+            }
+          },
+          "text": "{\"messageType\":\"response\",\"operation\":\"observeproperty\",\"name\":\"nope\",\"error\":{\"status\":\"404\",\"type\":\"https://w3c.github.io/web-thing-protocol/errors#not-found\",\"title\":\"Not Found\",\"detail\":\"No property found with the name 'nope'.\"}}"
+        },
+        {
+          "body": {
+            "messageType": "response",
+            "operation": "observeaction",
+            "name": "nope",
+            "error": {
+              "status": "404",
+              "type": "https://w3c.github.io/web-thing-protocol/errors#not-found",
+              "title": "Not Found",
+              "detail": "No action found with the name 'nope'."
+            }
+          },
+          "text": "{\"messageType\":\"response\",\"operation\":\"observeaction\",\"name\":\"nope\",\"error\":{\"status\":\"404\",\"type\":\"https://w3c.github.io/web-thing-protocol/errors#not-found\",\"title\":\"Not Found\",\"detail\":\"No action found with the name 'nope'.\"}}"
+        },
+        {
+          "body": {
+            "messageType": "response",
+            "operation": "subscribeevent",
+            "name": "nope",
+            "error": {
+              "status": "404",
+              "type": "https://w3c.github.io/web-thing-protocol/errors#not-found",
+              "title": "Not Found",
+              "detail": "No event found with the name 'nope'."
+            }
+          },
+          "text": "{\"messageType\":\"response\",\"operation\":\"subscribeevent\",\"name\":\"nope\",\"error\":{\"status\":\"404\",\"type\":\"https://w3c.github.io/web-thing-protocol/errors#not-found\",\"title\":\"Not Found\",\"detail\":\"No event found with the name 'nope'.\"}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "refusal_skips_the_rest",
+        "socket": "a",
+        "send": {
+          "messageType": "addPropertyObservation",
+          "data": {
+            "funcprop": true,
+            "nope": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "only_the_first_refused",
+        "socket": "a",
+        "receive": 1
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "response",
+            "operation": "observeproperty",
+            "name": "funcprop",
+            "error": {
+              "status": "403",
+              "type": "https://w3c.github.io/web-thing-protocol/errors#not-observable",
+              "title": "Not Observable",
+              "detail": "Property 'funcprop' is not observable."
+            }
+          },
+          "text": "{\"messageType\":\"response\",\"operation\":\"observeproperty\",\"name\":\"funcprop\",\"error\":{\"status\":\"403\",\"type\":\"https://w3c.github.io/web-thing-protocol/errors#not-observable\",\"title\":\"Not Observable\",\"detail\":\"Property 'funcprop' is not observable.\"}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "not_json",
+        "socket": "a",
+        "send_text": "not json"
+      }
+    },
+    {
+      "step": {
+        "name": "not_an_object",
+        "socket": "a",
+        "send_text": "[1]"
+      }
+    },
+    {
+      "step": {
+        "name": "data_not_an_object",
+        "socket": "a",
+        "send": {
+          "messageType": "addPropertyObservation",
+          "data": 5
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "other_message_type",
+        "socket": "a",
+        "send": {
+          "messageType": "setProperty",
+          "data": {
+            "dataprop": 1
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "bad_messages_ignored",
+        "socket": "a",
+        "quiet": 0.3
+      },
+      "messages": []
+    },
+    {
+      "step": {
+        "name": "observe_dataprop_again",
+        "socket": "a",
+        "send": {
+          "messageType": "addPropertyObservation",
+          "data": {
+            "dataprop": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "write_dataprop_again",
+        "method": "PUT",
+        "path": "/ws_probe/dataprop",
+        "json": 9
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "observed_once",
+        "socket": "a",
+        "receive": 1
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "propertyStatus",
+            "data": {
+              "dataprop": 9
+            }
+          },
+          "text": "{\"messageType\":\"propertyStatus\",\"data\":{\"dataprop\":9}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "nothing_more",
+        "socket": "a",
+        "quiet": 0.3
+      },
+      "messages": []
+    },
+    {
+      "step": {
+        "name": "open_counter",
+        "websocket": "/counter/ws",
+        "socket": "b"
+      },
+      "status": 101
+    },
+    {
+      "step": {
+        "name": "observe_counter",
+        "socket": "b",
+        "send": {
+          "messageType": "addPropertyObservation",
+          "data": {
+            "counter": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "observe_counter_action",
+        "socket": "b",
+        "send": {
+          "messageType": "addActionObservation",
+          "data": {
+            "increment_counter": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "sync_counter",
+        "socket": "b",
+        "send": {
+          "messageType": "addEventSubscription",
+          "data": {
+            "nope": true
+          }
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "counter_synced",
+        "socket": "b",
+        "receive": 1
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "response",
+            "operation": "subscribeevent",
+            "name": "nope",
+            "error": {
+              "status": "404",
+              "type": "https://w3c.github.io/web-thing-protocol/errors#not-found",
+              "title": "Not Found",
+              "detail": "No event found with the name 'nope'."
+            }
+          },
+          "text": "{\"messageType\":\"response\",\"operation\":\"subscribeevent\",\"name\":\"nope\",\"error\":{\"status\":\"404\",\"type\":\"https://w3c.github.io/web-thing-protocol/errors#not-found\",\"title\":\"Not Found\",\"detail\":\"No event found with the name 'nope'.\"}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "increment_counter",
+        "method": "POST",
+        "path": "/counter/increment_counter",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:3>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:3>",
+          "action": "/counter/increment_counter",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:3>",
+          "action": "/counter/increment_counter",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:3>\",\"action\":\"/counter/increment_counter\",\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:3>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "counter_observed",
+        "socket": "b",
+        "receive": 4
+      },
+      "messages": [
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "increment_counter",
+              "status": "pending"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"increment_counter\",\"status\":\"pending\"}}"
+        },
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "increment_counter",
+              "status": "running"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"increment_counter\",\"status\":\"running\"}}"
+        },
+        {
+          "body": {
+            "messageType": "propertyStatus",
+            "data": {
+              "counter": 1
+            }
+          },
+          "text": "{\"messageType\":\"propertyStatus\",\"data\":{\"counter\":1}}"
+        },
+        {
+          "body": {
+            "messageType": "actionStatus",
+            "data": {
+              "action name": "increment_counter",
+              "status": "completed"
+            }
+          },
+          "text": "{\"messageType\":\"actionStatus\",\"data\":{\"action name\":\"increment_counter\",\"status\":\"completed\"}}"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "other_socket_quiet",
+        "socket": "a",
+        "quiet": 0.3
+      },
+      "messages": []
+    },
+    {
+      "step": {
+        "name": "plain_get",
+        "method": "GET",
+        "path": "/ws_probe/ws"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "no_such_thing",
+        "websocket": "/nope/ws",
+        "socket": "c"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "upgrade_to_a_property",
+        "websocket": "/ws_probe/dataprop",
+        "socket": "d"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 9,
+        "text": "9"
+      }
+    },
+    {
+      "step": {
+        "name": "shutdown",
+        "restart": true
+      }
+    },
+    {
+      "step": {
+        "name": "a_closed",
+        "socket": "a",
+        "closed": true
+      },
+      "closed": {
+        "close": {
+          "code": 1001,
+          "reason": "the server is shutting down"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "b_closed",
+        "socket": "b",
+        "closed": true
+      },
+      "closed": {
+        "close": {
+          "code": 1001,
+          "reason": "the server is shutting down"
+        }
+      }
+    }
+  ]
+}

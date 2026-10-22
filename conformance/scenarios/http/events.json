@@ -1,0 +1,114 @@
+{
+  "config": {
+    "things": {
+      "event_probe": "twins.event_probe:EventProbe"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "name": "td",
+      "method": "GET",
+      "path": "/event_probe/"
+    },
+    {
+      "name": "open",
+      "websocket": "/event_probe/ws",
+      "socket": "a"
+    },
+    {
+      "name": "subscribe",
+      "socket": "a",
+      "send": {
+        "messageType": "addEventSubscription",
+        "data": {
+          "happened": true,
+          "counted": true
+        }
+      }
+    },
+    {
+      "name": "observe_level",
+      "socket": "a",
+      "send": {
+        "messageType": "addPropertyObservation",
+        "data": {
+          "level": true
+        }
+      }
+    },
+    {
+      "name": "sync",
+      "socket": "a",
+      "send": {
+        "messageType": "addEventSubscription",
+        "data": {
+          "nope": true
+        }
+      }
+    },
+    {
+      "name": "synced",
+      "socket": "a",
+      "receive": 1
+    },
+    {
+      "name": "happen",
+      "method": "POST",
+      "path": "/event_probe/happen",
+      "json": {
+        "what": "a test"
+      },
+      "wait": true
+    },
+    {
+      "name": "happened",
+      "socket": "a",
+      "receive": 1
+    },
+    {
+      "name": "count",
+      "method": "POST",
+      "path": "/event_probe/count",
+      "json": {
+        "to": 2
+      },
+      "wait": true
+    },
+    {
+      "name": "counted",
+      "socket": "a",
+      "receive": 2
+    },
+    {
+      "name": "write_level",
+      "method": "PUT",
+      "path": "/event_probe/level",
+      "json": 4
+    },
+    {
+      "name": "level",
+      "socket": "a",
+      "receive": 1
+    },
+    {
+      "name": "nothing_more",
+      "socket": "a",
+      "quiet": 0.3
+    },
+    {
+      "name": "close",
+      "socket": "a",
+      "close": true
+    },
+    {
+      "name": "happen_after_close",
+      "method": "POST",
+      "path": "/event_probe/happen",
+      "json": {
+        "what": "unseen"
+      },
+      "wait": true
+    }
+  ]
+}

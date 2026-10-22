@@ -11,6 +11,7 @@
 
 #include <chrono>
 #include <concepts>
+#include <cstdint>
 #include <deque>
 #include <filesystem>
 #include <memory>
@@ -21,6 +22,7 @@
 #include <vector>
 
 #include "teta/wot/http/message.hpp"
+#include "teta/wot/http/websocket.hpp"
 #include "teta/wot/json.hpp"
 #include "teta/wot/thing_server.hpp"
 
@@ -88,6 +90,50 @@ class TestEventStream {
     std::string buffer_;
 };
 
+/// How a TestWebSocket was closed by the server.
+struct TestClose {
+    /// The close code (1005 if the close had none).
+    std::uint16_t code = 1005;
+    std::string reason;
+    bool operator==(const TestClose&) const = default;
+};
+
+namespace detail {
+class SocketQueue;
+}
+
+/// A WebSocket opened by TestClient::websocket. It is served in-process:
+/// what it sends goes straight to the binding's session for the Thing.
+/// Destroying it is the client going away.
+class TestWebSocket {
+  public:
+    TestWebSocket(TestWebSocket&&) noexcept;
+    TestWebSocket& operator=(TestWebSocket&&) noexcept;
+    ~TestWebSocket();
+
+    /// Sends a JSON text message.
+    void send_json(const json::Value& value);
+    /// Sends a text message.
+    void send_text(std::string_view text);
+    /// Receives a JSON text message (a string if it isn't JSON). Throws
+    /// std::runtime_error if the socket closes, or after receive_timeout.
+    json::Value receive_json();
+    /// Receives a JSON text message if one arrives within `timeout`.
+    std::optional<json::Value> receive_json_within(std::chrono::nanoseconds timeout);
+    /// Waits for the server to close the socket, skipping messages. Throws
+    /// std::runtime_error after receive_timeout.
+    TestClose closed();
+    /// Closes the socket (code 1000).
+    void close();
+
+  private:
+    friend class TestClient;
+    TestWebSocket() = default;
+
+    std::shared_ptr<detail::SocketQueue> queue_;
+    std::shared_ptr<http::WebSocketSession> session_;
+};
+
 /// Sends requests to a ThingServer in-process.
 class TestClient {
   public:
@@ -121,6 +167,10 @@ class TestClient {
     /// Opens a server-sent events stream: `GET path` with `Accept:
     /// text/event-stream`.
     TestEventStream events(std::string_view path) const;
+    /// Opens a WebSocket (`websocket_connect`), such as `/counter/ws`, with
+    /// this client's `Host` and headers. Throws std::runtime_error if the
+    /// path isn't a Thing's WebSocket (the handshake would fail).
+    TestWebSocket websocket(std::string_view path) const;
 
     /// Cancels running invocations and stops the Things.
     void stop() const;

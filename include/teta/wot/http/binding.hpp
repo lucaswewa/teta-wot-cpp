@@ -33,6 +33,7 @@
 #include <string_view>
 
 #include "teta/wot/http/message.hpp"
+#include "teta/wot/http/websocket.hpp"
 #include "teta/wot/json.hpp"
 #include "teta/wot/runtime.hpp"
 
@@ -132,6 +133,16 @@ class HttpBinding {
     /// worker thread when the answer runs Thing code. The answer to a `HEAD`
     /// carries the body a `GET` would, which a transport doesn't send.
     void handle(Request request, Respond respond) const;
+
+    /// Whether `request` opens a Thing's WebSocket: a `GET {prefix}/{thing}/ws`
+    /// with `Upgrade: websocket`, for one of the runtime's Things. Other
+    /// requests to that path are `handle`'s (a 404, as teta-wot answers).
+    bool is_websocket(const Request& request) const;
+    /// Serves a WebSocket that the transport has accepted for `request`:
+    /// sends through `peer`, and returns the session to give what the client
+    /// sends. Throws std::invalid_argument if `request` isn't a WebSocket.
+    std::shared_ptr<WebSocketSession> open_websocket(const Request& request,
+                                                     std::shared_ptr<WebSocketPeer> peer) const;
 
     const std::shared_ptr<Runtime>& runtime() const;
     const HttpOptions& options() const;
