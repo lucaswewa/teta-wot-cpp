@@ -264,6 +264,8 @@ Each phase ports one area of `teta-wot`, and ends with its gate green on **both*
 
 ### Phase 1: JSON, TD and schemas (M)
 
+**Done** (2026-10-22): see the [Phase 1 note](notes/phase-01-td-schema.md). `blob_probe` and `ndarray_probe` TDs move to Phases 7 and 10.
+
 Ports `teta-wot-td`: TD model and builders, DataSchema, forms, security schemes, constraints, `Codec<T>` with schema generation equal to `schemars`' for each built-in type and reflected structs, JSON Schema → DataSchema conversion, W3C validation.
 
 **Gate:** every TD captured from the reference server (`conformance/fixtures/td/`) reproduced from the C++ twins (TD-only, no server yet), and valid against the W3C TD 1.1 schema; the `td_builder` and `schema-to-dataschema` examples.
