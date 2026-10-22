@@ -28,7 +28,9 @@
 // `ActionCtx&`, `Server` and `Dep<S>` are supplied by the server and aren't
 // named. `t.action("set", &T::set, tw::whole_input)` makes the one parameter
 // the whole input. `t.endpoint("GET", "readings.csv", &Logger::readings_csv)`
-// adds an HTTP route outside the Thing Description.
+// adds an HTTP route outside the Thing Description. `t.slot("stage",
+// &Autofocus::stage)` connects a member to another Thing (slots.hpp), and
+// `t.provides<CameraApi>()` lets slots of an interface connect to this Thing.
 
 #pragma once
 
@@ -48,6 +50,7 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
+#include <typeindex>
 #include <typeinfo>
 #include <utility>
 #include <vector>
@@ -60,6 +63,8 @@
 #include "teta/wot/http/message.hpp"
 #include "teta/wot/property.hpp"
 #include "teta/wot/runtime_shared.hpp"
+#include "teta/wot/settings.hpp"
+#include "teta/wot/slots.hpp"
 #include "teta/wot/td/constraints.hpp"
 #include "teta/wot/td/describe.hpp"
 #include "teta/wot/validate.hpp"
@@ -114,10 +119,21 @@ class Thing : public std::enable_shared_from_this<Self> {};
 
 template <typename T>
 class ThingSpec;
+template <typename T>
+class ThingRef;
 
 /// A Thing type: a class with `static void define(ThingSpec<T>&)`.
 template <typename T>
 concept ThingType = std::is_class_v<T> && requires(ThingSpec<T>& spec) { T::define(spec); };
+
+namespace detail {
+
+/// A typed reference to the Thing `handle` runs, if it is a `T` (defined in
+/// runtime.hpp).
+template <typename T>
+std::optional<ThingRef<T>> thing_ref_of(const std::shared_ptr<const ThingHandle>& handle);
+
+}  // namespace detail
 
 /// Makes an action's only parameter its whole input.
 struct WholeInput {};
@@ -400,8 +416,9 @@ class PropertyOptions : public Described<Self> {
         meta_.unit = std::move(unit);
         return self();
     }
-    /// Makes the property a setting (Phase 5): saved to the Thing's settings
-    /// file after every change and loaded when the server starts.
+    /// Makes the property a setting: saved to the Thing's settings file after
+    /// every change, and loaded from it when the server starts (see
+    /// settings.hpp). Without a settings folder, it is an ordinary property.
     Self& setting() {
         meta_.setting = true;
         return self();
@@ -661,6 +678,8 @@ class ActionHandler {
     /// Whether this action runs `callable`, of type `type` (for typed
     /// in-process calls through member function pointers).
     virtual bool runs(const std::type_info& type, const void* callable) const = 0;
+    /// The services its `Dep<S>` parameters need, with their names.
+    virtual std::vector<std::pair<std::type_index, std::string>> services() const = 0;
 };
 
 namespace detail {
@@ -721,6 +740,14 @@ class TypedActionHandler final : public ActionHandler {
         }
     }
 
+    std::vector<std::pair<std::type_index, std::string>> services() const override {
+        std::vector<std::pair<std::type_index, std::string>> out;
+        [&]<std::size_t... I>(std::index_sequence<I...>) {
+            (add_service<typename Function::args::template at<I>>(out), ...);
+        }(std::make_index_sequence<Info::count>{});
+        return out;
+    }
+
     Prepared prepare(const json::Value& input) const override {
         const Loc loc{"body"};
         json::Value coerced = validator_->validate(input, loc);
@@ -756,6 +783,14 @@ class TypedActionHandler final : public ActionHandler {
     }
 
   private:
+    template <typename A>
+    static void add_service(std::vector<std::pair<std::type_index, std::string>>& out) {
+        if constexpr (param_kind<A>() == ParamKind::dep) {
+            using S = typename std::remove_cvref_t<A>::service_type;
+            out.emplace_back(std::type_index(typeid(S)), codec::short_name(typeid(S)));
+        }
+    }
+
     template <std::size_t... I>
     void add_fields(std::vector<codec::Field>& fields,
                     const std::vector<std::optional<std::string>>& descriptions,
@@ -870,23 +905,42 @@ class DataHandler final : public PropertyHandler {
     td::DataSchema schema_;
 };
 
+/// A data property that is a setting, as its settings file sees it.
+template <typename T, typename V>
+class DataSetting final : public SettingAccess {
+  public:
+    DataSetting(std::shared_ptr<T> thing, Prop<V>& prop) : thing_(std::move(thing)), prop_(prop) {}
+    void prepare() override {}
+    std::optional<json::Value> current() const override {
+        return prop_.read([](const V& value) { return encode(value); });
+    }
+    void load(const json::Value& value) override { prop_.set_from_client(value); }
+
+  private:
+    std::shared_ptr<T> thing_;  // keeps `prop_` alive
+    Prop<V>& prop_;
+};
+
 template <typename T, typename V>
 class FunctionalHandler final : public PropertyHandler {
   public:
+    /// `settings` is the Thing's settings file, if the property is a setting.
     FunctionalHandler(std::shared_ptr<T> thing, const FunctionalPropertyOptions<T, V>& options,
-                      SchemaValidator validator)
+                      SchemaValidator validator, std::shared_ptr<SettingsStore> settings)
         : thing_(std::move(thing)),
           getter_(options.getter_),
           setter_(options.setter_),
           resetter_(options.resetter_),
           default_(options.default_),
-          validator_(std::move(validator)) {}
+          validator_(std::move(validator)),
+          settings_(std::move(settings)) {}
     json::Value read() override { return encode(getter_(*thing_)); }
     void write(const json::Value& value) override {
         if (!setter_) {
             throw PropertyError::read_only("");
         }
         setter_(*thing_, from_client<V>(validator_, value));
+        saved();
     }
     void check(const json::Value& value) override { (void)from_client<V>(validator_, value); }
     bool resettable() const override { return resetter_ || (setter_ && default_); }
@@ -898,6 +952,28 @@ class FunctionalHandler final : public PropertyHandler {
         } else {
             throw PropertyError::not_resettable("");
         }
+        saved();
+    }
+
+    /// For a setting: reads the getter into the value saved. The value saved
+    /// is the getter's, read after each write through the property (and once
+    /// before the file is loaded).
+    void refresh() {
+        if (!settings_) {
+            return;
+        }
+        std::optional<json::Value> value;
+        try {
+            value = encode(getter_(*thing_));
+        } catch (const std::exception&) {
+        }
+        std::lock_guard lock(last_mutex_);
+        last_ = std::move(value);
+    }
+    /// The value saved, for a setting.
+    std::optional<json::Value> last() const {
+        std::lock_guard lock(last_mutex_);
+        return last_;
     }
     std::optional<json::Value> default_json() const override {
         if (default_) {
@@ -910,12 +986,37 @@ class FunctionalHandler final : public PropertyHandler {
     bool observable() const override { return false; }
 
   private:
+    /// After a successful write or reset: refreshes and saves the setting.
+    void saved() {
+        if (settings_) {
+            refresh();
+            settings_->save();
+        }
+    }
+
     std::shared_ptr<T> thing_;
     std::function<V(T&)> getter_;
     std::function<void(T&, V)> setter_;
     std::function<void(T&)> resetter_;
     std::optional<V> default_;
     SchemaValidator validator_;
+    std::shared_ptr<SettingsStore> settings_;
+    mutable std::mutex last_mutex_;
+    std::optional<json::Value> last_;
+};
+
+/// A functional property that is a setting, as its settings file sees it.
+template <typename T, typename V>
+class FunctionalSetting final : public SettingAccess {
+  public:
+    explicit FunctionalSetting(std::shared_ptr<FunctionalHandler<T, V>> handler)
+        : handler_(std::move(handler)) {}
+    void prepare() override { handler_->refresh(); }
+    std::optional<json::Value> current() const override { return handler_->last(); }
+    void load(const json::Value& value) override { handler_->write(value); }
+
+  private:
+    std::shared_ptr<FunctionalHandler<T, V>> handler_;
 };
 
 }  // namespace detail
@@ -932,9 +1033,12 @@ class ThingSpec {
         std::string name;
         std::function<PropertyMeta()> meta;
         std::function<bool()> default_read_only;
-        std::function<std::shared_ptr<PropertyHandler>(const std::shared_ptr<T>&, const std::string& thing,
-                                                       const std::string& name,
-                                                       const std::shared_ptr<const RuntimeShared>&)>
+        /// `settings` is the Thing's settings file, if the server persists
+        /// settings.
+        std::function<std::shared_ptr<PropertyHandler>(
+            const std::shared_ptr<T>&, const std::string& thing, const std::string& name,
+            const std::shared_ptr<const RuntimeShared>&,
+            const std::shared_ptr<detail::SettingsStore>& settings)>
             build;
     };
     struct ActionSlot {
@@ -960,6 +1064,13 @@ class ThingSpec {
         EndpointOptions* options;
         std::function<http::EndpointHandler(const std::shared_ptr<T>&)> build;
     };
+    struct SlotSlot {
+        std::string name;
+        std::function<std::shared_ptr<detail::SlotControl>(const std::shared_ptr<T>&)> build;
+    };
+    /// Makes an interface the Thing provides, for its handle (null if it
+    /// can't).
+    using InterfaceBuild = std::function<std::shared_ptr<void>(const std::shared_ptr<const ThingHandle>&)>;
 
     ThingSpec() : title_(codec::short_name(typeid(T))) {}
     ThingSpec(const ThingSpec&) = delete;
@@ -1003,14 +1114,19 @@ class ThingSpec {
             {std::move(name), [options] { return options->meta(); }, [] { return false; },
              [options, member](
                  const std::shared_ptr<T>& thing, const std::string& thing_name,
-                 const std::string& property_name,
-                 const std::shared_ptr<const RuntimeShared>& shared) -> std::shared_ptr<PropertyHandler> {
+                 const std::string& property_name, const std::shared_ptr<const RuntimeShared>& shared,
+                 const std::shared_ptr<detail::SettingsStore>& settings) -> std::shared_ptr<PropertyHandler> {
                  Prop<V>& prop = (*thing).*member;
                  if (options->constraint_set()) {
                      prop.set_constraints(*options->constraint_set());
                  }
                  auto schema = prop.data_schema();
-                 prop.bind({thing_name, property_name, shared->broker, {}});
+                 std::function<void()> save;
+                 if (settings && options->meta().setting) {
+                     settings->add(property_name, std::make_shared<detail::DataSetting<T, V>>(thing, prop));
+                     save = [settings] { settings->save(); };
+                 }
+                 prop.bind({thing_name, property_name, shared->broker, std::move(save)});
                  return std::make_shared<detail::DataHandler<T, V>>(thing, prop, std::move(schema));
              }});
         return *options;
@@ -1031,12 +1147,19 @@ class ThingSpec {
         properties_.push_back(
             {std::move(name), [options] { return options->meta(); },
              [options] { return !static_cast<bool>(options->setter_); },
-             [options](const std::shared_ptr<T>& thing, const std::string&, const std::string&,
-                       const std::shared_ptr<const RuntimeShared>&) -> std::shared_ptr<PropertyHandler> {
+             [options](
+                 const std::shared_ptr<T>& thing, const std::string&, const std::string& property_name,
+                 const std::shared_ptr<const RuntimeShared>&,
+                 const std::shared_ptr<detail::SettingsStore>& settings) -> std::shared_ptr<PropertyHandler> {
                  auto validator =
                      detail::build_validator<V>(options->constraint_set().value_or(td::Constraints{}));
-                 return std::make_shared<detail::FunctionalHandler<T, V>>(thing, *options,
-                                                                          std::move(validator));
+                 auto store = options->meta().setting ? settings : nullptr;
+                 auto handler = std::make_shared<detail::FunctionalHandler<T, V>>(
+                     thing, *options, std::move(validator), store);
+                 if (store) {
+                     store->add(property_name, std::make_shared<detail::FunctionalSetting<T, V>>(handler));
+                 }
+                 return handler;
              }});
         return *options;
     }
@@ -1123,6 +1246,56 @@ class ThingSpec {
         return *options;
     }
 
+    /// A slot: a `Slot<X>`, `OptSlot<X>` or `SlotMap<X>` member, which the
+    /// runtime connects to other Things once every Thing is built (see
+    /// slots.hpp). By default it connects by type; the configuration's
+    /// `thing_slots` can override where.
+    template <typename C, typename F>
+        requires std::is_base_of_v<C, T> && detail::SlotField<F>
+    SlotOptions& slot(std::string name, F C::* member) {
+        auto options = keep(std::make_unique<SlotOptions>());
+        slots_.push_back({std::move(name), [options, member](const std::shared_ptr<T>& thing) {
+                              return detail::slot_control(thing, member, options->default_selection());
+                          }});
+        return *options;
+    }
+
+    /// Declares that this Thing provides the interface `I`, a base class of
+    /// the Thing, so that slots of `I` can connect to it. Calls through the
+    /// interface are plain C++ calls of the Thing.
+    template <typename I>
+        requires std::is_base_of_v<I, T>
+    ThingSpec& provides() {
+        interfaces_.emplace_back(
+            std::type_index(typeid(I)),
+            [](const std::shared_ptr<const ThingHandle>& handle) -> std::shared_ptr<void> {
+                auto ref = detail::thing_ref_of<T>(handle);
+                if (!ref) {
+                    return nullptr;
+                }
+                return std::shared_ptr<I>(ref->shared());
+            });
+        return *this;
+    }
+    /// Declares that this Thing provides the interface `I`, made by
+    /// `make(ThingRef<T>)`: usually an adapter that calls the Thing's actions
+    /// through the ThingRef, so calls through the interface are validated and
+    /// locked as clients' requests are.
+    template <typename I, typename F>
+        requires std::is_invocable_r_v<std::shared_ptr<I>, F, ThingRef<T>>
+    ThingSpec& provides(F make) {
+        interfaces_.emplace_back(
+            std::type_index(typeid(I)),
+            [make](const std::shared_ptr<const ThingHandle>& handle) mutable -> std::shared_ptr<void> {
+                auto ref = detail::thing_ref_of<T>(handle);
+                if (!ref) {
+                    return nullptr;
+                }
+                return std::shared_ptr<I>(make(std::move(*ref)));
+            });
+        return *this;
+    }
+
     /// Runs when the server starts, after the Thing's devices are open: a
     /// member function (or a function of the Thing) taking a ThingCtx& or
     /// nothing. Throwing stops the server from starting.
@@ -1160,6 +1333,8 @@ class ThingSpec {
     std::vector<EventSlot>& events() { return events_; }
     std::vector<DeviceSlot>& devices() { return devices_; }
     std::vector<EndpointSlot>& endpoints() { return endpoints_; }
+    std::vector<SlotSlot>& slots() { return slots_; }
+    std::vector<std::pair<std::type_index, InterfaceBuild>>& interfaces() { return interfaces_; }
     const std::function<void(T&, ThingCtx&)>& start_hook() const { return on_start_; }
     const std::function<void(T&, ThingCtx&)>& stop_hook() const { return on_stop_; }
     const std::function<json::Value(T&)>& state_function() const { return thing_state_; }
@@ -1220,6 +1395,8 @@ class ThingSpec {
     std::vector<EventSlot> events_;
     std::vector<DeviceSlot> devices_;
     std::vector<EndpointSlot> endpoints_;
+    std::vector<SlotSlot> slots_;
+    std::vector<std::pair<std::type_index, InterfaceBuild>> interfaces_;
     std::function<void(T&, ThingCtx&)> on_start_;
     std::function<void(T&, ThingCtx&)> on_stop_;
     std::function<json::Value(T&)> thing_state_;

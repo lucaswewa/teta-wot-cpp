@@ -1,0 +1,13 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing"
+    }
+  },
+  "args": [
+    "-c",
+    "{config}",
+    "-j",
+    "{}"
+  ]
+}

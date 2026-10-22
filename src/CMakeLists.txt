@@ -62,6 +62,7 @@ add_library(teta_wot_core
     core/problem.cpp
     core/property.cpp
     core/runtime.cpp
+    core/settings.cpp
     core/uuid.cpp
     core/validate.cpp)
 add_library(teta::wot-core ALIAS teta_wot_core)
@@ -73,6 +74,7 @@ target_link_libraries(teta_wot_core
 # teta::wot-http: the transport-neutral HTTP binding (Phase 4, ADR-0004).
 add_library(teta_wot_http
     http/binding.cpp
+    http/fallback.cpp
     http/path_uuid.cpp
     http/render.cpp
     http/routes.cpp
@@ -93,10 +95,11 @@ target_link_libraries(teta_wot_drogon
 # Drogon includes <windows.h>: no `min` and `max` macros.
 target_compile_definitions(teta_wot_drogon PUBLIC $<$<PLATFORM_ID:Windows>:NOMINMAX WIN32_LEAN_AND_MEAN>)
 
-# teta::wot-server: ThingServer, its shutdown, and TestClient (Phase 4).
-add_library(teta_wot_server server/testing.cpp server/thing_server.cpp)
+# teta::wot-server: ThingServer, its shutdown and TestClient (Phase 4); the
+# configuration model, registry, command line and fallback server (Phase 5).
+add_library(teta_wot_server server/cli.cpp server/config.cpp server/registry.cpp server/testing.cpp server/thing_server.cpp)
 add_library(teta::wot-server ALIAS teta_wot_server)
 set_target_properties(teta_wot_server PROPERTIES EXPORT_NAME wot-server)
 target_link_libraries(teta_wot_server
     PUBLIC teta_wot_http
-    PRIVATE teta_wot_drogon $<BUILD_INTERFACE:teta_wot_warnings>)
+    PRIVATE teta_wot_drogon $<$<PLATFORM_ID:Windows>:shell32 ws2_32> $<BUILD_INTERFACE:teta_wot_warnings>)

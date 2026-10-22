@@ -1,0 +1,21 @@
+{
+  "args": [
+    "--help"
+  ],
+  "exit": 0,
+  "stdout": [
+    "Serve Things over HTTP, from a configuration file.",
+    "",
+    "Usage: <server> [OPTIONS]",
+    "",
+    "Options:",
+    "  -c, --config <CONFIG>  Path to configuration file",
+    "  -j, --json <JSON>      Configuration as JSON string",
+    "      --fallback         Serve an error page instead of exiting, if we can't start",
+    "      --host <HOST>      Bind socket to this host [default: 127.0.0.1]",
+    "      --port <PORT>      Bind socket to this port. If 0, an available port will be picked [default: 5000]",
+    "      --debug            Enable debug logging",
+    "  -h, --help             Print help"
+  ],
+  "stderr": []
+}

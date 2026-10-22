@@ -11,7 +11,9 @@ Compared, after normalisation ([ADR-0011](adr/0011-verification.md)):
 - the status code;
 - the headers clients rely on: `content-type`, `location`, `allow` (methods sorted), `access-control-*`, `vary`, `cache-control`, `www-authenticate`, `link`, `etag`;
 - the body, both parsed and as exact text (number formatting, key order, escaping), with UUIDs numbered by first appearance, timestamps masked, a fresh invocation's run state masked and log record locations masked;
-- WebSocket messages and server-sent event fields (Phase 6), Blob and MJPEG bytes (Phase 7), settings files byte for byte (Phase 5).
+- settings files byte for byte, and the settings warnings' text (Phase 5);
+- the command line's exit codes and output (log lines aside), and the fallback page (Phase 5);
+- WebSocket messages and server-sent event fields (Phase 6), Blob and MJPEG bytes (Phase 7).
 
 Not compared, because hyper and Drogon can't be made to agree and clients don't depend on them (Phase 0 spike, [phase-00 note](notes/phase-00-baseline.md)):
 
@@ -44,18 +46,30 @@ Every request in the scenarios carries `Host: testserver`, so absolute URLs are 
 | Thing Description | TD 1.1, valid against the W3C schema; `id` `urn:uuid:` v5 of `{server_id}/{thing}` in the namespace v5(URL, `https://github.com/lucaswewa/wot#td-id`) (`conformance/counter` → `urn:uuid:f46f31e7-a858-5fd5-91b0-829d229ed6cd`); title, description from doc comments; forms for observation (SSE and WebSocket), events, top-level forms, invocation query and cancel forms, stream links; `profile` and `synchronous` in `wot` | `teta-wot-td`, `handlers.rs` (`served_td`) | fixtures `tds`, `tds-wot`: seven twins' TDs reproduced byte for byte in both profiles, from their C++ definitions (Phase 1, Phase 3); `blob_probe` Phase 7, `ndarray_probe` Phase 10 |
 | Observation | WebSocket at `{prefix}/{thing}/ws`: `addPropertyObservation`, `addActionObservation`, `addEventSubscription`; `propertyStatus`, `actionStatus`, `event`; 404/403 error messages; others ignored; plain `GET` 404. SSE (`text/event-stream`, `cache-control: no-cache`): `data:` lines (`tetathing`), named with an `id` (`wot`, and the "all" streams), `:` after 15 s of quiet | `observe.rs` | SSE `tests/http` (Phase 4); fixtures Phase 6 |
 | Blobs, MJPEG | `GET {prefix}/blob/{id}` with the media type (`charset=utf-8` added to `text/*`); `/output` serves or redirects; hrefs made absolute; MJPEG `multipart/x-mixed-replace` and the viewer page | `output.rs` | Phase 7 |
-| Settings files | `{folder}/{thing}/Settings-{Type}.json`, indented four spaces (serde_json `PrettyFormatter`), CRLF on Windows, LF elsewhere, written atomically | `teta-wot-core/src/settings.rs` | corpus (indentation, Phase 0); files Phase 5 |
+| Settings files | `{folder}/{thing}/Settings-{Class}.json` (the class name is the Thing's title unless set); every setting, keys sorted, nested values in their own order; indented four spaces (serde_json `PrettyFormatter`), no trailing newline, CRLF on Windows, LF elsewhere; written atomically (`.tmp`, then a rename) after every change once loaded, never before; a folder per Thing; loaded before any Thing starts, each value as a client's write; a missing file leaves the defaults; an invalid value, an unknown key, a file that isn't an object or isn't JSON only warns (teta-wot's messages), and an unknown key goes at the next save | `teta-wot-core/src/settings.rs` | fixtures `settings`, `settings-load` (Phase 5): files, loading, warnings, restarts |
+| Configuration file | LabThings' `ThingServerConfig`: `things` (a class name, or `cls`/`class`, `args`, `kwargs`, `thing_slots`), `settings_folder` (`./settings`), `api_prefix`, `enable_global_lock` (pydantic's lax booleans), `global_lock_log_level`, `application_config`; teta-wot's `server_id`, `wire_profile`, `security`, `mdns`; unknown keys warn; every problem reported at once in pydantic's words and locations; class names compared with `:` and `::` as `.` | `teta-wot-server/src/config.rs`, `registry.rs` | fixtures `cli` (Phase 5) |
 | OpenAPI, docs | OpenAPI 3.1 at `/openapi.json` with teta-wot's `operationId`s; Swagger UI 5.33.0 and ReDoc 2.5.4 pages | `openapi.rs`, `docs.rs` | Phase 8 |
 | Discovery | `/.well-known/wot` (`application/td+json`) at the root; `{prefix}/directory/things` sorted by `id` (`application/ld+json`), `offset`, `limit`, `format=collection`, `next` and `canonical` links, `etag`; `{prefix}/directory/things/{id}`; `HEAD`; 405 for writes; errors always problems | `discovery.rs` | Phase 9 |
 | Security | Basic or bearer on every interaction, `401` with `WWW-Authenticate`; TDs, directory, OpenAPI and docs public; `securityDefinitions` in TDs | `security.rs` | Phase 9 |
-| Command line | `-c`, `-j`, `--host`, `--port` (127.0.0.1:5000), `--fallback`, `--debug`; exit codes 0, 1, 2, 3; the fallback page | `teta-wot-server/src/cli.rs`, `fallback.rs` | Phase 5 |
+| Command line | clap's: `-c`, `-j`, `--host`, `--port` (127.0.0.1:5000), `--fallback`, `--debug`, `-h`, its help and error messages; exit codes 0 (stopped), 2 (command line), 3 (configuration, a Thing that can't start, the fallback served), 1 (anything else); `listening on http://…` once bound, before the Things start; the fallback page at `/` (500), `true` at `/fallback`, a 307 to `/` elsewhere, with the binding's CORS | `teta-wot-server/src/cli.rs`, `teta-wot-http/src/fallback.rs` | fixtures `cli` (Phase 5): 21 scenarios |
 
 ## 3. Deltas
 
-Differences from teta-wot v0.1.0 that are accepted, each with its exact expected answer. None comes from teta-wot: these are Drogon's, answered before the binding sees the request (Phase 4 note).
+Differences from teta-wot v0.1.0 that are accepted, each with its exact expected answer. On the wire, they are Drogon's, answered before the binding sees the request (Phase 4 note).
 
 | Request | teta-wot | teta-wot-cpp |
 |---|---|---|
 | A method Drogon's parser doesn't know: anything but `GET`, `HEAD`, `POST`, `PUT`, `DELETE`, `OPTIONS`, `PATCH`, `PROPFIND`, `MKCOL`, `COPY`, `MOVE` (such as `QUERY` or `TRACE`) | routed: 405 with `allow`, or 404 | 405, no body, no headers but the transport's |
 | A target whose query is empty (`GET /counter?`) | 307 to `…/counter/?` | 307 to `…/counter/` (the `?` is lost) |
 | A body over 128 MiB | 413 `{"detail": "length limit exceeded"}` | 413, no body, `connection: close` |
+
+On the command line (Phase 5 note), where `run.py --cli` masks the first two:
+
+| What | teta-wot | teta-wot-cpp |
+|---|---|---|
+| A Thing given both `args` and `kwargs` | `use either args or kwargs, not both: a Rust Thing's configuration is one typed value` | `… a C++ Thing's configuration is one typed value` |
+| The lists of registered names in configuration errors | the twin registry's, with `blob_probe` and `ndarray_probe` | without them until Phases 7 and 10 |
+| A missing service | `` Thing `camera` needs the service `dependency_injection::DataStore` … `` (the module path) | `` … the service `DataStore` … `` (the short name) |
+| A configuration with `security` | served with Basic or bearer authentication | refused (exit code 3) until the binding supports security (Phase 9) |
+| `"mdns": true` | advertised (with the `mdns` feature) | a warning: teta-wot-cpp doesn't advertise until Phase 9 |
+| Log lines | `tracing`'s format, on standard output | teta-wot-cpp's format, on standard error (log lines aren't contract) |

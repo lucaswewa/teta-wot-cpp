@@ -9,3 +9,4 @@ One note per phase: what was built, what was measured, and where the work depart
 | 2 | [Validation](phase-02-validation.md) | Done |
 | 3 | [Runtime core](phase-03-runtime.md) | Done |
 | 4 | [HTTP binding, Drogon adapter and TestClient](phase-04-http.md) | Done |
+| 5 | [Composition, settings, configuration, lifecycle](phase-05-composition.md) | Done |

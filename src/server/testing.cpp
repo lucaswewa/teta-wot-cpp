@@ -286,4 +286,16 @@ void TestClient::stop() const {
     binding_->runtime()->shutdown(std::chrono::seconds(1));
 }
 
+// ---- Harness ------------------------------------------------------------------------------
+
+detail::TemporaryFolder::TemporaryFolder()
+    : path_(std::filesystem::temp_directory_path() / ("teta-wot-" + Uuid::v4().to_string())) {
+    std::filesystem::create_directories(path_);
+}
+
+detail::TemporaryFolder::~TemporaryFolder() {
+    std::error_code ignored;
+    std::filesystem::remove_all(path_, ignored);
+}
+
 }  // namespace teta::wot::testing

@@ -1,0 +1,21 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing",
+      "stage": "labthings_fastapi.example_things:ThingThatCantStart"
+    }
+  },
+  "args": [
+    "-c",
+    "{config}",
+    "--port",
+    "{port}"
+  ],
+  "exit": 3,
+  "stdout": [
+    "listening on http://127.0.0.1:<port>"
+  ],
+  "stderr": [
+    "Error: Failed to enter 'stage' Thing: This thing can't start"
+  ]
+}

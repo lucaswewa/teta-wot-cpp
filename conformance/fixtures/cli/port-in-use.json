@@ -1,0 +1,19 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing"
+    }
+  },
+  "args": [
+    "-c",
+    "{config}",
+    "--port",
+    "{port}"
+  ],
+  "occupy": true,
+  "exit": 1,
+  "stdout": [],
+  "stderr": [
+    "Error: can't listen on 127.0.0.1:<port>: <os error>"
+  ]
+}

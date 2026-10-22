@@ -1,0 +1,14 @@
+{
+  "args": [
+    "--foo"
+  ],
+  "exit": 2,
+  "stdout": [],
+  "stderr": [
+    "error: unexpected argument '--foo' found",
+    "",
+    "Usage: <server> [OPTIONS]",
+    "",
+    "For more information, try '--help'."
+  ]
+}

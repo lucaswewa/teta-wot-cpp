@@ -1,0 +1,750 @@
+{
+  "config": {
+    "things": {
+      "settings_probe": "twins.settings_probe:SettingsProbe"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "no_file_before_a_change",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": false
+      }
+    },
+    {
+      "step": {
+        "name": "read_count_default",
+        "method": "GET",
+        "path": "/settings_probe/count"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 0,
+        "text": "0"
+      }
+    },
+    {
+      "step": {
+        "name": "read_exposure_default",
+        "method": "GET",
+        "path": "/settings_probe/exposure"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 10.0,
+        "text": "10.0"
+      }
+    },
+    {
+      "step": {
+        "name": "write_count",
+        "method": "PUT",
+        "path": "/settings_probe/count",
+        "json": 3
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "saved_after_the_first_write",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": true,
+        "written_by": "server",
+        "native_newlines": true,
+        "text": "{\n    \"calibration\": {\n        \"offset\": 0.0,\n        \"gain\": 1.0\n    },\n    \"count\": 3,\n    \"enabled\": false,\n    \"exposure\": 10.0,\n    \"label\": \"probe\",\n    \"limits\": {},\n    \"maybe\": null,\n    \"ratio\": 0.5,\n    \"tags\": []\n}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_ratio_small",
+        "method": "PUT",
+        "path": "/settings_probe/ratio",
+        "json": 1e-07
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "write_label",
+        "method": "PUT",
+        "path": "/settings_probe/label",
+        "json": "µm 中文 \"q\" \\ \u0001 😀"
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "write_enabled",
+        "method": "PUT",
+        "path": "/settings_probe/enabled",
+        "json": "yes"
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "write_tags",
+        "method": "PUT",
+        "path": "/settings_probe/tags",
+        "json": [
+          "a",
+          "b",
+          ""
+        ]
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "write_limits",
+        "method": "PUT",
+        "path": "/settings_probe/limits",
+        "json": {
+          "low": 1e-05,
+          "high": 1e+20,
+          "mid": 0.1,
+          "zero": 0
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "write_calibration",
+        "method": "PUT",
+        "path": "/settings_probe/calibration",
+        "json": {
+          "offset": 0.5,
+          "gain": 2
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "write_maybe",
+        "method": "PUT",
+        "path": "/settings_probe/maybe",
+        "json": 7
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "write_exposure",
+        "method": "PUT",
+        "path": "/settings_probe/exposure",
+        "json": 12.5
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "every_setting_saved",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": true,
+        "written_by": "server",
+        "native_newlines": true,
+        "text": "{\n    \"calibration\": {\n        \"offset\": 0.5,\n        \"gain\": 2.0\n    },\n    \"count\": 3,\n    \"enabled\": true,\n    \"exposure\": 12.5,\n    \"label\": \"µm 中文 \\\"q\\\" \\\\ \\u0001 😀\",\n    \"limits\": {\n        \"low\": 0.00001,\n        \"high\": 1e+20,\n        \"mid\": 0.1,\n        \"zero\": 0.0\n    },\n    \"maybe\": 7,\n    \"ratio\": 1e-7,\n    \"tags\": [\n        \"a\",\n        \"b\",\n        \"\"\n    ]\n}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_count_invalid",
+        "method": "PUT",
+        "path": "/settings_probe/count",
+        "json": -1
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "greater_than_equal",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be greater than or equal to 0",
+              "input": -1,
+              "ctx": {
+                "ge": 0
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"greater_than_equal\",\"loc\":[\"body\"],\"msg\":\"Input should be greater than or equal to 0\",\"input\":-1,\"ctx\":{\"ge\":0}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_exposure_invalid",
+        "method": "PUT",
+        "path": "/settings_probe/exposure",
+        "json": "bright"
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "float_parsing",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be a valid number, unable to parse string as a number",
+              "input": "bright"
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"float_parsing\",\"loc\":[\"body\"],\"msg\":\"Input should be a valid number, unable to parse string as a number\",\"input\":\"bright\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "unchanged_after_refused_writes",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": true,
+        "written_by": "server",
+        "native_newlines": true,
+        "text": "{\n    \"calibration\": {\n        \"offset\": 0.5,\n        \"gain\": 2.0\n    },\n    \"count\": 3,\n    \"enabled\": true,\n    \"exposure\": 12.5,\n    \"label\": \"µm 中文 \\\"q\\\" \\\\ \\u0001 😀\",\n    \"limits\": {\n        \"low\": 0.00001,\n        \"high\": 1e+20,\n        \"mid\": 0.1,\n        \"zero\": 0.0\n    },\n    \"maybe\": 7,\n    \"ratio\": 1e-7,\n    \"tags\": [\n        \"a\",\n        \"b\",\n        \"\"\n    ]\n}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_several",
+        "method": "PUT",
+        "path": "/settings_probe/properties",
+        "json": {
+          "count": 4,
+          "ratio": 2.5
+        }
+      },
+      "response": {
+        "status": 204,
+        "headers": {
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "saved_after_writing_several",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": true,
+        "written_by": "server",
+        "native_newlines": true,
+        "text": "{\n    \"calibration\": {\n        \"offset\": 0.5,\n        \"gain\": 2.0\n    },\n    \"count\": 4,\n    \"enabled\": true,\n    \"exposure\": 12.5,\n    \"label\": \"µm 中文 \\\"q\\\" \\\\ \\u0001 😀\",\n    \"limits\": {\n        \"low\": 0.00001,\n        \"high\": 1e+20,\n        \"mid\": 0.1,\n        \"zero\": 0.0\n    },\n    \"maybe\": 7,\n    \"ratio\": 2.5,\n    \"tags\": [\n        \"a\",\n        \"b\",\n        \"\"\n    ]\n}"
+      }
+    },
+    {
+      "step": {
+        "name": "reset_maybe",
+        "method": "POST",
+        "path": "/settings_probe/maybe/reset"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "saved_after_a_reset",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": true,
+        "written_by": "server",
+        "native_newlines": true,
+        "text": "{\n    \"calibration\": {\n        \"offset\": 0.5,\n        \"gain\": 2.0\n    },\n    \"count\": 4,\n    \"enabled\": true,\n    \"exposure\": 12.5,\n    \"label\": \"µm 中文 \\\"q\\\" \\\\ \\u0001 😀\",\n    \"limits\": {\n        \"low\": 0.00001,\n        \"high\": 1e+20,\n        \"mid\": 0.1,\n        \"zero\": 0.0\n    },\n    \"maybe\": null,\n    \"ratio\": 2.5,\n    \"tags\": [\n        \"a\",\n        \"b\",\n        \"\"\n    ]\n}"
+      }
+    },
+    {
+      "step": {
+        "name": "restart",
+        "restart": true
+      }
+    },
+    {
+      "step": {
+        "name": "no_warnings",
+        "warnings": true
+      },
+      "warnings": []
+    },
+    {
+      "step": {
+        "name": "loaded",
+        "method": "GET",
+        "path": "/settings_probe/properties"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "calibration": {
+            "offset": 0.5,
+            "gain": 2.0
+          },
+          "count": 4,
+          "enabled": true,
+          "exposure": 12.5,
+          "label": "µm 中文 \"q\" \\ \u0001 😀",
+          "limits": {
+            "low": 1e-05,
+            "high": 1e+20,
+            "mid": 0.1,
+            "zero": 0.0
+          },
+          "maybe": null,
+          "ratio": 2.5,
+          "tags": [
+            "a",
+            "b",
+            ""
+          ]
+        },
+        "text": "{\"calibration\":{\"offset\":0.5,\"gain\":2.0},\"count\":4,\"enabled\":true,\"exposure\":12.5,\"label\":\"µm 中文 \\\"q\\\" \\\\ \\u0001 😀\",\"limits\":{\"low\":0.00001,\"high\":1e+20,\"mid\":0.1,\"zero\":0.0},\"maybe\":null,\"ratio\":2.5,\"tags\":[\"a\",\"b\",\"\"]}"
+      }
+    },
+    {
+      "step": {
+        "name": "loaded_exposure",
+        "method": "GET",
+        "path": "/settings_probe/exposure"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 12.5,
+        "text": "12.5"
+      }
+    },
+    {
+      "step": {
+        "name": "not_rewritten_by_loading",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": true,
+        "written_by": "server",
+        "native_newlines": true,
+        "text": "{\n    \"calibration\": {\n        \"offset\": 0.5,\n        \"gain\": 2.0\n    },\n    \"count\": 4,\n    \"enabled\": true,\n    \"exposure\": 12.5,\n    \"label\": \"µm 中文 \\\"q\\\" \\\\ \\u0001 😀\",\n    \"limits\": {\n        \"low\": 0.00001,\n        \"high\": 1e+20,\n        \"mid\": 0.1,\n        \"zero\": 0.0\n    },\n    \"maybe\": null,\n    \"ratio\": 2.5,\n    \"tags\": [\n        \"a\",\n        \"b\",\n        \"\"\n    ]\n}"
+      }
+    },
+    {
+      "step": {
+        "name": "hand_edit",
+        "write_file": "settings_probe/Settings-SettingsProbe.json",
+        "text": "{\r\n  \"count\": -5, \"label\": 5, \"lamp\": \"on\",\r\n  \"ratio\": \"0.75\", \"maybe\": null, \"exposure\": \"15\",\r\n  \"calibration\": {\"offset\": 1}, \"tags\": \"x\"\r\n}\r\n"
+      }
+    },
+    {
+      "step": {
+        "name": "restart_after_hand_edit",
+        "restart": true
+      }
+    },
+    {
+      "step": {
+        "name": "hand_edit_warnings",
+        "warnings": true
+      },
+      "warnings": [
+        "Could not load setting count from settings file because of a validation error: 1 validation error\n  body: Input should be greater than or equal to 0 [type=greater_than_equal]",
+        "Could not load setting label from settings file because of a validation error: 1 validation error\n  body: Input should be a valid string [type=string_type]",
+        "An extra key lamp was found in the settings file. It will be deleted the next time settings are saved.",
+        "Could not load setting calibration from settings file because of a validation error: 1 validation error\n  body.gain: Field required [type=missing]",
+        "Could not load setting tags from settings file because of a validation error: 1 validation error\n  body: Input should be a valid list [type=list_type]"
+      ]
+    },
+    {
+      "step": {
+        "name": "loaded_after_hand_edit",
+        "method": "GET",
+        "path": "/settings_probe/properties"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "calibration": {
+            "offset": 0.0,
+            "gain": 1.0
+          },
+          "count": 0,
+          "enabled": false,
+          "exposure": 15.0,
+          "label": "probe",
+          "limits": {},
+          "maybe": null,
+          "ratio": 0.75,
+          "tags": []
+        },
+        "text": "{\"calibration\":{\"offset\":0.0,\"gain\":1.0},\"count\":0,\"enabled\":false,\"exposure\":15.0,\"label\":\"probe\",\"limits\":{},\"maybe\":null,\"ratio\":0.75,\"tags\":[]}"
+      }
+    },
+    {
+      "step": {
+        "name": "loaded_exposure_after_hand_edit",
+        "method": "GET",
+        "path": "/settings_probe/exposure"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 15.0,
+        "text": "15.0"
+      }
+    },
+    {
+      "step": {
+        "name": "hand_edit_kept_until_saved",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": true,
+        "written_by": "scenario",
+        "text": "{\n  \"count\": -5, \"label\": 5, \"lamp\": \"on\",\n  \"ratio\": \"0.75\", \"maybe\": null, \"exposure\": \"15\",\n  \"calibration\": {\"offset\": 1}, \"tags\": \"x\"\n}\n"
+      }
+    },
+    {
+      "step": {
+        "name": "write_enabled_again",
+        "method": "PUT",
+        "path": "/settings_probe/enabled",
+        "json": false
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "rewritten_without_the_extra_key",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": true,
+        "written_by": "server",
+        "native_newlines": true,
+        "text": "{\n    \"calibration\": {\n        \"offset\": 0.0,\n        \"gain\": 1.0\n    },\n    \"count\": 0,\n    \"enabled\": false,\n    \"exposure\": 15.0,\n    \"label\": \"probe\",\n    \"limits\": {},\n    \"maybe\": null,\n    \"ratio\": 0.75,\n    \"tags\": []\n}"
+      }
+    },
+    {
+      "step": {
+        "name": "not_a_mapping",
+        "write_file": "settings_probe/Settings-SettingsProbe.json",
+        "text": "[1, 2]"
+      }
+    },
+    {
+      "step": {
+        "name": "restart_with_a_list",
+        "restart": true
+      }
+    },
+    {
+      "step": {
+        "name": "list_warnings",
+        "warnings": true
+      },
+      "warnings": [
+        "Error loading settings for SettingsProbe from <settings>/settings_probe/Settings-SettingsProbe.json. The file does not contain a Mapping"
+      ]
+    },
+    {
+      "step": {
+        "name": "defaults_after_a_list",
+        "method": "GET",
+        "path": "/settings_probe/properties"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "calibration": {
+            "offset": 0.0,
+            "gain": 1.0
+          },
+          "count": 0,
+          "enabled": false,
+          "exposure": 10.0,
+          "label": "probe",
+          "limits": {},
+          "maybe": null,
+          "ratio": 0.5,
+          "tags": []
+        },
+        "text": "{\"calibration\":{\"offset\":0.0,\"gain\":1.0},\"count\":0,\"enabled\":false,\"exposure\":10.0,\"label\":\"probe\",\"limits\":{},\"maybe\":null,\"ratio\":0.5,\"tags\":[]}"
+      }
+    },
+    {
+      "step": {
+        "name": "not_json",
+        "write_file": "settings_probe/Settings-SettingsProbe.json",
+        "text": "{\"count\": "
+      }
+    },
+    {
+      "step": {
+        "name": "restart_with_bad_json",
+        "restart": true
+      }
+    },
+    {
+      "step": {
+        "name": "bad_json_warnings",
+        "warnings": true
+      },
+      "warnings": [
+        "Error loading settings for SettingsProbe from <settings>/settings_probe/Settings-SettingsProbe.json, could not load a JSON object. Settings for this Thing will be reset to default. (EOF while parsing a value at line 1 column 10)"
+      ]
+    },
+    {
+      "step": {
+        "name": "defaults_after_bad_json",
+        "method": "GET",
+        "path": "/settings_probe/properties"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "calibration": {
+            "offset": 0.0,
+            "gain": 1.0
+          },
+          "count": 0,
+          "enabled": false,
+          "exposure": 10.0,
+          "label": "probe",
+          "limits": {},
+          "maybe": null,
+          "ratio": 0.5,
+          "tags": []
+        },
+        "text": "{\"calibration\":{\"offset\":0.0,\"gain\":1.0},\"count\":0,\"enabled\":false,\"exposure\":10.0,\"label\":\"probe\",\"limits\":{},\"maybe\":null,\"ratio\":0.5,\"tags\":[]}"
+      }
+    },
+    {
+      "step": {
+        "name": "bad_json_kept_until_saved",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": true,
+        "written_by": "scenario",
+        "text": "{\"count\": "
+      }
+    },
+    {
+      "step": {
+        "name": "write_count_after_bad_json",
+        "method": "PUT",
+        "path": "/settings_probe/count",
+        "json": 9
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "rewritten_after_bad_json",
+        "file": "settings_probe/Settings-SettingsProbe.json"
+      },
+      "file": {
+        "exists": true,
+        "written_by": "server",
+        "native_newlines": true,
+        "text": "{\n    \"calibration\": {\n        \"offset\": 0.0,\n        \"gain\": 1.0\n    },\n    \"count\": 9,\n    \"enabled\": false,\n    \"exposure\": 10.0,\n    \"label\": \"probe\",\n    \"limits\": {},\n    \"maybe\": null,\n    \"ratio\": 0.5,\n    \"tags\": []\n}"
+      }
+    },
+    {
+      "step": {
+        "name": "empty_object",
+        "write_file": "settings_probe/Settings-SettingsProbe.json",
+        "text": "{}"
+      }
+    },
+    {
+      "step": {
+        "name": "restart_with_an_empty_object",
+        "restart": true
+      }
+    },
+    {
+      "step": {
+        "name": "empty_object_warnings",
+        "warnings": true
+      },
+      "warnings": []
+    },
+    {
+      "step": {
+        "name": "defaults_after_an_empty_object",
+        "method": "GET",
+        "path": "/settings_probe/properties"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "calibration": {
+            "offset": 0.0,
+            "gain": 1.0
+          },
+          "count": 0,
+          "enabled": false,
+          "exposure": 10.0,
+          "label": "probe",
+          "limits": {},
+          "maybe": null,
+          "ratio": 0.5,
+          "tags": []
+        },
+        "text": "{\"calibration\":{\"offset\":0.0,\"gain\":1.0},\"count\":0,\"enabled\":false,\"exposure\":10.0,\"label\":\"probe\",\"limits\":{},\"maybe\":null,\"ratio\":0.5,\"tags\":[]}"
+      }
+    }
+  ]
+}

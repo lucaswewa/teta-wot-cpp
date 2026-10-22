@@ -16,6 +16,7 @@
 #include <thread>
 #include <vector>
 
+#include "../temp_folder.hpp"
 #include "teta/wot.hpp"
 #include "twins.hpp"
 
@@ -196,9 +197,13 @@ std::string replace_all(std::string text, const std::string& from, const std::st
     return text;
 }
 
-// run.py's `run`, through TestClient.
+// run.py's `run`, through TestClient, with a temporary settings folder.
 Value run(const Value& scenario) {
-    const auto server = twins::server_builder(scenario["config"]).build();
+    const testing_support::TemporaryFolder folder;
+    Value config = scenario["config"];
+    config["settings_folder"] = folder.text();
+    const auto server =
+        tw::ThingServer::from_config(tw::ServerConfig::from_value(config), twins::registry()).build();
     const auto base = tw::testing::TestClient::start(server);
     const std::string prefix = scenario["config"].value("api_prefix", "");
     Normaliser normaliser;

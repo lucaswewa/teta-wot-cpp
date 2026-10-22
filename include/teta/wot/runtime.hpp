@@ -44,7 +44,13 @@ class BuildError : public std::exception {
         duplicate_affordance,
         /// An affordance is badly defined, or badly named.
         definition,
-        /// A Thing needs a service that isn't registered.
+        /// A Thing's configuration (its `kwargs` or `args`) doesn't fit its
+        /// `Config` type.
+        invalid_config,
+        /// A slot can't be connected (`ThingSlotError`).
+        slot,
+        /// A Thing needs a service (a `Dep<S>` parameter) that isn't
+        /// registered.
         missing_service,
         /// A Thing's settings folder can't be created.
         settings_folder,
@@ -166,12 +172,9 @@ struct EndpointEntry {
     const std::string& operation_name() const { return meta.name ? *meta.name : path; }
 };
 
-template <typename T>
-class ThingRef;
-
 /// One running Thing: its instance and the registry entries of its
 /// affordances, which the HTTP binding serves.
-class ThingHandle {
+class ThingHandle : public std::enable_shared_from_this<ThingHandle> {
   public:
     /// Builds the registry entries from `T::define`; throws BuildError.
     template <ThingType T>
@@ -184,6 +187,25 @@ class ThingHandle {
     const std::vector<std::string>& semantic_types() const { return semantic_types_; }
     /// The class name in the settings file's name.
     const std::string& class_name() const { return class_name_; }
+    /// The Thing's settings file, if it has settings and the server has a
+    /// settings folder.
+    std::optional<std::filesystem::path> settings_file() const;
+    /// The names of the Thing's slots, in definition order.
+    std::vector<std::string> slot_names() const;
+    /// The services its actions' `Dep<S>` parameters need, with their names.
+    std::vector<std::pair<std::type_index, std::string>> services() const;
+
+    /// The Thing as the interface `I`, if it declared that it provides it
+    /// (`t.provides<I>()`).
+    template <typename I>
+    std::shared_ptr<I> provided() const {
+        for (const auto& [type, build] : interfaces_) {
+            if (type == std::type_index(typeid(I))) {
+                return std::static_pointer_cast<I>(build(shared_from_this()));
+            }
+        }
+        return nullptr;
+    }
 
     /// A property by name.
     const PropertyEntry* property(std::string_view name) const;
@@ -215,11 +237,17 @@ class ThingHandle {
     td::ThingDescription thing_description(const td::TdOptions& options) const;
 
     // For the runtime.
+    /// Loads the Thing's settings file, if it has one.
+    void load_settings();
     /// Opens the devices, then runs the start hook; on failure closes the
     /// devices opened, and throws.
     void start();
     /// Runs the stop hook, then closes the devices.
     void stop();
+    /// The slots, by name.
+    const std::vector<std::pair<std::string, std::shared_ptr<detail::SlotControl>>>& slots() const {
+        return slots_;
+    }
 
   private:
     struct DeviceHook {
@@ -227,6 +255,7 @@ class ThingHandle {
         std::function<void(const std::string&)> open;
         std::function<void()> close;
     };
+    using InterfaceBuild = std::function<std::shared_ptr<void>(const std::shared_ptr<const ThingHandle>&)>;
     void close_devices(std::size_t count);
 
     std::string name_;
@@ -240,6 +269,9 @@ class ThingHandle {
     std::vector<EventEntry> events_;
     std::vector<EndpointEntry> endpoints_;
     std::vector<DeviceHook> devices_;
+    std::vector<std::pair<std::string, std::shared_ptr<detail::SlotControl>>> slots_;
+    std::vector<std::pair<std::type_index, InterfaceBuild>> interfaces_;
+    std::shared_ptr<detail::SettingsStore> settings_;
     std::function<void(ThingCtx&)> on_start_;
     std::function<void(ThingCtx&)> on_stop_;
     std::function<json::Value()> thing_state_;
@@ -249,6 +281,49 @@ class ThingHandle {
 };
 
 class Runtime;
+
+/// A Thing built from a typed configuration: its `Config` type, read with
+/// its codec from the Thing's `kwargs` in the configuration file (or from its
+/// `args`, field by field), and a constructor taking it.
+template <typename T>
+concept ConfiguredThing = ThingType<T> && requires { typename T::Config; } && Decodable<typename T::Config> &&
+                          std::constructible_from<T, typename T::Config>;
+
+/// A Thing a configuration file can name: a ConfiguredThing, or a Thing
+/// without a `Config` that is default-constructible, whose `kwargs` must then
+/// be empty (or `null`).
+template <typename T>
+concept FromConfig = ConfiguredThing<T> ||
+                     (ThingType<T> && !requires { typename T::Config; } && std::default_initializable<T>);
+
+namespace detail {
+
+/// Checks the configuration of a Thing that takes none; throws
+/// std::invalid_argument with serde's message.
+void check_no_config(const json::Value& value);
+/// `args`, as an object of the fields `schema` lists, in order; throws
+/// std::invalid_argument if there are more args than fields.
+json::Value args_as_object(const json::Value& args, const json::Value& schema);
+
+/// A Thing built from its configuration (an object of kwargs, or an array
+/// of args). Throws std::invalid_argument.
+template <FromConfig T>
+std::shared_ptr<T> make_from_config(const json::Value& value) {
+    if constexpr (ConfiguredThing<T>) {
+        using C = typename T::Config;
+        try {
+            return std::make_shared<T>(
+                Codec<C>::decode(value.is_array() ? args_as_object(value, Codec<C>::json_schema()) : value));
+        } catch (const DecodeError& error) {
+            throw std::invalid_argument(error.what());
+        }
+    } else {
+        check_no_config(value);
+        return std::make_shared<T>();
+    }
+}
+
+}  // namespace detail
 
 /// Builds a Runtime.
 class RuntimeBuilder {
@@ -296,6 +371,47 @@ class RuntimeBuilder {
         return thing(std::move(name), std::make_shared<T>());
     }
 
+    /// Adds a Thing built from its configuration: `kwargs` (an object, or
+    /// `null`) is read into `T::Config` when the runtime is built.
+    template <FromConfig T>
+    RuntimeBuilder& thing_from_config(std::string name, const json::Value& kwargs) {
+        if (kwargs.is_null()) {
+            return thing_from_args<T>(std::move(name), {}, json::Value::object());
+        }
+        if (!kwargs.is_object()) {
+            return failing(std::move(name), "kwargs must be an object, not " + json::dump(kwargs));
+        }
+        return thing_from_args<T>(std::move(name), {}, kwargs);
+    }
+    /// Adds a Thing built from a configuration file entry's `args` and
+    /// `kwargs` (an object). `T::Config` is read from `kwargs`, or from `args`
+    /// (field by field) when there are no `kwargs`; giving both is an error.
+    template <FromConfig T>
+    RuntimeBuilder& thing_from_args(std::string name, std::vector<json::Value> args, json::Value kwargs) {
+        things_.push_back(
+            {std::move(name),
+             [args = std::move(args), kwargs = std::move(kwargs)](
+                 const std::string& thing_name, std::shared_ptr<const RuntimeShared> shared) {
+                 if (!args.empty() && !kwargs.empty()) {
+                     throw invalid_config(thing_name,
+                                          "use either args or kwargs, not both: a C++ Thing's "
+                                          "configuration is one typed value");
+                 }
+                 std::shared_ptr<T> thing;
+                 try {
+                     thing = detail::make_from_config<T>(args.empty() ? kwargs : json::Value(args));
+                 } catch (const std::invalid_argument& error) {
+                     throw invalid_config(thing_name, error.what());
+                 }
+                 return ThingHandle::instantiate(thing_name, std::move(thing), std::move(shared));
+             }});
+        return *this;
+    }
+    /// Overrides where a Thing's slots connect (the configuration's
+    /// `thing_slots` for that Thing), by slot name.
+    RuntimeBuilder& thing_slots(const std::string& thing,
+                                std::vector<std::pair<std::string, SlotSelection>> slots);
+
     /// Registers a shared service, which actions receive as `Dep<S>`
     /// parameters. `S` may be an abstract interface.
     template <typename S>
@@ -315,8 +431,8 @@ class RuntimeBuilder {
         return *this;
     }
 
-    /// Checks the names and builds each Thing's registry entries; throws
-    /// BuildError.
+    /// Checks the names, builds each Thing's registry entries, connects the
+    /// slots and works out the start order; throws BuildError.
     Runtime build();
 
   private:
@@ -325,12 +441,15 @@ class RuntimeBuilder {
         std::function<std::shared_ptr<ThingHandle>(const std::string&, std::shared_ptr<const RuntimeShared>)>
             make;
     };
+    static BuildError invalid_config(const std::string& thing, const std::string& error);
+    RuntimeBuilder& failing(std::string name, std::string error);
     bool global_lock_ = false;
     std::chrono::nanoseconds lock_timeout_ = default_lock_timeout;
     log::Level lock_log_level_ = log::Level::info;
     Clock clock_;
     std::size_t max_threads_ = WorkerPool::default_max_threads;
     std::vector<ThingFactory> things_;
+    std::vector<std::pair<std::string, std::vector<std::pair<std::string, SlotSelection>>>> slot_overrides_;
     std::unordered_map<std::type_index, Server::Service> services_;
     std::optional<json::Value> application_config_;
     std::optional<std::filesystem::path> settings_folder_;
@@ -359,15 +478,16 @@ class Runtime {
     const std::shared_ptr<MessageBroker>& broker() const { return shared_->broker; }
     /// The global lock, if enabled.
     const std::shared_ptr<GlobalLock>& global_lock() const { return shared_->lock; }
-    /// The order the Things start in (configuration order until slots, in
-    /// Phase 5); they stop in reverse.
+    /// The order the Things start in: the Things a Thing's slots connect to
+    /// first, otherwise configuration order. They stop in reverse.
     const std::vector<std::string>& start_order() const { return start_order_; }
     const Server& server() const { return shared_->server; }
     const std::shared_ptr<WorkerPool>& pool() const { return shared_->pool; }
 
-    /// Starts the Things in start order: for each, its devices open and then
-    /// its start hook runs. If one fails, the Things already started stop in
-    /// reverse order and StartupError is thrown.
+    /// Loads every Thing's settings, then starts the Things in start order:
+    /// for each, its devices open and then its start hook runs. If one fails,
+    /// the Things already started stop in reverse order and StartupError is
+    /// thrown.
     void start();
     /// Stops the started Things in reverse order: for each, its stop hook
     /// runs and then its devices close.
@@ -490,10 +610,14 @@ std::shared_ptr<ThingHandle> ThingHandle::instantiate(const std::string& name, s
     auto definition_error = [&](const std::string& affordance, const std::string& message) {
         return BuildError(DefinitionError(name, affordance, message));
     };
+    std::shared_ptr<detail::SettingsStore> settings;
+    if (const auto& folder = shared->server.settings_folder()) {
+        settings = std::make_shared<detail::SettingsStore>(*folder, name, handle->class_name_);
+    }
     for (auto& slot : spec.properties()) {
         std::shared_ptr<PropertyHandler> handler;
         try {
-            handler = slot.build(thing, name, slot.name, shared);
+            handler = slot.build(thing, name, slot.name, shared, settings);
         } catch (const PropertyError& error) {
             throw definition_error(slot.name, error.what());
         } catch (const std::exception& error) {
@@ -542,6 +666,13 @@ std::shared_ptr<ThingHandle> ThingHandle::instantiate(const std::string& name, s
              [thing, open = slot.open](const std::string& device_name) { open(*thing, device_name); },
              [thing, close = slot.close] { close(*thing); }});
     }
+    for (auto& slot : spec.slots()) {
+        handle->slots_.emplace_back(slot.name, slot.build(thing));
+    }
+    handle->interfaces_ = std::move(spec.interfaces());
+    if (settings && settings->has_settings()) {
+        handle->settings_ = std::move(settings);
+    }
     if (const auto& hook = spec.start_hook()) {
         handle->on_start_ = [thing, hook](ThingCtx& ctx) { hook(*thing, ctx); };
     }
@@ -553,6 +684,44 @@ std::shared_ptr<ThingHandle> ThingHandle::instantiate(const std::string& name, s
     }
     return handle;
 }
+
+namespace detail {
+
+template <typename T>
+std::optional<ThingRef<T>> thing_ref_of(const std::shared_ptr<const ThingHandle>& handle) {
+    if (auto instance = handle->instance<T>()) {
+        return ThingRef<T>(handle, std::move(instance));
+    }
+    return std::nullopt;
+}
+
+/// What a slot of `T` holds: a ThingRef<T> for a Thing type, a
+/// std::shared_ptr<T> for an interface.
+template <typename T>
+struct SlotTarget {
+    static_assert(
+        requires { sizeof(T); },
+        "a slot's Thing type or interface must be complete where the slot is declared: Things that "
+        "refer to each other connect one way through an interface (t.provides<I>())");
+    static constexpr bool is_thing = ThingType<T>;
+    using Handle = std::conditional_t<is_thing, ThingRef<T>, std::shared_ptr<T>>;
+
+    /// The handle for a Thing, if the Thing is (or provides) this target.
+    static std::optional<Handle> resolve(const std::shared_ptr<ThingHandle>& thing) {
+        if constexpr (is_thing) {
+            return thing_ref_of<T>(thing);
+        } else {
+            if (auto provided = thing->template provided<T>()) {
+                return provided;
+            }
+            return std::nullopt;
+        }
+    }
+    /// The target's name, for messages.
+    static std::string target_name() { return codec::short_name(typeid(T)); }
+};
+
+}  // namespace detail
 
 template <typename T>
 std::optional<ThingRef<T>> Runtime::thing_ref(std::string_view name) const {

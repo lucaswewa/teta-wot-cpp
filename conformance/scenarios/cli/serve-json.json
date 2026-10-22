@@ -1,0 +1,15 @@
+{
+  "args": [
+    "-j",
+    "{\"things\": {\"counter\": \"twins:TestThing\"}, \"settings_folder\": \"{settings}\"}",
+    "--port={port}",
+    "--debug"
+  ],
+  "steps": [
+    {
+      "name": "td",
+      "method": "GET",
+      "path": "/counter/"
+    }
+  ]
+}

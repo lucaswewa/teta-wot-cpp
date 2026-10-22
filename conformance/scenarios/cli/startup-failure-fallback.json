@@ -1,0 +1,60 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing",
+      "stage": "labthings_fastapi.example_things:ThingThatCantStart"
+    }
+  },
+  "args": [
+    "-c",
+    "{config}",
+    "--port",
+    "{port}",
+    "--fallback"
+  ],
+  "steps": [
+    {
+      "name": "page",
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "name": "identified",
+      "method": "GET",
+      "path": "/fallback"
+    },
+    {
+      "name": "thing_redirected",
+      "method": "GET",
+      "path": "/stage/"
+    },
+    {
+      "name": "post_redirected",
+      "method": "POST",
+      "path": "/counter/increment"
+    },
+    {
+      "name": "query_redirected",
+      "method": "GET",
+      "path": "/things/?x=1"
+    },
+    {
+      "name": "cors",
+      "method": "GET",
+      "path": "/fallback",
+      "headers": {
+        "Origin": "http://example.com"
+      }
+    },
+    {
+      "name": "preflight",
+      "method": "OPTIONS",
+      "path": "/anything",
+      "headers": {
+        "Origin": "http://example.com",
+        "Access-Control-Request-Method": "PUT",
+        "Access-Control-Request-Headers": "content-type"
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "config": {
+    "things": {
+      "settings_probe": "twins.settings_probe:SettingsProbe",
+      "counter": "twins.counter:TestThing"
+    },
+    "server_id": "conformance"
+  },
+  "files": {
+    "settings_probe/Settings-SettingsProbe.json": "{\n    \"calibration\": {\n        \"offset\": 0.25,\n        \"gain\": 4.0\n    },\n    \"count\": 12,\n    \"enabled\": true,\n    \"exposure\": 33.0,\n    \"label\": \"loaded é\",\n    \"limits\": {\n        \"b\": 1e-7,\n        \"a\": 1.5\n    },\n    \"maybe\": 3,\n    \"ratio\": 0.125,\n    \"tags\": [\n        \"x\"\n    ]\n}"
+  },
+  "steps": [
+    {"name": "no_warnings", "warnings": true},
+    {"name": "loaded", "method": "GET", "path": "/settings_probe/properties"},
+    {"name": "loaded_exposure", "method": "GET", "path": "/settings_probe/exposure"},
+    {"name": "file_as_written", "file": "settings_probe/Settings-SettingsProbe.json"},
+    {"name": "no_file_for_a_thing_without_settings", "file": "counter/Settings-TestThing.json"},
+    {"name": "write_the_same_count", "method": "PUT", "path": "/settings_probe/count", "json": 12},
+    {"name": "rewritten_identically", "file": "settings_probe/Settings-SettingsProbe.json"},
+    {"name": "counter_still_has_no_file", "method": "POST", "path": "/counter/increment", "wait": true},
+    {"name": "no_file_after_an_invocation", "file": "counter/Settings-TestThing.json"}
+  ]
+}

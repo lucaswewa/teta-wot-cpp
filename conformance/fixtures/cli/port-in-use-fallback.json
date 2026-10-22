@@ -1,0 +1,23 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing"
+    }
+  },
+  "args": [
+    "-c",
+    "{config}",
+    "--port",
+    "{port}",
+    "--fallback"
+  ],
+  "occupy": true,
+  "exit": 3,
+  "stdout": [
+    "Error: can't listen on 127.0.0.1:<port>: <os error>",
+    "Starting fallback server."
+  ],
+  "stderr": [
+    "Error: the fallback server couldn't start: can't listen on 127.0.0.1:<port>: <os error>"
+  ]
+}

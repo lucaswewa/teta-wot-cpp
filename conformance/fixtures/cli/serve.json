@@ -1,0 +1,234 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing"
+    },
+    "api_prefix": "/api",
+    "unused": 1
+  },
+  "args": [
+    "-c",
+    "{config}",
+    "--port",
+    "{port}"
+  ],
+  "exit": 0,
+  "stdout": [
+    "listening on http://127.0.0.1:<port>"
+  ],
+  "stderr": [],
+  "steps": [
+    {
+      "step": {
+        "name": "things",
+        "method": "GET",
+        "path": "/api/things/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "counter": "http://testserver/api/counter/"
+        },
+        "text": "{\"counter\":\"http://testserver/api/counter/\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/api/counter/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "TestThing",
+          "properties": {
+            "counter": {
+              "description": "A pointless counter.",
+              "title": "A pointless counter.",
+              "writeOnly": false,
+              "readOnly": true,
+              "default": 0,
+              "type": "integer",
+              "forms": [
+                {
+                  "href": "/api/counter/counter",
+                  "op": [
+                    "readproperty"
+                  ]
+                },
+                {
+                  "href": "/api/counter/counter",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/api/counter/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "increment_counter": {
+              "description": "This action doesn't do very much - all it does, in fact,\nis increment the counter (which may be read using the\n`counter` property).",
+              "title": "Increment the counter property.",
+              "forms": [
+                {
+                  "href": "/api/counter/increment_counter",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "increment_counter_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "increment_counter_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "slowly_increase_counter": {
+              "description": "Increment the counter slowly over a minute.",
+              "title": "Increment the counter slowly over a minute.",
+              "forms": [
+                {
+                  "href": "/api/counter/slowly_increase_counter",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "slowly_increase_counter_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "slowly_increase_counter_output",
+                "type": "null"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A test thing with a counter property and a couple of actions.",
+          "forms": [
+            {
+              "href": "/api/counter/properties",
+              "op": [
+                "readallproperties"
+              ]
+            },
+            {
+              "href": "/api/counter/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/api/counter/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"TestThing\",\"properties\":{\"counter\":{\"description\":\"A pointless counter.\",\"title\":\"A pointless counter.\",\"writeOnly\":false,\"readOnly\":true,\"default\":0,\"type\":\"integer\",\"forms\":[{\"href\":\"/api/counter/counter\",\"op\":[\"readproperty\"]},{\"href\":\"/api/counter/counter\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/api/counter/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"increment_counter\":{\"description\":\"This action doesn't do very much - all it does, in fact,\\nis increment the counter (which may be read using the\\n`counter` property).\",\"title\":\"Increment the counter property.\",\"forms\":[{\"href\":\"/api/counter/increment_counter\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"increment_counter_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"increment_counter_output\",\"type\":\"null\"},\"synchronous\":false},\"slowly_increase_counter\":{\"description\":\"Increment the counter slowly over a minute.\",\"title\":\"Increment the counter slowly over a minute.\",\"forms\":[{\"href\":\"/api/counter/slowly_increase_counter\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"slowly_increase_counter_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"slowly_increase_counter_output\",\"type\":\"null\"},\"synchronous\":false}},\"description\":\"A test thing with a counter property and a couple of actions.\",\"forms\":[{\"href\":\"/api/counter/properties\",\"op\":[\"readallproperties\"]},{\"href\":\"/api/counter/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/api/counter/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "count",
+        "method": "GET",
+        "path": "/api/counter/counter"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 0,
+        "text": "0"
+      }
+    }
+  ]
+}

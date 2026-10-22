@@ -9,14 +9,20 @@ add_executable(teta-wot-tests
     core/nested_test.cpp
     core/property_test.cpp
     core/runtime_test.cpp
+    core/settings_test.cpp
+    core/slots_test.cpp
     core/thing_spec_test.cpp
     http/binding_test.cpp
     http/cors_test.cpp
+    http/fallback_test.cpp
     http/fixtures_test.cpp
     http/http_test.cpp
     http/options_test.cpp
     json/json_test.cpp
     json/parse_test.cpp
+    server/cli_test.cpp
+    server/config_test.cpp
+    server/harness_test.cpp
     td/codec_corpus_test.cpp
     td/model_test.cpp
     td/schema_corpus_test.cpp
@@ -45,8 +51,14 @@ find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
     add_test(NAME conformance.http
         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/conformance/run.py check
-            --server $<TARGET_FILE:twin-server> counter validation default locked prefixed wot)
+            --server $<TARGET_FILE:twin-server>
+            counter validation default locked prefixed wot settings settings-load)
     set_tests_properties(conformance.http PROPERTIES LABELS conformance TIMEOUT 600)
+    # The command line: exit codes, output, the fallback server.
+    add_test(NAME conformance.cli
+        COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/conformance/run.py check --cli
+            --server $<TARGET_FILE:twin-server>)
+    set_tests_properties(conformance.cli PROPERTIES LABELS conformance TIMEOUT 600)
     # The examples that serve, against their Rust originals' answers (plan
     # section 6.1). They listen on port 5000.
     if(TETA_WOT_BUILD_EXAMPLES)

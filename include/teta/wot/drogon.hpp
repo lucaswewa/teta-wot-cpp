@@ -17,6 +17,8 @@
 //   last chunk;
 // - the body size limit is lifted to 128 MiB (the binding refuses more than
 //   64 MiB, as teta-wot does), and held in memory;
+// - Drogon's home page is turned off: otherwise it turns a request for `/`
+//   into one for `/index.html` before the default handler sees it;
 // - no `server` header; a `date` header.
 
 #pragma once
@@ -48,10 +50,14 @@ http::Request to_request(const drogon::HttpRequest& request);
 /// keep it alive.
 drogon::HttpResponsePtr to_response(http::Response response, const drogon::HttpRequestPtr& request);
 
-/// Answers Drogon's requests with a binding.
+/// What answers requests: a binding's `handle`, or the fallback server's.
+using Service = std::function<void(http::Request, http::HttpBinding::Respond)>;
+
+/// Answers Drogon's requests with a binding (or another service).
 class Handler {
   public:
     explicit Handler(std::shared_ptr<const http::HttpBinding> binding);
+    explicit Handler(Service service);
 
     void operator()(const drogon::HttpRequestPtr& request,
                     std::function<void(const drogon::HttpResponsePtr&)>&& callback) const;
@@ -61,7 +67,7 @@ class Handler {
     std::size_t in_flight() const { return in_flight_->load(); }
 
   private:
-    std::shared_ptr<const http::HttpBinding> binding_;
+    Service service_;
     std::shared_ptr<std::atomic<std::size_t>> in_flight_ = std::make_shared<std::atomic<std::size_t>>(0);
 };
 
@@ -71,5 +77,7 @@ class Handler {
 /// and shutdown stay the application's.
 std::shared_ptr<Handler> mount(std::shared_ptr<const http::HttpBinding> binding,
                                drogon::HttpAppFramework& app = drogon::app());
+/// Serves `service` from `app`, as `mount` serves a binding.
+std::shared_ptr<Handler> mount(Service service, drogon::HttpAppFramework& app = drogon::app());
 
 }  // namespace teta::wot::drogon_adapter

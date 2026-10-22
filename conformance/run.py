@@ -14,6 +14,8 @@ servers and compares their answers with each other. Scenarios are
 A server is any executable with teta-wot's command line: it is started as
 `PATH -c CONFIG --host 127.0.0.1 --port PORT`, with the scenario's
 configuration (and a temporary settings folder), and stopped with Ctrl-C.
+A scenario's `files` (`{"thing/Settings-Class.json": "text"}`) are written
+into the settings folder before the server starts.
 
 With `--examples`, the scenarios are `conformance/scenarios/examples/*.json`
 and the fixtures `conformance/fixtures/examples/`: each scenario is named
@@ -23,6 +25,18 @@ listens. A server is then a pattern, `{name}` standing for the example's
 name, such as `target/release/{name}` for teta-wot's examples or
 `build/linux-gcc/examples/{name}/example-{name}` for teta-wot-cpp's. This
 compares each example with its Rust original (plan §6.1).
+
+With `--cli`, the scenarios are `conformance/scenarios/cli/*.json` and the
+fixtures `conformance/fixtures/cli/`: each runs the server's command line
+with `args`, in which `{config}` is the path of a file holding the
+scenario's `config` (with a temporary settings folder), `{settings}` that
+folder (escaped for a JSON string, for `-j`) and `{port}` a free port. `occupy` makes something else listen on that port first. With
+`steps`, the server is expected to serve: they run once it listens (with
+`"fallback": true`, against the fallback server), and then it is stopped
+with Ctrl-C. The exit code and the output are recorded, without log lines
+(their format isn't contract), with the port, the temporary folder and the
+program's name masked, and with `Registered: …` lists masked (the C++ twins
+lack the Blob and array probes until Phases 7 and 10).
 
 Every request is sent over a real socket with `Host: testserver`, so the URLs
 the server builds don't depend on the port. Redirects aren't followed.
@@ -35,6 +49,20 @@ created until it has finished, and record its final state) and `poll`
 `running`, or with `until`, is one of those listed, and record that
 answer). Paths and bodies may use `{last}` (the
 most recent invocation's ID) and `{inv:N}` (the N-th, from 0).
+
+Settings steps, instead of a request:
+
+- `{"name", "file": "thing/Settings-Class.json"}` records that file of the
+  settings folder: whether it exists, its text with line ends as `\\n`, and
+  whether the scenario or the server wrote it last; for the server's, whether
+  its line ends are the platform's (CRLF on Windows, LF elsewhere);
+- `{"name", "write_file": "thing/Settings-Class.json", "text": "..."}`
+  writes a file there;
+- `{"name", "restart": true}` stops the server and starts it again, with the
+  same settings folder;
+- `{"name", "warnings": true}` records the settings and slot warnings the
+  server has logged since it last started, without their log line's format,
+  with the settings folder as `<settings>` and paths written with `/`.
 
 Normalisation, as the `wot` repository's fixtures (ADR-0011):
 
@@ -93,6 +121,20 @@ UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 NAIVE = r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,6})?"
 UTC = NAIVE + r"(?:Z|\+00:00)"
 
+ANSI = re.compile(r"\x1b\[[0-9;]*m")
+# A console log line, teta-wot's (`time LEVEL target: message fields`) or
+# teta-wot-cpp's (`time LEVEL message`).
+LOG_LINE = re.compile(r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z\s+(?:TRACE|DEBUG|INFO|WARN|ERROR) ")
+# The warnings `warnings` steps record, by how they start.
+WARNINGS = [
+    "Could not load setting ",
+    "An extra key ",
+    "Error loading settings for ",
+    "the configuration key `",
+    "`thing_slots` of `",
+    "the slots of ",
+]
+
 
 class Normaliser:
     """Masks what differs from run to run, consistently within a scenario."""
@@ -145,67 +187,145 @@ def free_port():
         return s.getsockname()[1]
 
 
+def wait_listening(process, port, executable, output):
+    """Waits until something listens on `port`; raises if the process ends
+    first, or nothing listens within 20 s."""
+    deadline = time.monotonic() + 20
+    while time.monotonic() < deadline:
+        if process.poll() is not None:
+            raise RuntimeError(f"{executable} exited with {process.returncode}: {output()}")
+        try:
+            socket.create_connection(("127.0.0.1", port), timeout=0.2).close()
+            return
+        except OSError:
+            time.sleep(0.05)
+    raise TimeoutError(f"{executable} didn't listen on {port}")
+
+
+def interrupt(process):
+    """Stops a process as Ctrl-C (Ctrl-Break on Windows) would."""
+    if process.poll() is None:
+        process.send_signal(signal.CTRL_BREAK_EVENT if os.name == "nt" else signal.SIGINT)
+        try:
+            process.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
+
+
+def new_group():
+    return subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
+
+
+def request(port, method, path, body=None, headers=None):
+    conn = http.client.HTTPConnection("127.0.0.1", port, timeout=15)
+    try:
+        all_headers = {"Host": HOST, **(headers or {})}
+        if isinstance(body, str):
+            body = body.encode("utf-8")
+        conn.request(method, path, body=body, headers=all_headers)
+        response = conn.getresponse()
+        return response.status, {k.lower(): v for k, v in response.getheaders()}, response.read()
+    finally:
+        conn.close()
+
+
 class Server:
     """A server process, started with a configuration (or, for an example,
     with its `serve` arguments) and stopped with Ctrl-C."""
 
     def __init__(self, executable, scenario):
-        executable = str(Path(executable).resolve())
+        self.executable = str(Path(executable).resolve())
+        self.scenario = scenario
         self.folder = tempfile.TemporaryDirectory()
-        if "serve" in scenario:
-            self.port = scenario.get("port", 5000)
-            command = [executable, *scenario["serve"]]
+        self.settings = Path(self.folder.name) / "settings"
+        self.written = {}
+        for name, text in scenario.get("files", {}).items():
+            self.write(name, text)
+        self.log_path = Path(self.folder.name) / "server.log"
+        self.log = None
+        try:
+            self.start()
+        except BaseException:
+            self.folder.cleanup()
+            raise
+
+    def start(self):
+        if "serve" in self.scenario:
+            self.port = self.scenario.get("port", 5000)
+            command = [self.executable, *self.scenario["serve"]]
         else:
-            config = dict(scenario["config"])
-            config.setdefault("settings_folder", str(Path(self.folder.name) / "settings"))
+            config = dict(self.scenario["config"])
+            config.setdefault("settings_folder", str(self.settings))
             config_path = Path(self.folder.name) / "config.json"
             config_path.write_text(json.dumps(config), encoding="utf-8")
             self.port = free_port()
-            command = [executable, "-c", str(config_path), "--host", "127.0.0.1", "--port", str(self.port)]
-        flags = subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
-        self.log = open(Path(self.folder.name) / "server.log", "wb")
-        self.process = subprocess.Popen(command, stdout=self.log, stderr=subprocess.STDOUT, creationflags=flags)
-        deadline = time.monotonic() + 20
-        while time.monotonic() < deadline:
-            if self.process.poll() is not None:
-                output = self.output()
-                self.log.close()
-                self.folder.cleanup()
-                raise RuntimeError(f"{executable} exited with {self.process.returncode}: {output}")
-            try:
-                socket.create_connection(("127.0.0.1", self.port), timeout=0.2).close()
-                return
-            except OSError:
-                time.sleep(0.05)
-        self.stop()
-        raise TimeoutError(f"{executable} didn't listen on {self.port}")
+            command = [self.executable, "-c", str(config_path), "--host", "127.0.0.1", "--port", str(self.port)]
+        self.log = open(self.log_path, "wb")
+        self.process = subprocess.Popen(command, stdout=self.log, stderr=subprocess.STDOUT, creationflags=new_group())
+        try:
+            wait_listening(self.process, self.port, self.executable, self.output)
+        except BaseException:
+            interrupt(self.process)
+            self.log.close()
+            raise
 
     def output(self):
         self.log.flush()
-        return (Path(self.folder.name) / "server.log").read_text(errors="replace")
+        return self.log_path.read_text(encoding="utf-8", errors="replace")
+
+    def restart(self):
+        interrupt(self.process)
+        self.log.close()
+        self.start()
+
+    def write(self, name, text):
+        path = self.settings / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(text.encode("utf-8"))
+        self.written[name] = text.encode("utf-8")
+
+    def file(self, name):
+        path = self.settings / name
+        if not path.exists():
+            return {"exists": False}
+        raw = path.read_bytes()
+        lf = raw.decode("utf-8").replace("\r\n", "\n")
+        if raw == self.written.get(name):
+            # As the scenario wrote it: its line ends are the scenario's.
+            return {"exists": True, "written_by": "scenario", "text": lf}
+        crlf = raw.count(b"\r\n")
+        native = crlf == lf.count("\n") if os.name == "nt" else crlf == 0
+        return {"exists": True, "written_by": "server", "native_newlines": native, "text": lf}
+
+    def warnings(self):
+        """The warnings logged since the server started, normalised."""
+        found = []
+        lines = ANSI.sub("", self.output()).replace("\r\n", "\n").split("\n")
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            starts = [line.find(w) for w in WARNINGS if w in line]
+            i += 1
+            if not starts:
+                continue
+            message = line[min(starts):]
+            while i < len(lines) and lines[i].startswith("  ") and not LOG_LINE.match(lines[i]):
+                message += "\n" + lines[i]
+                i += 1
+            message = re.sub(r" thing=\S+$", "", message)
+            message = message.replace(str(self.settings), "<settings>")
+            message = re.sub(r"<settings>\S*?\.json", lambda m: m.group(0).replace("\\", "/"), message)
+            found.append(message)
+        return found
 
     def stop(self):
-        if self.process.poll() is None:
-            self.process.send_signal(signal.CTRL_BREAK_EVENT if os.name == "nt" else signal.SIGINT)
-            try:
-                self.process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                self.process.kill()
-                self.process.wait()
+        interrupt(self.process)
         self.log.close()
         self.folder.cleanup()
 
     def request(self, method, path, body=None, headers=None):
-        conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=15)
-        try:
-            all_headers = {"Host": HOST, **(headers or {})}
-            if isinstance(body, str):
-                body = body.encode("utf-8")
-            conn.request(method, path, body=body, headers=all_headers)
-            response = conn.getresponse()
-            return response.status, {k.lower(): v for k, v in response.getheaders()}, response.read()
-        finally:
-            conn.close()
+        return request(self.port, method, path, body, headers)
 
 
 def record(status, headers, raw, normaliser, race=False):
@@ -234,72 +354,195 @@ def record(status, headers, raw, normaliser, race=False):
     return entry
 
 
+def run_steps(server, scenario, prefix):
+    """Runs a scenario's steps against a running server (anything with
+    `request`); returns what they recorded."""
+    normaliser = Normaliser()
+    ids = []
+    steps = []
+
+    def resolve(value):
+        if isinstance(value, list):
+            return [resolve(v) for v in value]
+        if isinstance(value, dict):
+            return {k: resolve(v) for k, v in value.items()}
+        if not isinstance(value, str):
+            return value
+        value = value.replace("{last}", ids[-1] if ids else NIL)
+        return re.sub(r"\{inv:(\d+)\}", lambda m: ids[int(m.group(1))], value)
+
+    for step in scenario["steps"]:
+        if "file" in step:
+            steps.append({"step": step, "file": server.file(step["file"])})
+            continue
+        if "write_file" in step:
+            server.write(step["write_file"], step["text"])
+            steps.append({"step": step})
+            continue
+        if step.get("restart"):
+            server.restart()
+            steps.append({"step": step})
+            continue
+        if step.get("warnings"):
+            steps.append({"step": step, "warnings": server.warnings()})
+            continue
+        headers = dict(step.get("headers", {}))
+        body = None
+        if "json" in step:
+            body = json.dumps(resolve(step["json"]))
+            headers.setdefault("Content-Type", "application/json")
+        elif "body" in step:
+            body = step["body"]
+        elif "body_repeat" in step:
+            text, count = step["body_repeat"]
+            body = text * count
+        status, answer_headers, raw = server.request(step["method"], resolve(step["path"]), body, headers)
+        deadline = time.monotonic() + 15
+
+        def polling(raw):
+            status = json.loads(raw).get("status")
+            return status not in step["until"] if "until" in step else status in ("pending", "running")
+
+        while step.get("poll") and polling(raw):
+            if time.monotonic() > deadline:
+                raise TimeoutError(step["name"])
+            time.sleep(0.02)
+            status, answer_headers, raw = server.request(step["method"], resolve(step["path"]), body, headers)
+        created = None
+        if status == 201 and "json" in answer_headers.get("content-type", ""):
+            parsed = json.loads(raw)
+            if isinstance(parsed, dict) and "id" in parsed:
+                created = parsed["id"]
+            elif isinstance(parsed, dict) and "status" in parsed:
+                # An ActionStatus (the `wot` profile) has no `id`: it is in `location`.
+                found = UUID.search(answer_headers.get("location", ""))
+                created = found.group(0) if found else None
+            if created:
+                ids.append(created)
+        entry = {"step": step, "response": record(status, answer_headers, raw, normaliser, race=created is not None)}
+        if step.get("wait") and created:
+            deadline = time.monotonic() + 15
+            while True:
+                final = server.request("GET", f"{prefix}/action_invocations/{created}")
+                if json.loads(final[2]).get("status") not in ("pending", "running"):
+                    break
+                if time.monotonic() > deadline:
+                    raise TimeoutError(created)
+                time.sleep(0.02)
+            entry["final"] = record(*final, normaliser)
+        steps.append(entry)
+    return steps
+
+
 def run(executable, scenario):
     """Runs one scenario against one server; returns what it recorded."""
     server = Server(executable, scenario)
     try:
-        normaliser = Normaliser()
-        ids = []
-        prefix = scenario.get("config", {}).get("api_prefix", "")
-        steps = []
-
-        def resolve(value):
-            if isinstance(value, list):
-                return [resolve(v) for v in value]
-            if isinstance(value, dict):
-                return {k: resolve(v) for k, v in value.items()}
-            if not isinstance(value, str):
-                return value
-            value = value.replace("{last}", ids[-1] if ids else NIL)
-            return re.sub(r"\{inv:(\d+)\}", lambda m: ids[int(m.group(1))], value)
-
-        for step in scenario["steps"]:
-            headers = dict(step.get("headers", {}))
-            body = None
-            if "json" in step:
-                body = json.dumps(resolve(step["json"]))
-                headers.setdefault("Content-Type", "application/json")
-            elif "body" in step:
-                body = step["body"]
-            elif "body_repeat" in step:
-                text, count = step["body_repeat"]
-                body = text * count
-            status, answer_headers, raw = server.request(step["method"], resolve(step["path"]), body, headers)
-            deadline = time.monotonic() + 15
-            def polling(raw):
-                status = json.loads(raw).get("status")
-                return status not in step["until"] if "until" in step else status in ("pending", "running")
-            while step.get("poll") and polling(raw):
-                if time.monotonic() > deadline:
-                    raise TimeoutError(step["name"])
-                time.sleep(0.02)
-                status, answer_headers, raw = server.request(step["method"], resolve(step["path"]), body, headers)
-            created = None
-            if status == 201 and "json" in answer_headers.get("content-type", ""):
-                parsed = json.loads(raw)
-                if isinstance(parsed, dict) and "id" in parsed:
-                    created = parsed["id"]
-                elif isinstance(parsed, dict) and "status" in parsed:
-                    # An ActionStatus (the `wot` profile) has no `id`: it is in `location`.
-                    found = UUID.search(answer_headers.get("location", ""))
-                    created = found.group(0) if found else None
-                if created:
-                    ids.append(created)
-            entry = {"step": step, "response": record(status, answer_headers, raw, normaliser, race=created is not None)}
-            if step.get("wait") and created:
-                deadline = time.monotonic() + 15
-                while True:
-                    final = server.request("GET", f"{prefix}/action_invocations/{created}")
-                    if json.loads(final[2]).get("status") not in ("pending", "running"):
-                        break
-                    if time.monotonic() > deadline:
-                        raise TimeoutError(created)
-                    time.sleep(0.02)
-                entry["final"] = record(*final, normaliser)
-            steps.append(entry)
-        return steps
+        return run_steps(server, scenario, scenario.get("config", {}).get("api_prefix", ""))
     finally:
         server.stop()
+
+
+class Listening:
+    """A server's port, for steps run against the command line's server."""
+
+    def __init__(self, port):
+        self.port = port
+
+    def request(self, method, path, body=None, headers=None):
+        return request(self.port, method, path, body, headers)
+
+
+def output_lines(text, replacements):
+    """A command line's output, without log lines, masked."""
+    lines = []
+    skipping = False
+    for line in ANSI.sub("", text).replace("\r\n", "\n").split("\n"):
+        if LOG_LINE.match(line):
+            skipping = True
+            continue
+        if skipping and line.startswith("  "):
+            continue  # a log record's continuation
+        skipping = False
+        for old, new in replacements:
+            line = line.replace(old, new)
+        line = re.sub(r"Registered: .*", "Registered: <names>", line)
+        # Each says which language a Thing's configuration type is in.
+        line = re.sub(r"a (?:Rust|C\+\+) Thing's configuration", "a <language> Thing's configuration", line)
+        line = re.sub(r"<folder>\S*", lambda m: m.group(0).replace("\\", "/"), line)
+        # The operating system's words for an error.
+        line = re.sub(r"^(Error: Could not find configuration file .*?) \(.*\(os error \d+\)\)$", r"\1 (<os error>)",
+                      line)
+        line = re.sub(r"(can't (?:listen on|resolve) \S*): .*$", r"\1: <os error>", line)
+        lines.append(line)
+    while lines and lines[-1] == "":
+        lines.pop()
+    return lines
+
+
+def run_cli(executable, scenario):
+    """Runs one command-line scenario; returns what it recorded."""
+    executable = str(Path(executable).resolve())
+    with tempfile.TemporaryDirectory() as folder:
+        folder_path = Path(folder)
+        port = free_port()
+        config_path = folder_path / "config.json"
+        if "config" in scenario:
+            config = dict(scenario["config"])
+            config.setdefault("settings_folder", str(folder_path / "settings"))
+            config_path.write_text(json.dumps(config), encoding="utf-8")
+        settings = json.dumps(str(folder_path / "settings"))[1:-1]
+        args = [a.replace("{config}", str(config_path)).replace("{port}", str(port)).replace("{settings}", settings)
+                for a in scenario["args"]]
+        occupied = None
+        if scenario.get("occupy"):
+            occupied = socket.socket()
+            occupied.bind(("127.0.0.1", port))
+            occupied.listen()
+        out_path, err_path = folder_path / "stdout.txt", folder_path / "stderr.txt"
+        with open(out_path, "wb") as out, open(err_path, "wb") as err:
+            process = subprocess.Popen([executable, *args], stdout=out, stderr=err, creationflags=new_group())
+            steps = None
+            try:
+                if "steps" in scenario:
+                    wait_listening(process, port, executable, lambda: err_path.read_text(errors="replace"))
+                    steps = run_steps(Listening(port), scenario, "")
+                    interrupt(process)
+                else:
+                    process.wait(timeout=30)
+            finally:
+                interrupt(process)
+                if occupied:
+                    occupied.close()
+        replacements = [
+            (json.dumps(str(folder_path))[1:-1], "<folder>"),
+            (str(folder_path), "<folder>"),
+            (f":{port}", ":<port>"),
+            (Path(executable).name, "<server>"),
+        ]
+        recorded = {
+            "exit": process.returncode,
+            "stdout": output_lines(out_path.read_bytes().decode("utf-8", errors="replace"), replacements),
+            "stderr": output_lines(err_path.read_bytes().decode("utf-8", errors="replace"), replacements),
+        }
+        if steps is not None:
+            text = json.dumps(steps)
+            for old, new in replacements:
+                text = text.replace(json.dumps(old)[1:-1], json.dumps(new)[1:-1])
+            recorded["steps"] = portable_paths(json.loads(text))
+        return recorded
+
+
+def portable_paths(value):
+    """Paths under the temporary folder written with `/`, also where they are
+    escaped for JSON (in the fallback page's configuration)."""
+    if isinstance(value, str):
+        return re.sub(r"<folder>[^\s&\"'<>]*", lambda m: m.group(0).replace("\\\\", "/").replace("\\", "/"), value)
+    if isinstance(value, list):
+        return [portable_paths(v) for v in value]
+    if isinstance(value, dict):
+        return {k: portable_paths(v) for k, v in value.items()}
+    return value
 
 
 def load(folder, names):
@@ -325,7 +568,9 @@ def main():
     parser.add_argument("mode", choices=["capture", "check", "diff"])
     parser.add_argument("--server", action="append", required=True,
                         help="a server executable (with --examples, a pattern with {name})")
-    parser.add_argument("--examples", action="store_true", help="compare examples, not the twin servers")
+    kinds = parser.add_mutually_exclusive_group()
+    kinds.add_argument("--examples", action="store_true", help="compare examples, not the twin servers")
+    kinds.add_argument("--cli", action="store_true", help="compare the command line: exit codes, output, fallback")
     parser.add_argument("scenarios", nargs="*")
     args = parser.parse_args()
     if args.mode == "diff" and len(args.server) != 2:
@@ -333,27 +578,34 @@ def main():
     if args.mode != "diff" and len(args.server) != 1:
         parser.error(f"{args.mode} needs one --server")
 
-    kind = "examples" if args.examples else "http"
+    kind = "examples" if args.examples else "cli" if args.cli else "http"
     scenarios, fixtures = HERE / "scenarios" / kind, HERE / "fixtures" / kind
+    runner = run_cli if args.cli else run
     failed = []
     for name, scenario in load(scenarios, args.scenarios):
         servers = [server.format(name=name) if args.examples else server for server in args.server]
         if args.mode == "capture":
-            setup = {key: scenario[key] for key in ("config", "serve", "port") if key in scenario}
-            fixture = {**setup, "steps": run(servers[0], scenario)}
+            if args.cli:
+                setup = {k: v for k, v in scenario.items() if k != "steps"}
+                fixture = {**setup, **runner(servers[0], scenario)}
+            else:
+                setup = {key: scenario[key] for key in ("config", "serve", "port", "files") if key in scenario}
+                fixture = {**setup, "steps": runner(servers[0], scenario)}
             fixtures.mkdir(parents=True, exist_ok=True)
             path = fixtures / f"{name}.json"
             path.write_text(dumps(fixture), encoding="utf-8", newline="\n")
             print(f"captured {name}: {path.relative_to(HERE.parent)}")
         elif args.mode == "check":
             fixture = json.loads((fixtures / f"{name}.json").read_text(encoding="utf-8"))
-            ok = compare(f"fixture {name}", fixture["steps"], f"server {name}", run(servers[0], scenario))
+            expected = {k: fixture[k] for k in ("exit", "stdout", "stderr", "steps") if k in fixture} if args.cli \
+                else fixture["steps"]
+            ok = compare(f"fixture {name}", expected, f"server {name}", runner(servers[0], scenario))
             print(f"{'ok  ' if ok else 'FAIL'} {name}")
             if not ok:
                 failed.append(name)
         else:
-            a = run(servers[0], scenario)
-            b = run(servers[1], scenario)
+            a = runner(servers[0], scenario)
+            b = runner(servers[1], scenario)
             ok = compare(servers[0], a, servers[1], b)
             print(f"{'ok  ' if ok else 'FAIL'} {name}")
             if not ok:

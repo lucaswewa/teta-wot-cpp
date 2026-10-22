@@ -108,25 +108,40 @@ drogon::HttpResponsePtr to_response(http::Response response, const drogon::HttpR
     return out;
 }
 
-Handler::Handler(std::shared_ptr<const http::HttpBinding> binding) : binding_(std::move(binding)) {}
+Handler::Handler(std::shared_ptr<const http::HttpBinding> binding)
+    : service_([binding = std::move(binding)](http::Request request, http::HttpBinding::Respond respond) {
+          binding->handle(std::move(request), std::move(respond));
+      }) {}
+
+Handler::Handler(Service service) : service_(std::move(service)) {}
 
 void Handler::operator()(const drogon::HttpRequestPtr& request,
                          std::function<void(const drogon::HttpResponsePtr&)>&& callback) const {
     ++*in_flight_;
-    binding_->handle(to_request(*request), [request, callback = std::move(callback),
-                                            in_flight = in_flight_](http::Response response) {
-        callback(to_response(std::move(response), request));
-        --*in_flight;
-    });
+    service_(to_request(*request),
+             [request, callback = std::move(callback), in_flight = in_flight_](http::Response response) {
+                 callback(to_response(std::move(response), request));
+                 --*in_flight;
+             });
 }
 
 std::shared_ptr<Handler> mount(std::shared_ptr<const http::HttpBinding> binding,
                                drogon::HttpAppFramework& app) {
-    auto handler = std::make_shared<Handler>(std::move(binding));
+    return mount(
+        Service([binding = std::move(binding)](http::Request request, http::HttpBinding::Respond respond) {
+            binding->handle(std::move(request), std::move(respond));
+        }),
+        app);
+}
+
+std::shared_ptr<Handler> mount(Service service, drogon::HttpAppFramework& app) {
+    auto handler = std::make_shared<Handler>(std::move(service));
     app.setDefaultHandler([handler](const drogon::HttpRequestPtr& request,
                                     std::function<void(const drogon::HttpResponsePtr&)>&& callback) {
            (*handler)(request, std::move(callback));
        })
+        // Otherwise Drogon asks for `/index.html` when `/` is requested.
+        .setHomePage("")
         .setClientMaxBodySize(max_body_size)
         .setClientMaxMemoryBodySize(max_body_size)
         .enableServerHeader(false)
