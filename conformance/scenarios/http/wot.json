@@ -1,0 +1,42 @@
+{
+  "config": {
+    "things": {
+      "mything": "labthings_fastapi.example_things:MyThing",
+      "http_probe": "twins.http_probe:HttpProbe",
+      "ws_probe": "twins.ws_probe:ThingWithProperties"
+    },
+    "wire_profile": "wot",
+    "server_id": "conformance"
+  },
+  "steps": [
+    {"name": "write", "method": "PUT", "path": "/http_probe/value", "json": 2},
+    {"name": "read", "method": "GET", "path": "/http_probe/value"},
+    {"name": "write_invalid", "method": "PUT", "path": "/http_probe/value", "json": "x"},
+    {"name": "write_malformed", "method": "PUT", "path": "/http_probe/value", "body": "{not json"},
+    {"name": "write_null", "method": "PUT", "path": "/http_probe/value", "json": null},
+    {"name": "write_readonly", "method": "PUT", "path": "/mything/counter", "json": 1},
+    {"name": "reset", "method": "POST", "path": "/http_probe/value/reset"},
+    {"name": "write_multiple", "method": "PUT", "path": "/http_probe/properties", "json": {"value": 4}},
+    {"name": "write_multiple_invalid", "method": "PUT", "path": "/mything/properties", "json": {"counter": 1, "foo": [2], "a/b": 3}},
+    {"name": "not_found", "method": "GET", "path": "/nothing"},
+    {"name": "redirect", "method": "GET", "path": "/http_probe"},
+    {"name": "invoke_zero", "method": "POST", "path": "/http_probe/zero", "wait": true},
+    {"name": "zero_output", "method": "GET", "path": "/action_invocations/{last}/output"},
+    {"name": "invoke_refuse", "method": "POST", "path": "/http_probe/refuse", "wait": true},
+    {"name": "refuse_output", "method": "GET", "path": "/action_invocations/{last}/output"},
+    {"name": "invoke_raise", "method": "POST", "path": "/ws_probe/raise_error", "wait": true},
+    {"name": "invoke_cancel_myself", "method": "POST", "path": "/ws_probe/cancel_myself", "wait": true},
+    {"name": "invoke_nothing", "method": "POST", "path": "/mything/action_without_arguments", "wait": true},
+    {"name": "invoke_slow", "method": "POST", "path": "/http_probe/slow", "json": {"seconds": 30}},
+    {"name": "slow_running", "method": "GET", "path": "/action_invocations/{last}", "poll": true, "until": ["running"]},
+    {"name": "cancel_slow", "method": "DELETE", "path": "/action_invocations/{last}"},
+    {"name": "slow_failed", "method": "GET", "path": "/action_invocations/{last}", "poll": true, "until": ["failed"]},
+    {"name": "cancel_again", "method": "DELETE", "path": "/action_invocations/{last}"},
+    {"name": "invoke_invalid", "method": "POST", "path": "/http_probe/slow", "json": {"seconds": "soon"}},
+    {"name": "list_action", "method": "GET", "path": "/http_probe/zero"},
+    {"name": "query_all_actions", "method": "GET", "path": "/http_probe/actions"},
+    {"name": "list_all", "method": "GET", "path": "/action_invocations"},
+    {"name": "bad_id", "method": "GET", "path": "/action_invocations/bad-id"},
+    {"name": "nil_id", "method": "GET", "path": "/action_invocations/00000000-0000-0000-0000-000000000000"}
+  ]
+}

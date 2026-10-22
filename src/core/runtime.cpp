@@ -61,6 +61,23 @@ void check_affordance_names(const std::string& thing, const std::vector<std::str
     }
 }
 
+std::optional<std::string> endpoint_path_problem(const std::string& path) {
+    if (path.empty() || path.front() == '/') {
+        return "endpoint path `" + path + "` must be relative to the Thing, without a leading `/`";
+    }
+    for (std::size_t start = 0;;) {
+        const auto end = path.find('/', start);
+        const auto segment = std::string_view(path).substr(start, end - start);
+        if (segment.empty() || segment == "." || segment == "..") {
+            return "endpoint path `" + path + "` has an empty, `.` or `..` segment";
+        }
+        if (end == std::string::npos) {
+            return std::nullopt;
+        }
+        start = end + 1;
+    }
+}
+
 }  // namespace detail
 
 BuildError::BuildError(Kind kind, std::string thing, std::string name, std::string message)
@@ -279,6 +296,11 @@ td::ThingInfo ThingHandle::info() const {
     }
     for (const auto& e : events_) {
         info.events.push_back({e.name, e.title, e.description, e.data, e.semantic_types});
+    }
+    for (const auto& e : endpoints_) {
+        if (e.meta.link) {
+            info.endpoint_links.push_back({e.path, e.meta.link->rel, e.meta.link->media_type});
+        }
     }
     return info;
 }

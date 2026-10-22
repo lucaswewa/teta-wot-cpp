@@ -1,0 +1,17 @@
+{
+  "serve": ["--serve"],
+  "port": 5000,
+  "steps": [
+    {"name": "td", "method": "GET", "path": "/light/"},
+    {"name": "status_off", "method": "GET", "path": "/light/status"},
+    {"name": "toggle", "method": "POST", "path": "/light/toggle", "wait": true},
+    {"name": "status_on", "method": "GET", "path": "/light/status"},
+    {"name": "too_bright", "method": "PUT", "path": "/light/brightness", "json": 150},
+    {"name": "dim", "method": "PUT", "path": "/light/brightness", "json": 40},
+    {"name": "status_dim", "method": "GET", "path": "/light/status"},
+    {"name": "write_is_on", "method": "PUT", "path": "/light/is_on", "json": false},
+    {"name": "write_status", "method": "PUT", "path": "/light/status", "json": "on"},
+    {"name": "reset_brightness", "method": "POST", "path": "/light/brightness/reset"},
+    {"name": "all", "method": "GET", "path": "/light/properties"}
+  ]
+}

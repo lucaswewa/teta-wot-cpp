@@ -1,0 +1,32 @@
+{
+  "config": {
+    "things": {
+      "http_probe": "twins.http_probe:HttpProbe",
+      "counter": "twins.counter:TestThing",
+      "ws_probe": "twins.ws_probe:ThingWithProperties"
+    },
+    "enable_global_lock": true,
+    "server_id": "conformance"
+  },
+  "steps": [
+    {"name": "invoke_slow", "method": "POST", "path": "/http_probe/slow", "json": {"seconds": 30}},
+    {"name": "slow_running", "method": "GET", "path": "/action_invocations/{inv:0}", "poll": true, "until": ["running"]},
+    {"name": "write_busy", "method": "PUT", "path": "/http_probe/value", "json": 1},
+    {"name": "reset_busy", "method": "POST", "path": "/http_probe/value/reset"},
+    {"name": "write_functional_busy", "method": "PUT", "path": "/ws_probe/funcprop", "json": 1},
+    {"name": "write_multiple_busy", "method": "PUT", "path": "/http_probe/properties", "json": {"value": 2}},
+    {"name": "write_invalid_busy", "method": "PUT", "path": "/http_probe/value", "json": "x"},
+    {"name": "read_free", "method": "GET", "path": "/http_probe/value"},
+    {"name": "read_functional_free", "method": "GET", "path": "/ws_probe/funcprop"},
+    {"name": "invoke_busy", "method": "POST", "path": "/http_probe/zero", "wait": true},
+    {"name": "busy_output", "method": "GET", "path": "/action_invocations/{last}/output"},
+    {"name": "invoke_other_thing_busy", "method": "POST", "path": "/counter/increment_counter", "wait": true},
+    {"name": "invocations_busy", "method": "GET", "path": "/action_invocations"},
+    {"name": "cancel_slow", "method": "DELETE", "path": "/action_invocations/{inv:0}"},
+    {"name": "slow_cancelled", "method": "GET", "path": "/action_invocations/{inv:0}", "poll": true},
+    {"name": "write_free", "method": "PUT", "path": "/http_probe/value", "json": 1},
+    {"name": "reset_free", "method": "POST", "path": "/http_probe/value/reset"},
+    {"name": "invoke_free", "method": "POST", "path": "/http_probe/zero", "wait": true},
+    {"name": "counter_free", "method": "GET", "path": "/counter/counter"}
+  ]
+}

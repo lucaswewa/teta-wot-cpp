@@ -152,6 +152,20 @@ class ActionEntry {
     std::shared_ptr<const RuntimeShared> shared_;
 };
 
+/// A custom endpoint of a running Thing.
+struct EndpointEntry {
+    /// In upper case.
+    std::string method;
+    /// Relative to the Thing's path.
+    std::string path;
+    EndpointMeta meta;
+    http::EndpointHandler handler;
+
+    /// The name its OpenAPI `operationId` is made from: the one given, or the
+    /// path.
+    const std::string& operation_name() const { return meta.name ? *meta.name : path; }
+};
+
 template <typename T>
 class ThingRef;
 
@@ -179,6 +193,8 @@ class ThingHandle {
     const std::vector<ActionEntry>& actions() const { return actions_; }
     const EventEntry* event(std::string_view name) const;
     const std::vector<EventEntry>& events() const { return events_; }
+    /// The custom endpoints, in definition order.
+    const std::vector<EndpointEntry>& endpoints() const { return endpoints_; }
 
     /// The Thing itself, if it is a `T`.
     template <typename T>
@@ -222,6 +238,7 @@ class ThingHandle {
     std::vector<PropertyEntry> properties_;
     std::vector<ActionEntry> actions_;
     std::vector<EventEntry> events_;
+    std::vector<EndpointEntry> endpoints_;
     std::vector<DeviceHook> devices_;
     std::function<void(ThingCtx&)> on_start_;
     std::function<void(ThingCtx&)> on_stop_;
@@ -436,6 +453,9 @@ namespace detail {
 
 /// Builds the entries of one Thing (runtime.cpp).
 void check_affordance_names(const std::string& thing, const std::vector<std::string>& names);
+/// Why a custom endpoint's path can't be used, if it can't: it must be
+/// relative, with segments that aren't empty, `.` or `..`.
+std::optional<std::string> endpoint_path_problem(const std::string& path);
 
 }  // namespace detail
 
@@ -504,6 +524,17 @@ std::shared_ptr<ThingHandle> ThingHandle::instantiate(const std::string& name, s
         handle->events_.push_back({slot.name, slot.options->title_text().value_or(slot.name),
                                    slot.options->description_text(), slot.options->semantic_types(),
                                    std::move(data)});
+    }
+    for (auto& slot : spec.endpoints()) {
+        if (auto problem = detail::endpoint_path_problem(slot.path)) {
+            throw definition_error(slot.path, *problem);
+        }
+        for (const auto& existing : handle->endpoints_) {
+            if (existing.method == slot.method && existing.path == slot.path) {
+                throw definition_error(slot.path, "two endpoints answer " + slot.method + " " + slot.path);
+            }
+        }
+        handle->endpoints_.push_back({slot.method, slot.path, slot.options->meta(), slot.build(thing)});
     }
     for (auto& slot : spec.devices()) {
         handle->devices_.push_back(

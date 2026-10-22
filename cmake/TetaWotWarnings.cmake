@@ -1,7 +1,8 @@
 # Warning flags for the project's own targets (not for consumers).
 add_library(teta_wot_warnings INTERFACE)
 if(MSVC)
-    target_compile_options(teta_wot_warnings INTERFACE /W4 /permissive- /utf-8 /Zc:__cplusplus)
+    # /bigobj: Things defined with many affordances make many template sections.
+    target_compile_options(teta_wot_warnings INTERFACE /W4 /permissive- /utf-8 /Zc:__cplusplus /bigobj)
     if(TETA_WOT_WARNINGS_AS_ERRORS)
         target_compile_options(teta_wot_warnings INTERFACE /WX)
     endif()

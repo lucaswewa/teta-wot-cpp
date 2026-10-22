@@ -31,6 +31,21 @@ extern const std::vector<std::string> names;
 /// an unknown name.
 void add(tw::RuntimeBuilder& builder, std::string_view name);
 
+/// Adds the twin whose class configuration files name `cls` (the reference
+/// registry's names, such as `twins.counter:TestThing` or
+/// `labthings_fastapi.example_things:MyThing`) under `name`. False if no twin
+/// has that class.
+bool add_class(tw::RuntimeBuilder& builder, const std::string& name, std::string_view cls);
+
+/// The class names `add_class` knows, as the reference registry lists them.
+std::vector<std::string> class_names();
+
+/// A server builder for a configuration file's content, read as the reference
+/// reads what the scenarios use: `things` (each a class name or `{"cls":
+/// ...}`), `server_id`, `api_prefix`, `enable_global_lock` and
+/// `wire_profile`. Throws std::invalid_argument for what it can't serve.
+tw::ThingServerBuilder server_builder(const tw::json::Value& config);
+
 /// A position in three dimensions.
 struct Position {
     std::int64_t x = 0;

@@ -70,7 +70,9 @@ jobs:
           key: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
-      - name: Test (unit tests and examples)
+      # The unit tests, the examples, and the HTTP fixtures over sockets
+      # (`conformance.http`, which needs Python 3).
+      - name: Test (unit tests, examples and fixtures)
         run: ctest --preset ${{ matrix.preset }}
       # The cmake-consumer example again, against the installed package (not
       # for the sanitizer builds, whose library needs the sanitizer runtime).
@@ -82,12 +84,19 @@ jobs:
           triplet=$( [ "$RUNNER_OS" = Windows ] && echo x64-windows-static || echo x64-linux )
           # CMake on Windows needs D:/a/... paths, not Git Bash's /d/a/...
           root=$( [ "$RUNNER_OS" = Windows ] && cygpath -m "$PWD" || echo "$PWD" )
-          # The library's dependencies come from the vcpkg tree the build used.
+          vcpkg=$( [ "$RUNNER_OS" = Windows ] && cygpath -m "$VCPKG_ROOT" || echo "$VCPKG_ROOT" )
+          # The library's dependencies come from the vcpkg tree the build used,
+          # through vcpkg's toolchain (whose wrappers some of Drogon's
+          # dependencies need, such as zlib's).
           cmake -S examples/cmake-consumer -B build/consumer -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_CXX_COMPILER=$( [ "$RUNNER_OS" = Windows ] && echo cl || echo g++ ) \
             -DCMAKE_MSVC_RUNTIME_LIBRARY='MultiThreaded$<$<CONFIG:Debug>:Debug>' \
-            -DCMAKE_PREFIX_PATH="${{ runner.temp }}/teta-wot;$root/build/${{ matrix.preset }}/vcpkg_installed/$triplet"
+            -DCMAKE_TOOLCHAIN_FILE="$vcpkg/scripts/buildsystems/vcpkg.cmake" \
+            -DVCPKG_TARGET_TRIPLET=$triplet \
+            -DVCPKG_INSTALLED_DIR="$root/build/${{ matrix.preset }}/vcpkg_installed" \
+            -DVCPKG_MANIFEST_MODE=OFF \
+            -DCMAKE_PREFIX_PATH="${{ runner.temp }}/teta-wot"
           cmake --build build/consumer
           ctest --test-dir build/consumer --output-on-failure
 
@@ -114,12 +123,13 @@ jobs:
       - name: Build the reference server
         working-directory: conformance/reference-rs
         run: cargo build --release --locked
-      - name: The serde_json, schema and validation corpora are up to date
+      - name: The serde_json, schema, validation and wire corpora are up to date
         run: |
           conformance/reference-rs/target/release/json-corpus > tests/json/serde_json_corpus.txt
           conformance/reference-rs/target/release/schema-corpus > tests/td/schema_corpus.jsonl
           conformance/reference-rs/target/release/validation-corpus > tests/validate/validation_corpus.jsonl
-          git diff --exit-code -- tests/json/serde_json_corpus.txt tests/td/schema_corpus.jsonl tests/validate/validation_corpus.jsonl
+          conformance/reference-rs/target/release/wire-corpus > tests/http/wire_corpus.jsonl
+          git diff --exit-code -- tests/json/serde_json_corpus.txt tests/td/schema_corpus.jsonl tests/validate/validation_corpus.jsonl tests/http/wire_corpus.jsonl
       - name: The fixtures are what the reference answers
         run: |
           python3 conformance/run.py capture --server conformance/reference-rs/target/release/reference-server

@@ -15,6 +15,10 @@ Windows and Linux builds need the same dependencies (Drogon and its own, nlohman
 - A `system` preset builds without vcpkg, from `CMAKE_PREFIX_PATH` or the system, for environments where vcpkg can't download.
 - The library installs a CMake package, `teta-wot` (`find_package(teta-wot CONFIG)`, targets `teta::wot`, `teta::wot-json`, …).
 
+## Amendments
+
+- **Phase 4 (2026-10-22):** Drogon is a dependency of the library, no longer a manifest feature, since the server is built on it (ADR-0004). The features are `tests` and `spdlog`.
+
 ## Consequences
 
 - CI clones vcpkg at the baseline and caches its binary archives per preset.

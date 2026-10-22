@@ -2,9 +2,11 @@
 #
 # Built two ways:
 # - in the tree, as every example (`teta_wot_add_example`);
-# - on its own, against an installed teta-wot-cpp:
-#     cmake -S examples/cmake-consumer -B build-consumer -DCMAKE_PREFIX_PATH=<install prefix>
-#   (with vcpkg, the overlay port from Phase 10 replaces the prefix).
+# - on its own, against an installed teta-wot-cpp, with vcpkg's toolchain for
+#   its dependencies (as CI does):
+#     cmake -S examples/cmake-consumer -B build-consumer -DCMAKE_PREFIX_PATH=<install prefix> \
+#           -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake ...
+#   (the overlay port from Phase 10 replaces the prefix).
 if(NOT TARGET teta::wot)
     cmake_minimum_required(VERSION 3.28)
     project(cmake-consumer LANGUAGES CXX)

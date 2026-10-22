@@ -1,0 +1,1355 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing",
+      "http_probe": "twins.http_probe:HttpProbe"
+    },
+    "api_prefix": "/api/v1",
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "things",
+        "method": "GET",
+        "path": "/api/v1/things/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "counter": "http://testserver/api/v1/counter/",
+          "http_probe": "http://testserver/api/v1/http_probe/"
+        },
+        "text": "{\"counter\":\"http://testserver/api/v1/counter/\",\"http_probe\":\"http://testserver/api/v1/http_probe/\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "thing_descriptions",
+        "method": "GET",
+        "path": "/api/v1/thing_descriptions/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "counter": {
+            "id": "urn:uuid:<uuid:0>",
+            "title": "TestThing",
+            "properties": {
+              "counter": {
+                "description": "A pointless counter.",
+                "title": "A pointless counter.",
+                "writeOnly": false,
+                "readOnly": true,
+                "default": 0,
+                "type": "integer",
+                "forms": [
+                  {
+                    "href": "/api/v1/counter/counter",
+                    "op": [
+                      "readproperty"
+                    ]
+                  },
+                  {
+                    "href": "/api/v1/counter/counter",
+                    "op": [
+                      "observeproperty",
+                      "unobserveproperty"
+                    ],
+                    "subprotocol": "sse"
+                  },
+                  {
+                    "href": "ws://testserver/api/v1/counter/ws",
+                    "op": [
+                      "observeproperty"
+                    ]
+                  }
+                ],
+                "observable": true
+              }
+            },
+            "actions": {
+              "increment_counter": {
+                "description": "This action doesn't do very much - all it does, in fact,\nis increment the counter (which may be read using the\n`counter` property).",
+                "title": "Increment the counter property.",
+                "forms": [
+                  {
+                    "href": "/api/v1/counter/increment_counter",
+                    "op": [
+                      "invokeaction"
+                    ]
+                  },
+                  {
+                    "href": "/api/v1/action_invocations/{id}",
+                    "op": [
+                      "queryaction",
+                      "cancelaction"
+                    ]
+                  }
+                ],
+                "uriVariables": {
+                  "id": {
+                    "title": "Invocation ID",
+                    "format": "uuid",
+                    "type": "string"
+                  }
+                },
+                "input": {
+                  "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                  "title": "increment_counter_input",
+                  "oneOf": [
+                    {
+                      "description": "A model representing an object that must have no keys.",
+                      "type": "object",
+                      "properties": {},
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "output": {
+                  "title": "increment_counter_output",
+                  "type": "null"
+                },
+                "synchronous": false
+              },
+              "slowly_increase_counter": {
+                "description": "Increment the counter slowly over a minute.",
+                "title": "Increment the counter slowly over a minute.",
+                "forms": [
+                  {
+                    "href": "/api/v1/counter/slowly_increase_counter",
+                    "op": [
+                      "invokeaction"
+                    ]
+                  },
+                  {
+                    "href": "/api/v1/action_invocations/{id}",
+                    "op": [
+                      "queryaction",
+                      "cancelaction"
+                    ]
+                  }
+                ],
+                "uriVariables": {
+                  "id": {
+                    "title": "Invocation ID",
+                    "format": "uuid",
+                    "type": "string"
+                  }
+                },
+                "input": {
+                  "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                  "title": "slowly_increase_counter_input",
+                  "oneOf": [
+                    {
+                      "description": "A model representing an object that must have no keys.",
+                      "type": "object",
+                      "properties": {},
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "output": {
+                  "title": "slowly_increase_counter_output",
+                  "type": "null"
+                },
+                "synchronous": false
+              }
+            },
+            "description": "A test thing with a counter property and a couple of actions.",
+            "forms": [
+              {
+                "href": "/api/v1/counter/properties",
+                "op": [
+                  "readallproperties"
+                ]
+              },
+              {
+                "href": "/api/v1/counter/properties",
+                "op": [
+                  "observeallproperties",
+                  "unobserveallproperties"
+                ],
+                "subprotocol": "sse"
+              },
+              {
+                "href": "/api/v1/counter/actions",
+                "op": [
+                  "queryallactions"
+                ]
+              }
+            ],
+            "base": "http://testserver/",
+            "securityDefinitions": {
+              "no_security": {
+                "description": "No security",
+                "scheme": "nosec"
+              }
+            },
+            "security": "no_security",
+            "@context": "https://www.w3.org/2022/wot/td/v1.1"
+          },
+          "http_probe": {
+            "id": "urn:uuid:<uuid:1>",
+            "title": "HttpProbe",
+            "properties": {
+              "value": {
+                "description": "A writable integer.",
+                "title": "A writable integer.",
+                "writeOnly": false,
+                "readOnly": false,
+                "default": 0,
+                "type": "integer",
+                "forms": [
+                  {
+                    "href": "/api/v1/http_probe/value",
+                    "op": [
+                      "readproperty",
+                      "writeproperty"
+                    ]
+                  },
+                  {
+                    "href": "/api/v1/http_probe/value",
+                    "op": [
+                      "observeproperty",
+                      "unobserveproperty"
+                    ],
+                    "subprotocol": "sse"
+                  },
+                  {
+                    "href": "ws://testserver/api/v1/http_probe/ws",
+                    "op": [
+                      "observeproperty"
+                    ]
+                  }
+                ],
+                "observable": true
+              }
+            },
+            "actions": {
+              "refuse": {
+                "description": "Fail in an anticipated way.",
+                "title": "Fail in an anticipated way.",
+                "forms": [
+                  {
+                    "href": "/api/v1/http_probe/refuse",
+                    "op": [
+                      "invokeaction"
+                    ]
+                  },
+                  {
+                    "href": "/api/v1/action_invocations/{id}",
+                    "op": [
+                      "queryaction",
+                      "cancelaction"
+                    ]
+                  }
+                ],
+                "uriVariables": {
+                  "id": {
+                    "title": "Invocation ID",
+                    "format": "uuid",
+                    "type": "string"
+                  }
+                },
+                "input": {
+                  "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                  "title": "refuse_input",
+                  "oneOf": [
+                    {
+                      "description": "A model representing an object that must have no keys.",
+                      "type": "object",
+                      "properties": {},
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "output": {
+                  "title": "refuse_output",
+                  "type": "null"
+                },
+                "synchronous": false
+              },
+              "slow": {
+                "description": ":param seconds: How long to sleep.\n:return: \"done\".",
+                "title": "Sleep, unless cancelled.",
+                "forms": [
+                  {
+                    "href": "/api/v1/http_probe/slow",
+                    "op": [
+                      "invokeaction"
+                    ]
+                  },
+                  {
+                    "href": "/api/v1/action_invocations/{id}",
+                    "op": [
+                      "queryaction",
+                      "cancelaction"
+                    ]
+                  }
+                ],
+                "uriVariables": {
+                  "id": {
+                    "title": "Invocation ID",
+                    "format": "uuid",
+                    "type": "string"
+                  }
+                },
+                "input": {
+                  "title": "slow_input",
+                  "type": "object",
+                  "properties": {
+                    "seconds": {
+                      "default": 10.0,
+                      "type": "number"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "output": {
+                  "title": "slow_output",
+                  "type": "string"
+                },
+                "synchronous": false
+              },
+              "zero": {
+                "description": "Return zero.",
+                "title": "Return zero.",
+                "forms": [
+                  {
+                    "href": "/api/v1/http_probe/zero",
+                    "op": [
+                      "invokeaction"
+                    ]
+                  },
+                  {
+                    "href": "/api/v1/action_invocations/{id}",
+                    "op": [
+                      "queryaction",
+                      "cancelaction"
+                    ]
+                  }
+                ],
+                "uriVariables": {
+                  "id": {
+                    "title": "Invocation ID",
+                    "format": "uuid",
+                    "type": "string"
+                  }
+                },
+                "input": {
+                  "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                  "title": "zero_input",
+                  "oneOf": [
+                    {
+                      "description": "A model representing an object that must have no keys.",
+                      "type": "object",
+                      "properties": {},
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "output": {
+                  "title": "zero_output",
+                  "type": "integer"
+                },
+                "synchronous": false
+              }
+            },
+            "description": "A Thing for probing the HTTP binding.",
+            "forms": [
+              {
+                "href": "/api/v1/http_probe/properties",
+                "op": [
+                  "readallproperties",
+                  "writemultipleproperties"
+                ]
+              },
+              {
+                "href": "/api/v1/http_probe/properties",
+                "op": [
+                  "observeallproperties",
+                  "unobserveallproperties"
+                ],
+                "subprotocol": "sse"
+              },
+              {
+                "href": "/api/v1/http_probe/actions",
+                "op": [
+                  "queryallactions"
+                ]
+              }
+            ],
+            "base": "http://testserver/",
+            "securityDefinitions": {
+              "no_security": {
+                "description": "No security",
+                "scheme": "nosec"
+              }
+            },
+            "security": "no_security",
+            "@context": "https://www.w3.org/2022/wot/td/v1.1"
+          }
+        },
+        "text": "{\"counter\":{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"TestThing\",\"properties\":{\"counter\":{\"description\":\"A pointless counter.\",\"title\":\"A pointless counter.\",\"writeOnly\":false,\"readOnly\":true,\"default\":0,\"type\":\"integer\",\"forms\":[{\"href\":\"/api/v1/counter/counter\",\"op\":[\"readproperty\"]},{\"href\":\"/api/v1/counter/counter\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/api/v1/counter/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"increment_counter\":{\"description\":\"This action doesn't do very much - all it does, in fact,\\nis increment the counter (which may be read using the\\n`counter` property).\",\"title\":\"Increment the counter property.\",\"forms\":[{\"href\":\"/api/v1/counter/increment_counter\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/v1/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"increment_counter_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"increment_counter_output\",\"type\":\"null\"},\"synchronous\":false},\"slowly_increase_counter\":{\"description\":\"Increment the counter slowly over a minute.\",\"title\":\"Increment the counter slowly over a minute.\",\"forms\":[{\"href\":\"/api/v1/counter/slowly_increase_counter\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/v1/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"slowly_increase_counter_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"slowly_increase_counter_output\",\"type\":\"null\"},\"synchronous\":false}},\"description\":\"A test thing with a counter property and a couple of actions.\",\"forms\":[{\"href\":\"/api/v1/counter/properties\",\"op\":[\"readallproperties\"]},{\"href\":\"/api/v1/counter/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/api/v1/counter/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"},\"http_probe\":{\"id\":\"urn:uuid:<uuid:1>\",\"title\":\"HttpProbe\",\"properties\":{\"value\":{\"description\":\"A writable integer.\",\"title\":\"A writable integer.\",\"writeOnly\":false,\"readOnly\":false,\"default\":0,\"type\":\"integer\",\"forms\":[{\"href\":\"/api/v1/http_probe/value\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/api/v1/http_probe/value\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/api/v1/http_probe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"refuse\":{\"description\":\"Fail in an anticipated way.\",\"title\":\"Fail in an anticipated way.\",\"forms\":[{\"href\":\"/api/v1/http_probe/refuse\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/v1/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"refuse_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"refuse_output\",\"type\":\"null\"},\"synchronous\":false},\"slow\":{\"description\":\":param seconds: How long to sleep.\\n:return: \\\"done\\\".\",\"title\":\"Sleep, unless cancelled.\",\"forms\":[{\"href\":\"/api/v1/http_probe/slow\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/v1/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"slow_input\",\"type\":\"object\",\"properties\":{\"seconds\":{\"default\":10.0,\"type\":\"number\"}},\"additionalProperties\":false},\"output\":{\"title\":\"slow_output\",\"type\":\"string\"},\"synchronous\":false},\"zero\":{\"description\":\"Return zero.\",\"title\":\"Return zero.\",\"forms\":[{\"href\":\"/api/v1/http_probe/zero\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/v1/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"zero_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"zero_output\",\"type\":\"integer\"},\"synchronous\":false}},\"description\":\"A Thing for probing the HTTP binding.\",\"forms\":[{\"href\":\"/api/v1/http_probe/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/api/v1/http_probe/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/api/v1/http_probe/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}}"
+      }
+    },
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/api/v1/counter/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "TestThing",
+          "properties": {
+            "counter": {
+              "description": "A pointless counter.",
+              "title": "A pointless counter.",
+              "writeOnly": false,
+              "readOnly": true,
+              "default": 0,
+              "type": "integer",
+              "forms": [
+                {
+                  "href": "/api/v1/counter/counter",
+                  "op": [
+                    "readproperty"
+                  ]
+                },
+                {
+                  "href": "/api/v1/counter/counter",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/api/v1/counter/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "increment_counter": {
+              "description": "This action doesn't do very much - all it does, in fact,\nis increment the counter (which may be read using the\n`counter` property).",
+              "title": "Increment the counter property.",
+              "forms": [
+                {
+                  "href": "/api/v1/counter/increment_counter",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/v1/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "increment_counter_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "increment_counter_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "slowly_increase_counter": {
+              "description": "Increment the counter slowly over a minute.",
+              "title": "Increment the counter slowly over a minute.",
+              "forms": [
+                {
+                  "href": "/api/v1/counter/slowly_increase_counter",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/v1/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "slowly_increase_counter_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "slowly_increase_counter_output",
+                "type": "null"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A test thing with a counter property and a couple of actions.",
+          "forms": [
+            {
+              "href": "/api/v1/counter/properties",
+              "op": [
+                "readallproperties"
+              ]
+            },
+            {
+              "href": "/api/v1/counter/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/api/v1/counter/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"TestThing\",\"properties\":{\"counter\":{\"description\":\"A pointless counter.\",\"title\":\"A pointless counter.\",\"writeOnly\":false,\"readOnly\":true,\"default\":0,\"type\":\"integer\",\"forms\":[{\"href\":\"/api/v1/counter/counter\",\"op\":[\"readproperty\"]},{\"href\":\"/api/v1/counter/counter\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/api/v1/counter/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"increment_counter\":{\"description\":\"This action doesn't do very much - all it does, in fact,\\nis increment the counter (which may be read using the\\n`counter` property).\",\"title\":\"Increment the counter property.\",\"forms\":[{\"href\":\"/api/v1/counter/increment_counter\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/v1/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"increment_counter_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"increment_counter_output\",\"type\":\"null\"},\"synchronous\":false},\"slowly_increase_counter\":{\"description\":\"Increment the counter slowly over a minute.\",\"title\":\"Increment the counter slowly over a minute.\",\"forms\":[{\"href\":\"/api/v1/counter/slowly_increase_counter\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/v1/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"slowly_increase_counter_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"slowly_increase_counter_output\",\"type\":\"null\"},\"synchronous\":false}},\"description\":\"A test thing with a counter property and a couple of actions.\",\"forms\":[{\"href\":\"/api/v1/counter/properties\",\"op\":[\"readallproperties\"]},{\"href\":\"/api/v1/counter/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/api/v1/counter/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "td_redirect",
+        "method": "GET",
+        "path": "/api/v1/counter?x=1"
+      },
+      "response": {
+        "status": 307,
+        "headers": {
+          "location": "http://testserver/api/v1/counter/?x=1",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "property_redirect",
+        "method": "GET",
+        "path": "/api/v1/counter/counter/"
+      },
+      "response": {
+        "status": 307,
+        "headers": {
+          "location": "http://testserver/api/v1/counter/counter",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "unprefixed_td",
+        "method": "GET",
+        "path": "/counter/"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "unprefixed_things",
+        "method": "GET",
+        "path": "/things/"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "prefix_alone",
+        "method": "GET",
+        "path": "/api/v1"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "prefix_slash",
+        "method": "GET",
+        "path": "/api/v1/"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "half_prefix",
+        "method": "GET",
+        "path": "/api/counter/"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "read",
+        "method": "GET",
+        "path": "/api/v1/counter/counter"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 0,
+        "text": "0"
+      }
+    },
+    {
+      "step": {
+        "name": "write_readonly",
+        "method": "PUT",
+        "path": "/api/v1/counter/counter",
+        "json": 2
+      },
+      "response": {
+        "status": 405,
+        "headers": {
+          "content-type": "application/json",
+          "allow": "GET",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Method Not Allowed"
+        },
+        "text": "{\"detail\":\"Method Not Allowed\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "write",
+        "method": "PUT",
+        "path": "/api/v1/http_probe/value",
+        "json": 3
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "read_all",
+        "method": "GET",
+        "path": "/api/v1/http_probe/properties"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "value": 3
+        },
+        "text": "{\"value\":3}"
+      }
+    },
+    {
+      "step": {
+        "name": "invoke",
+        "method": "POST",
+        "path": "/api/v1/counter/increment_counter",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/api/v1/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:2>",
+          "action": "/api/v1/counter/increment_counter",
+          "href": "http://testserver/api/v1/action_invocations/<uuid:2>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/api/v1/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/api/v1/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:2>",
+          "action": "/api/v1/counter/increment_counter",
+          "href": "http://testserver/api/v1/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/api/v1/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/api/v1/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/api/v1/counter/increment_counter\",\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "get_invocation",
+        "method": "GET",
+        "path": "/api/v1/action_invocations/{last}"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:2>",
+          "action": "/api/v1/counter/increment_counter",
+          "href": "http://testserver/api/v1/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/api/v1/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/api/v1/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/api/v1/counter/increment_counter\",\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "invocation_output",
+        "method": "GET",
+        "path": "/api/v1/action_invocations/{last}/output"
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "No result is available for this invocation"
+        },
+        "text": "{\"detail\":\"No result is available for this invocation\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "invoke_zero",
+        "method": "POST",
+        "path": "/api/v1/http_probe/zero",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/api/v1/action_invocations/<uuid:3>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:3>",
+          "action": "/api/v1/http_probe/zero",
+          "href": "http://testserver/api/v1/action_invocations/<uuid:3>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/api/v1/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/api/v1/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:3>",
+          "action": "/api/v1/http_probe/zero",
+          "href": "http://testserver/api/v1/action_invocations/<uuid:3>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/api/v1/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/api/v1/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": 0,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:3>\",\"action\":\"/api/v1/http_probe/zero\",\"href\":\"http://testserver/api/v1/action_invocations/<uuid:3>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:3>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:3>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":0,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "zero_output",
+        "method": "GET",
+        "path": "/api/v1/action_invocations/{last}/output"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 0,
+        "text": "0"
+      }
+    },
+    {
+      "step": {
+        "name": "list_action",
+        "method": "GET",
+        "path": "/api/v1/counter/increment_counter"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          {
+            "status": "completed",
+            "id": "<uuid:2>",
+            "action": "/api/v1/counter/increment_counter",
+            "href": "http://testserver/api/v1/action_invocations/<uuid:2>",
+            "timeStarted": "<naive-datetime>",
+            "timeRequested": "<naive-datetime>",
+            "timeCompleted": "<naive-datetime>",
+            "links": [
+              {
+                "href": "http://testserver/api/v1/action_invocations/<uuid:2>",
+                "type": null,
+                "rel": "self",
+                "anchor": null
+              },
+              {
+                "href": "http://testserver/api/v1/action_invocations/<uuid:2>/output",
+                "type": null,
+                "rel": "output",
+                "anchor": null
+              }
+            ]
+          }
+        ],
+        "text": "[{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/api/v1/counter/increment_counter\",\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}]}]"
+      }
+    },
+    {
+      "step": {
+        "name": "query_all_actions",
+        "method": "GET",
+        "path": "/api/v1/counter/actions"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "increment_counter": [
+            {
+              "status": "completed",
+              "id": "<uuid:2>",
+              "action": "/api/v1/counter/increment_counter",
+              "href": "http://testserver/api/v1/action_invocations/<uuid:2>",
+              "timeStarted": "<naive-datetime>",
+              "timeRequested": "<naive-datetime>",
+              "timeCompleted": "<naive-datetime>",
+              "links": [
+                {
+                  "href": "http://testserver/api/v1/action_invocations/<uuid:2>",
+                  "type": null,
+                  "rel": "self",
+                  "anchor": null
+                },
+                {
+                  "href": "http://testserver/api/v1/action_invocations/<uuid:2>/output",
+                  "type": null,
+                  "rel": "output",
+                  "anchor": null
+                }
+              ]
+            }
+          ],
+          "slowly_increase_counter": []
+        },
+        "text": "{\"increment_counter\":[{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/api/v1/counter/increment_counter\",\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}]}],\"slowly_increase_counter\":[]}"
+      }
+    },
+    {
+      "step": {
+        "name": "list_all",
+        "method": "GET",
+        "path": "/api/v1/action_invocations"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          {
+            "status": "completed",
+            "id": "<uuid:2>",
+            "action": "/api/v1/counter/increment_counter",
+            "href": "http://testserver/api/v1/action_invocations/<uuid:2>",
+            "timeStarted": "<naive-datetime>",
+            "timeRequested": "<naive-datetime>",
+            "timeCompleted": "<naive-datetime>",
+            "links": [
+              {
+                "href": "http://testserver/api/v1/action_invocations/<uuid:2>",
+                "type": null,
+                "rel": "self",
+                "anchor": null
+              },
+              {
+                "href": "http://testserver/api/v1/action_invocations/<uuid:2>/output",
+                "type": null,
+                "rel": "output",
+                "anchor": null
+              }
+            ]
+          },
+          {
+            "status": "completed",
+            "id": "<uuid:3>",
+            "action": "/api/v1/http_probe/zero",
+            "href": "http://testserver/api/v1/action_invocations/<uuid:3>",
+            "timeStarted": "<naive-datetime>",
+            "timeRequested": "<naive-datetime>",
+            "timeCompleted": "<naive-datetime>",
+            "links": [
+              {
+                "href": "http://testserver/api/v1/action_invocations/<uuid:3>",
+                "type": null,
+                "rel": "self",
+                "anchor": null
+              },
+              {
+                "href": "http://testserver/api/v1/action_invocations/<uuid:3>/output",
+                "type": null,
+                "rel": "output",
+                "anchor": null
+              }
+            ]
+          }
+        ],
+        "text": "[{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/api/v1/counter/increment_counter\",\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}]},{\"status\":\"completed\",\"id\":\"<uuid:3>\",\"action\":\"/api/v1/http_probe/zero\",\"href\":\"http://testserver/api/v1/action_invocations/<uuid:3>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:3>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/api/v1/action_invocations/<uuid:3>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}]}]"
+      }
+    },
+    {
+      "step": {
+        "name": "invocations_slash",
+        "method": "GET",
+        "path": "/api/v1/action_invocations/"
+      },
+      "response": {
+        "status": 307,
+        "headers": {
+          "location": "http://testserver/api/v1/action_invocations",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "unprefixed_invocations",
+        "method": "GET",
+        "path": "/action_invocations"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "unprefixed_invocation",
+        "method": "GET",
+        "path": "/action_invocations/{last}"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "bad_id",
+        "method": "GET",
+        "path": "/api/v1/action_invocations/bad-id"
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "uuid_parsing",
+              "loc": [
+                "path",
+                "id"
+              ],
+              "msg": "Input should be a valid UUID, invalid character: found `i` at 4",
+              "input": "bad-id",
+              "ctx": {
+                "error": "invalid character: found `i` at 4"
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"uuid_parsing\",\"loc\":[\"path\",\"id\"],\"msg\":\"Input should be a valid UUID, invalid character: found `i` at 4\",\"input\":\"bad-id\",\"ctx\":{\"error\":\"invalid character: found `i` at 4\"}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "cancel_completed",
+        "method": "DELETE",
+        "path": "/api/v1/action_invocations/{last}"
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "The invocation is completed and may not be cancelled."
+        },
+        "text": "{\"detail\":\"The invocation is completed and may not be cancelled.\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "host_header",
+        "method": "GET",
+        "path": "/api/v1/things/",
+        "headers": {
+          "Host": "lab-pc.local:8000"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "counter": "http://lab-pc.local:8000/api/v1/counter/",
+          "http_probe": "http://lab-pc.local:8000/api/v1/http_probe/"
+        },
+        "text": "{\"counter\":\"http://lab-pc.local:8000/api/v1/counter/\",\"http_probe\":\"http://lab-pc.local:8000/api/v1/http_probe/\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "host_header_invocation",
+        "method": "GET",
+        "path": "/api/v1/action_invocations/{last}",
+        "headers": {
+          "Host": "lab-pc.local:8000"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:3>",
+          "action": "/api/v1/http_probe/zero",
+          "href": "http://lab-pc.local:8000/api/v1/action_invocations/<uuid:3>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://lab-pc.local:8000/api/v1/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://lab-pc.local:8000/api/v1/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": 0,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:3>\",\"action\":\"/api/v1/http_probe/zero\",\"href\":\"http://lab-pc.local:8000/api/v1/action_invocations/<uuid:3>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://lab-pc.local:8000/api/v1/action_invocations/<uuid:3>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://lab-pc.local:8000/api/v1/action_invocations/<uuid:3>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":0,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "cors_preflight",
+        "method": "OPTIONS",
+        "path": "/api/v1/counter/counter",
+        "headers": {
+          "Origin": "http://example.com",
+          "Access-Control-Request-Method": "GET"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/plain; charset=utf-8",
+          "access-control-allow-origin": "http://example.com",
+          "access-control-allow-credentials": "true",
+          "access-control-allow-methods": "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, QUERY",
+          "access-control-max-age": "600",
+          "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network"
+        },
+        "body": "OK"
+      }
+    }
+  ]
+}

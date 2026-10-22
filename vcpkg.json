@@ -5,28 +5,28 @@
   "description": "W3C Web of Things Things served over HTTP with Drogon, with wire-level parity with teta-wot.",
   "license": "MIT",
   "dependencies": [
+    {
+      "name": "drogon",
+      "default-features": false
+    },
     "boost-pfr",
     "nlohmann-json",
     "re2",
     "tl-expected"
   ],
   "features": {
-    "drogon": {
-      "description": "The Drogon transport (and, in Phase 0, the Drogon spike)",
-      "dependencies": [
-        {
-          "name": "drogon",
-          "default-features": false
-        }
-      ]
-    },
     "spdlog": {
       "description": "The spdlog sink (teta/wot/log_spdlog.hpp), used by the invocation-logs example",
-      "dependencies": ["spdlog"]
+      "dependencies": [
+        "spdlog"
+      ]
     },
     "tests": {
       "description": "Unit tests and fixture replay",
-      "dependencies": ["gtest", "json-schema-validator"]
+      "dependencies": [
+        "gtest",
+        "json-schema-validator"
+      ]
     }
   }
 }

@@ -15,5 +15,12 @@ Each example teaches one concept with the public API only. Run without arguments
 | [`device-actor`](device-actor/README.md) | 3 | A synchronous driver on its own thread |
 | [`invocation-logs`](invocation-logs/README.md) | 3 | Per-invocation logs, and the spdlog sink |
 | [`compile-errors`](compile-errors/README.md) | 3 | What the compiler says when a Thing is declared wrongly |
+| [`quickstart-counter`](quickstart-counter/README.md) | 4 | The first Thing, served |
+| [`light`](light/README.md) | 4 | The guide's tutorial Thing |
+| [`counter-server`](counter-server/README.md) | 4 | The first end-to-end milestone: `ThingServer` on Drogon |
+| [`http-walkthrough`](http-walkthrough/README.md) | 4 | Every route, status and header over a real socket |
+| [`api-prefix`](api-prefix/README.md) | 4 | Serving under `/api/v1` |
+| [`custom-endpoint`](custom-endpoint/README.md) | 4 | Routes outside the TD |
+| [`drogon-integration`](drogon-integration/README.md) | 4 | Serving Things inside an application that already uses Drogon |
 
 Add an example with `teta_wot_add_example(<name> SOURCES main.cpp)` in `examples/<name>/CMakeLists.txt`, a `README.md` with **Concept**, **Technologies**, how to run it and what to look for, and a line in `examples/CMakeLists.txt` and here.
