@@ -147,7 +147,8 @@ class DeviceCore : public std::enable_shared_from_this<DeviceCore> {
     /// A job for the device thread.
     struct Job {
         /// Runs a call on the driver; returns the panic message if it
-        /// panicked.
+        /// panicked, without answering (the device thread answers with
+        /// `fail` once the device is faulted).
         std::function<std::optional<std::string>(void* driver)> run;
         /// Answers without running.
         std::function<void(DeviceError)> fail;
@@ -323,9 +324,8 @@ class Device {
                     panic = "unknown panic";
                 }
             });
-            if (panic) {
-                promise->set_exception(std::make_exception_ptr(DeviceError::panicked(name, *panic)));
-            }
+            // On a panic, the device thread faults the device, then answers
+            // with `fail`, so the caller sees the device faulted.
             return panic;
         };
         Pending<R> pending{std::move(future), job.abandoned};

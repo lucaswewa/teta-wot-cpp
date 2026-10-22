@@ -229,9 +229,12 @@ void DeviceCore::run(std::shared_ptr<std::promise<void>> opened) {
                                    std::chrono::system_clock::now(),
                                    {},
                                    {}});
-                        std::lock_guard lock(mutex_);
-                        state_ = DeviceState::faulted;
-                        reason_ = *panic;
+                        {
+                            std::lock_guard lock(mutex_);
+                            state_ = DeviceState::faulted;
+                            reason_ = *panic;
+                        }
+                        item.job.fail(DeviceError::panicked(name, *panic));
                     }
                 } else if (state == DeviceState::faulted) {
                     item.job.fail(DeviceError::faulted(name, reason));

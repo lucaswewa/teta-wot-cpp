@@ -51,6 +51,7 @@ void check(bool condition, const char* what) {
 }
 
 void run() {
+    std::cout << std::unitbuf;  // each line as it is written
     auto busy = std::make_shared<std::atomic<bool>>(false);
     tw::DeviceOptions options;
     options.call_timeout = 200ms;
