@@ -30,5 +30,7 @@ Each example teaches one concept with the public API only. Run without arguments
 | [`observe-websocket`](observe-websocket/README.md) | 6 | A property and an action observed over the WebSocket |
 | [`sse-observe`](sse-observe/README.md) | 6 | A property observed with `EventSource` |
 | [`events`](events/README.md) | 6 | Events from a device thread, over SSE, the WebSocket and C++ |
+| [`blob-camera`](blob-camera/README.md) | 7 | Blobs out of actions and back in |
+| [`mjpeg-stream`](mjpeg-stream/README.md) | 7 | A live preview, and actions waiting for frames |
 
 Add an example with `teta_wot_add_example(<name> SOURCES main.cpp)` in `examples/<name>/CMakeLists.txt`, a `README.md` with **Concept**, **Technologies**, how to run it and what to look for, and a line in `examples/CMakeLists.txt` and here.

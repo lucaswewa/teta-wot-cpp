@@ -33,7 +33,7 @@ Things served by both implementations under the same registry names, so one conf
 | `twins.ndarray_probe:NDArrayProbe` | `NDArrayProbe` | Arrays as properties and action inputs and outputs |
 | `twins.event_probe:EventProbe` | `EventProbe` | Events emitted by actions, and an observable property (teta-wot-cpp's own: none of the `wot` twins has events) |
 
-They are ported from the `wot` repository's `conformance/twin-server` to teta-wot v0.1.0's API (the only changes are the crate paths). The C++ ports (`twins/`) join phase by phase: since Phase 3, seven are C++ Things whose TDs equal the reference's; `blob_probe` and `ndarray_probe` follow with Blobs (Phase 7) and arrays (Phase 10). `event_probe` was added in Phase 6, to both implementations, for events.
+They are ported from the `wot` repository's `conformance/twin-server` to teta-wot v0.1.0's API (the only changes are the crate paths). The C++ ports (`twins/`) join phase by phase: since Phase 3, seven are C++ Things whose TDs equal the reference's, `blob_probe` joined with Blobs (Phase 7), and `ndarray_probe` follows with arrays (Phase 10). `event_probe` was added in Phase 6, to both implementations, for events.
 
 | Scenario | What it captures |
 |---|---|
@@ -50,6 +50,9 @@ They are ported from the `wot` repository's `conformance/twin-server` to teta-wo
 | `sse` | Server-sent events: a property, all properties, an event, all events, `Accept` among other ranges, a functional property read instead, the end at shutdown |
 | `sse-wot` | Named events with `id`s in the `wot` profile |
 | `events` | An event Thing's TD, events over the WebSocket, and a closed socket |
+| `blobs` | Blobs: outputs from memory, a temporary file, text, CSV and a map of two; `/output` and downloads with their media types; Blob inputs found by absolute, foreign and relative `href`s; every kind of refused Blob input (wrong media type, unknown, malformed ID, no ID, missing fields, not an object); unknown and malformed Blob IDs; `HEAD` and `POST` |
+| `blobs-wot` | Blobs in the `wot` profile, under an API prefix: `ActionStatus` outputs, downloads, refused inputs as problems |
+| `streams` | MJPEG: the viewer page, frames to one and two clients, nothing more until a frame is added, a stopped stream ending its clients, a stream opened while stopped (it ends at once), a frame added while stopped (kept, but sent to no one), a restart, the end at shutdown, 404 and 405 |
 | `settings-load` | A server started with a settings file already there (as teta-wot writes it): loaded, not rewritten by loading, rewritten identically by the next save; no file for a Thing without settings |
 
 Command-line scenarios (`scenarios/cli/`, run with `--cli`) run the server's command line and record its exit code and output (log lines aside), and, for those that serve, a scripted session: `help`, `unknown-argument`, `missing-value`, `invalid-port`, `repeated-argument`, `no-configuration`, `missing-file`, `both-configurations`, `invalid-json`, `not-an-object`, `invalid-configuration` (every kind of problem at once), `unknown-class`, `invalid-kwargs`, `args-and-kwargs`, `startup-failure`, `startup-failure-fallback` and `configuration-fallback` (the fallback page, its redirects and CORS), `serve`, `serve-json`, `port-in-use` and `port-in-use-fallback`.
@@ -65,8 +68,10 @@ Example scenarios (`scenarios/examples/`, run with `--examples`) compare an exam
 | `observe-websocket` | The oven's TD, its temperature and `heat_to` over the WebSocket, a refusal, the SSE stream |
 | `events` | The laser's TD, a trip over the WebSocket and over SSE, the interlock's state |
 | `sse-observe` | The thermometer's TD and stream (its readings depend on the time, so only the answer's headers) |
+| `blob-camera` | The TD, captures from memory and from a file, their downloads' headers, `describe` with a found, an unknown and a mistyped Blob, the capture count (not the JPEGs, which differ: see the Phase 7 note) |
+| `mjpeg-stream` | The TD, the viewer page, the stream's headers, `fps` and its bounds, a snapshot and its download's headers, `sharpness` (not the JPEGs, nor so their sizes) |
 
-`tds` and `tds-wot` need `blob_probe` and `ndarray_probe`, which the C++ twin server serves from Phases 7 and 10; the other scenarios run against it.
+`tds` and `tds-wot` need `ndarray_probe`, which the C++ twin server serves from Phase 10; the other scenarios run against it.
 
 ## Running it
 
@@ -75,7 +80,7 @@ cd conformance/reference-rs && cargo build --release --locked && cd ../..
 python3 conformance/run.py capture --server conformance/reference-rs/target/release/reference-server
 python3 conformance/run.py check --server <a server>
 python3 conformance/run.py diff --server conformance/reference-rs/target/release/reference-server --server <a server>
-python3 conformance/run.py check --server build/<preset>/conformance/twin-server-cpp/twin-server counter validation default locked prefixed wot settings settings-load
+python3 conformance/run.py check --server build/<preset>/conformance/twin-server-cpp/twin-server counter validation default locked prefixed wot settings settings-load ws sse sse-wot events blobs blobs-wot streams
 python3 conformance/run.py capture --cli --server conformance/reference-rs/target/release/reference-server
 python3 conformance/run.py check --cli --server build/<preset>/conformance/twin-server-cpp/twin-server
 python3 conformance/run.py capture --examples --server '<teta-wot>/target/release/{name}'
