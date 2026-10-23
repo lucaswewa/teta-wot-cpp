@@ -98,6 +98,11 @@ jobs:
       - name: The microscope as a systemd service
         if: matrix.preset == 'linux-gcc'
         run: examples/microscope-service/service_test.sh build/${{ matrix.preset }}/examples/microscope-service/example-microscope-service
+      # The soak tool, briefly: every kind of client against the simulated
+      # microscope, failing on any error or ended stream (releases soak for
+      # 24 hours, which also judges memory).
+      - name: Soak the simulated microscope (3 minutes)
+        run: ./build/${{ matrix.preset }}/tools/soak/soak --server build/${{ matrix.preset }}/examples/simulated-microscope/example-simulated-microscope --duration 3m
       # The cmake-consumer example again, against the installed package (not
       # for the sanitizer builds, whose library needs the sanitizer runtime).
       - name: Install, then build cmake-consumer against it
