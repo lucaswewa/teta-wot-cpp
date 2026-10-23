@@ -92,8 +92,10 @@ struct Settings {
     Level sink_level = Level::info;
 };
 
+// Never destroyed: objects that outlive `main` (a server's runtime, which
+// the transport keeps until the process exits) may still log.
 Settings& settings() {
-    static Settings instance;
+    static Settings& instance = *new Settings;
     return instance;
 }
 
@@ -127,7 +129,7 @@ void set_sink(Sink sink, Level level) {
 
 Sink console_sink() {
     return [](const Event& event) {
-        static std::mutex output;
+        static std::mutex& output = *new std::mutex;
         static constexpr const char* names[] = {"TRACE", "DEBUG", "INFO", "WARN", "ERROR"};
         const std::string line = std::format("{} {:>5} {}\n", format_utc(event.time),
                                              names[static_cast<int>(event.level)], event.message);

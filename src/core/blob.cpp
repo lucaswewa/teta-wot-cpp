@@ -28,8 +28,11 @@ struct Registry {
     std::unordered_map<Uuid, std::weak_ptr<BlobData>> data;
 };
 
+// Never destroyed: Blobs held by objects that outlive `main` (a server's
+// runtime, which the transport keeps until the process exits) still
+// unregister from it.
 Registry& registry() {
-    static Registry instance;
+    static Registry& instance = *new Registry;
     return instance;
 }
 
