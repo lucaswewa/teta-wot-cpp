@@ -1,0 +1,38 @@
+{
+  "config": {
+    "things": {
+      "blob_probe": "twins.blob_probe:BlobProbe"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {"name": "viewer", "method": "GET", "path": "/blob_probe/stream/viewer"},
+    {"name": "viewer_post", "method": "POST", "path": "/blob_probe/stream/viewer"},
+    {"name": "stream_post", "method": "POST", "path": "/blob_probe/stream"},
+    {"name": "unknown_stream", "method": "GET", "path": "/blob_probe/nope"},
+    {"name": "unknown_viewer", "method": "GET", "path": "/blob_probe/nope/viewer"},
+    {"name": "open_a", "mjpeg": "/blob_probe/stream", "stream": "a"},
+    {"name": "add_one", "method": "POST", "path": "/blob_probe/add_frames", "json": {"count": 1}, "wait": true},
+    {"name": "a_frame", "stream": "a", "frames": 1},
+    {"name": "a_nothing_more", "stream": "a", "quiet": 0.3},
+    {"name": "add_another", "method": "POST", "path": "/blob_probe/add_frames", "json": {"count": 1}, "wait": true},
+    {"name": "a_another", "stream": "a", "frames": 1},
+    {"name": "open_b", "mjpeg": "/blob_probe/stream", "stream": "b"},
+    {"name": "add_for_both", "method": "POST", "path": "/blob_probe/add_frames", "json": {"count": 1}, "wait": true},
+    {"name": "a_for_both", "stream": "a", "frames": 1},
+    {"name": "b_for_both", "stream": "b", "frames": 1},
+    {"name": "stop", "method": "POST", "path": "/blob_probe/stop_stream", "wait": true},
+    {"name": "a_ended", "stream": "a", "ended": true},
+    {"name": "b_ended", "stream": "b", "ended": true},
+    {"name": "open_stopped", "mjpeg": "/blob_probe/stream", "stream": "c"},
+    {"name": "stopped_ended", "stream": "c", "ended": true},
+    {"name": "add_while_stopped", "method": "POST", "path": "/blob_probe/add_frames", "json": {"count": 1}, "wait": true},
+    {"name": "restart_stream", "method": "POST", "path": "/blob_probe/restart_stream", "wait": true},
+    {"name": "open_d", "mjpeg": "/blob_probe/stream", "stream": "d"},
+    {"name": "add_after_restart", "method": "POST", "path": "/blob_probe/add_frames", "json": {"count": 1}, "wait": true},
+    {"name": "d_frame", "stream": "d", "frames": 1},
+    {"name": "shutdown", "restart": true},
+    {"name": "d_ended", "stream": "d", "ended": true},
+    {"name": "viewer_after_restart", "method": "GET", "path": "/blob_probe/stream/viewer"}
+  ]
+}

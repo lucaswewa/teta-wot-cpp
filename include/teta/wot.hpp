@@ -5,6 +5,7 @@
 #pragma once
 
 #include "teta/wot/action.hpp"
+#include "teta/wot/blob.hpp"
 #include "teta/wot/broker.hpp"
 #include "teta/wot/cancel.hpp"
 #include "teta/wot/cli.hpp"
@@ -28,6 +29,7 @@
 #include "teta/wot/server.hpp"
 #include "teta/wot/settings.hpp"
 #include "teta/wot/slots.hpp"
+#include "teta/wot/stream.hpp"
 #include "teta/wot/td/constraints.hpp"
 #include "teta/wot/td/convert.hpp"
 #include "teta/wot/td/data_schema.hpp"

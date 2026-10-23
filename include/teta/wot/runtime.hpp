@@ -217,6 +217,10 @@ class ThingHandle : public std::enable_shared_from_this<ThingHandle> {
     const std::vector<EventEntry>& events() const { return events_; }
     /// The custom endpoints, in definition order.
     const std::vector<EndpointEntry>& endpoints() const { return endpoints_; }
+    /// An MJPEG stream by name.
+    const MjpegStream* stream(std::string_view name) const;
+    /// The MJPEG streams, by name, in definition order.
+    const std::vector<std::pair<std::string, MjpegStream>>& streams() const { return streams_; }
 
     /// The Thing itself, if it is a `T`.
     template <typename T>
@@ -268,6 +272,7 @@ class ThingHandle : public std::enable_shared_from_this<ThingHandle> {
     std::vector<ActionEntry> actions_;
     std::vector<EventEntry> events_;
     std::vector<EndpointEntry> endpoints_;
+    std::vector<std::pair<std::string, MjpegStream>> streams_;
     std::vector<DeviceHook> devices_;
     std::vector<std::pair<std::string, std::shared_ptr<detail::SlotControl>>> slots_;
     std::vector<std::pair<std::type_index, InterfaceBuild>> interfaces_;
@@ -594,6 +599,9 @@ std::shared_ptr<ThingHandle> ThingHandle::instantiate(const std::string& name, s
     for (const auto& e : spec.events()) {
         names.push_back(e.name);
     }
+    for (const auto& stream : spec.streams()) {
+        names.push_back(stream.name);
+    }
     detail::check_affordance_names(name, names);
 
     auto handle = std::make_shared<ThingHandle>();
@@ -665,6 +673,9 @@ std::shared_ptr<ThingHandle> ThingHandle::instantiate(const std::string& name, s
             {slot.name,
              [thing, open = slot.open](const std::string& device_name) { open(*thing, device_name); },
              [thing, close = slot.close] { close(*thing); }});
+    }
+    for (auto& stream : spec.streams()) {
+        handle->streams_.emplace_back(stream.name, stream.get(*thing));
     }
     for (auto& slot : spec.slots()) {
         handle->slots_.emplace_back(slot.name, slot.build(thing));

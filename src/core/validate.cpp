@@ -349,6 +349,25 @@ ValidationError ValidationError::decode_error(Loc loc, std::string_view message,
                    std::nullopt});
 }
 
+ValidationError ValidationError::value_error_at(
+    Loc loc, const std::vector<std::variant<std::string, std::size_t>>& path, std::string_view message,
+    const json::Value& input) {
+    static const json::Value null;
+    const json::Value* at = &input;
+    for (const auto& step : path) {
+        if (const auto* key = std::get_if<std::string>(&step)) {
+            const auto it = at->is_object() ? at->find(*key) : at->end();
+            at = at->is_object() && it != at->end() ? &*it : &null;
+            loc.emplace_back(*key);
+        } else {
+            const auto index = std::get<std::size_t>(step);
+            at = at->is_array() && index < at->size() ? &(*at)[index] : &null;
+            loc.emplace_back(index);
+        }
+    }
+    return value_error(std::move(loc), message, *at);
+}
+
 // ---- Coercions ----------------------------------------------------------------------
 
 namespace coercion {

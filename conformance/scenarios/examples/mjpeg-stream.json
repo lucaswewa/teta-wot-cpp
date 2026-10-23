@@ -1,0 +1,20 @@
+{
+  "serve": ["--serve"],
+  "port": 5000,
+  "steps": [
+    {"name": "td", "method": "GET", "path": "/camera/"},
+    {"name": "viewer", "method": "GET", "path": "/camera/preview/viewer"},
+    {"name": "preview", "mjpeg": "/camera/preview", "stream": "p"},
+    {"name": "fps", "method": "GET", "path": "/camera/fps"},
+    {"name": "fps_zero", "method": "PUT", "path": "/camera/fps", "json": 0},
+    {"name": "fps_too_fast", "method": "PUT", "path": "/camera/fps", "json": 31},
+    {"name": "fps_faster", "method": "PUT", "path": "/camera/fps", "json": 20},
+    {"name": "fps_after", "method": "GET", "path": "/camera/fps"},
+    {"name": "snapshot", "method": "POST", "path": "/camera/snapshot", "wait": true},
+    {"name": "snapshot_output", "method": "GET", "path": "/action_invocations/{last}/output", "ignore_body": true},
+    {"name": "snapshot_download", "method": "GET", "path": "/blob/{blob:0}", "ignore_body": true},
+    {"name": "sharpness", "method": "POST", "path": "/camera/sharpness"},
+    {"name": "sharpness_status", "method": "GET", "path": "/action_invocations/{last}", "poll": true, "ignore_body": true},
+    {"name": "unknown_stream", "method": "GET", "path": "/camera/nope/viewer"}
+  ]
+}

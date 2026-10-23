@@ -48,6 +48,10 @@ std::string naive_local(std::chrono::system_clock::time_point time);
 /// A UTC time in RFC 3339 with exactly `digits` fractional digits (6 or 9).
 std::string rfc3339(std::chrono::system_clock::time_point time, int digits);
 
+/// Makes the Blob `href`s in a JSON value absolute: `blob/<id>` becomes
+/// `{scheme}://{host}{prefix}/blob/<id>`, for Blobs that still exist.
+void resolve_blobs(json::Value& value, const Urls& urls);
+
 /// An invocation as JSON: its summary, and with `full` also its `input`,
 /// `output`, `log` and `error`.
 json::Value invocation_json(const InvocationRecord& record, const Urls& urls, bool full);

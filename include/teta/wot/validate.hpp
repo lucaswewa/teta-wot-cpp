@@ -89,6 +89,12 @@ class ValidationError : public std::exception {
     /// allowed something the type doesn't): `value_error` without `ctx`, as
     /// teta-wot's `from_serde`.
     static ValidationError decode_error(Loc loc, std::string_view message, json::Value input);
+    /// pydantic's `value_error` for a value that its type's decoding refused
+    /// (a Blob that isn't on the server): at `path` below `loc`, with the
+    /// value that `input` (as the client sent it) has there.
+    static ValidationError value_error_at(Loc loc,
+                                          const std::vector<std::variant<std::string, std::size_t>>& path,
+                                          std::string_view message, const json::Value& input);
 
   private:
     std::vector<ValidationIssue> issues_;

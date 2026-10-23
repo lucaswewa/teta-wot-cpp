@@ -65,6 +65,7 @@
 #include "teta/wot/runtime_shared.hpp"
 #include "teta/wot/settings.hpp"
 #include "teta/wot/slots.hpp"
+#include "teta/wot/stream.hpp"
 #include "teta/wot/td/constraints.hpp"
 #include "teta/wot/td/describe.hpp"
 #include "teta/wot/validate.hpp"
@@ -766,6 +767,9 @@ class TypedActionHandler final : public ActionHandler {
                 echo = json::Value::object();
                 encode_fields(**data, echo, std::make_index_sequence<Info::data_count>{});
             }
+        } catch (const ValueDecodeError& error) {
+            // A Blob that isn't there: at the Blob, as the client sent it.
+            throw ValidationError::value_error_at(loc, error.path(), error.message(), input);
         } catch (const DecodeError& error) {
             throw ValidationError::decode_error(loc, error.what(), std::move(coerced));
         }
@@ -825,7 +829,7 @@ class TypedActionHandler final : public ActionHandler {
     std::tuple_element_t<I, DataTuple> decode_field(const json::Value& input) const {
         using P = std::tuple_element_t<I, DataTuple>;
         if (const auto it = input.find(names_[I]); it != input.end()) {
-            return Codec<P>::decode(*it);
+            return codec::at(names_[I], [&] { return Codec<P>::decode(*it); });
         }
         if (defaults_[I]) {
             return Codec<P>::decode(*defaults_[I]);
@@ -1064,6 +1068,10 @@ class ThingSpec {
         EndpointOptions* options;
         std::function<http::EndpointHandler(const std::shared_ptr<T>&)> build;
     };
+    struct StreamSlot {
+        std::string name;
+        std::function<MjpegStream(T&)> get;
+    };
     struct SlotSlot {
         std::string name;
         std::function<std::shared_ptr<detail::SlotControl>(const std::shared_ptr<T>&)> build;
@@ -1246,6 +1254,16 @@ class ThingSpec {
         return *options;
     }
 
+    /// An MJPEG stream: an MjpegStream member, served at `/{thing}/{name}`
+    /// (`multipart/x-mixed-replace`), with a viewer page at
+    /// `/{thing}/{name}/viewer`, and linked from the Thing Description.
+    template <typename C>
+        requires std::is_base_of_v<C, T>
+    ThingSpec& stream(std::string name, MjpegStream C::* member) {
+        streams_.push_back({std::move(name), [member](T& thing) { return thing.*member; }});
+        return *this;
+    }
+
     /// A slot: a `Slot<X>`, `OptSlot<X>` or `SlotMap<X>` member, which the
     /// runtime connects to other Things once every Thing is built (see
     /// slots.hpp). By default it connects by type; the configuration's
@@ -1334,6 +1352,7 @@ class ThingSpec {
     std::vector<DeviceSlot>& devices() { return devices_; }
     std::vector<EndpointSlot>& endpoints() { return endpoints_; }
     std::vector<SlotSlot>& slots() { return slots_; }
+    std::vector<StreamSlot>& streams() { return streams_; }
     std::vector<std::pair<std::type_index, InterfaceBuild>>& interfaces() { return interfaces_; }
     const std::function<void(T&, ThingCtx&)>& start_hook() const { return on_start_; }
     const std::function<void(T&, ThingCtx&)>& stop_hook() const { return on_stop_; }
@@ -1396,6 +1415,7 @@ class ThingSpec {
     std::vector<DeviceSlot> devices_;
     std::vector<EndpointSlot> endpoints_;
     std::vector<SlotSlot> slots_;
+    std::vector<StreamSlot> streams_;
     std::vector<std::pair<std::type_index, InterfaceBuild>> interfaces_;
     std::function<void(T&, ThingCtx&)> on_start_;
     std::function<void(T&, ThingCtx&)> on_stop_;

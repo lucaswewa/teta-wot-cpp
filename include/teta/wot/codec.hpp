@@ -78,6 +78,44 @@ class DecodeError : public std::runtime_error {
     using std::runtime_error::runtime_error;
 };
 
+/// A value that its type's decoding found invalid, as pydantic's
+/// `value_error` (a Blob that isn't on the server): validation reports it at
+/// the value, with the value as sent. Container codecs add their key or
+/// index to its path as it passes.
+class ValueDecodeError : public DecodeError {
+  public:
+    /// One step of the path: an object key, or an array index.
+    using Step = std::variant<std::string, std::size_t>;
+
+    explicit ValueDecodeError(std::string message) : DecodeError(message), message_(std::move(message)) {}
+
+    /// The message, after pydantic's "Value error, ".
+    const std::string& message() const { return message_; }
+    /// The steps from the value decoded to the invalid one.
+    const std::vector<Step>& path() const { return path_; }
+    void prepend(Step step) { path_.insert(path_.begin(), std::move(step)); }
+
+  private:
+    std::string message_;
+    std::vector<Step> path_;
+};
+
+namespace codec {
+
+/// Decodes the value at `step` of a container with `decode()`, adding the
+/// step to the path of a ValueDecodeError.
+template <typename F>
+decltype(auto) at(ValueDecodeError::Step step, F&& decode) {
+    try {
+        return std::forward<F>(decode)();
+    } catch (ValueDecodeError& error) {
+        error.prepend(std::move(step));
+        throw;
+    }
+}
+
+}  // namespace codec
+
 namespace codec {
 
 /// The schema being generated on this thread, so that a struct that contains
@@ -495,8 +533,8 @@ struct Codec<std::vector<T>> {
         }
         std::vector<T> out;
         out.reserve(value.size());
-        for (const auto& item : value) {
-            out.push_back(Codec<T>::decode(item));
+        for (std::size_t i = 0; i < value.size(); ++i) {
+            out.push_back(codec::at(i, [&] { return Codec<T>::decode(value[i]); }));
         }
         return out;
     }
@@ -527,7 +565,7 @@ struct Codec<std::array<T, N>> {
         }
         std::array<T, N> out{};
         for (std::size_t i = 0; i < N; ++i) {
-            out[i] = Codec<T>::decode(value[i]);
+            out[i] = codec::at(i, [&] { return Codec<T>::decode(value[i]); });
         }
         return out;
     }
@@ -558,7 +596,7 @@ struct Codec<std::tuple<Ts...>> {
             throw DecodeError("invalid length " + std::to_string(value.size()) + ", expected " + expected);
         }
         return [&]<std::size_t... I>(std::index_sequence<I...>) {
-            return std::tuple<Ts...>(Codec<Ts>::decode(value[I])...);
+            return std::tuple<Ts...>(codec::at(I, [&] { return Codec<Ts>::decode(value[I]); })...);
         }(std::index_sequence_for<Ts...>{});
     }
 };
@@ -602,7 +640,7 @@ struct StringMapCodec {
         }
         Map out;
         for (const auto& [key, item] : value.items()) {
-            out[key] = Codec<V>::decode(item);
+            out[key] = codec::at(key, [&] { return Codec<V>::decode(item); });
         }
         return out;
     }
@@ -749,7 +787,7 @@ struct Codec<T> {
             const std::string name(names[index]);
             const auto it = value.find(name);
             if (it != value.end()) {
-                member = Codec<M>::decode(*it);
+                member = codec::at(name, [&] { return Codec<M>::decode(*it); });
                 return;
             }
             const auto* field_info = info.find(names[index]);

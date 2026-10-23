@@ -90,6 +90,36 @@ class TestEventStream {
     std::string buffer_;
 };
 
+/// A streamed answer opened by TestClient::stream (an MJPEG stream), read
+/// chunk by chunk as the server sends it. Destroying it is the client going
+/// away.
+class TestStream {
+  public:
+    TestStream(TestStream&&) noexcept;
+    TestStream& operator=(TestStream&&) noexcept;
+    ~TestStream();
+
+    int status = 0;
+    http::Headers headers;
+
+    std::optional<std::string> header(std::string_view name) const;
+    /// The next chunk of the body, or `nullopt` at its end. Throws
+    /// std::runtime_error after receive_timeout.
+    std::optional<std::string> next_chunk();
+    /// The next chunk if one arrives within `timeout` (`nullopt` at the end
+    /// too).
+    std::optional<std::string> next_chunk_within(std::chrono::nanoseconds timeout);
+
+  private:
+    friend class TestClient;
+    TestStream() = default;
+    // The next chunk, or nullopt at the end; throws on a timeout if `strict`.
+    std::optional<std::string> receive(std::chrono::nanoseconds timeout, bool strict);
+
+    std::shared_ptr<detail::ChunkQueue> chunks_;
+    std::optional<std::string> body_;  // a body that wasn't streamed
+};
+
 /// How a TestWebSocket was closed by the server.
 struct TestClose {
     /// The close code (1005 if the close had none).
@@ -167,6 +197,9 @@ class TestClient {
     /// Opens a server-sent events stream: `GET path` with `Accept:
     /// text/event-stream`.
     TestEventStream events(std::string_view path) const;
+    /// `GET path`, its body read as it comes: for a stream that doesn't end
+    /// by itself, such as an MJPEG stream.
+    TestStream stream(std::string_view path) const;
     /// Opens a WebSocket (`websocket_connect`), such as `/counter/ws`, with
     /// this client's `Host` and headers. Throws std::runtime_error if the
     /// path isn't a Thing's WebSocket (the handshake would fail).

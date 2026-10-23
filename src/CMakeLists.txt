@@ -50,6 +50,7 @@ endif()
 # teta::wot-core: the runtime (Phase 3) and the validator (Phase 2).
 add_library(teta_wot_core
     core/action.cpp
+    core/blob.cpp
     core/broker.cpp
     core/cancel.cpp
     core/context.cpp
@@ -63,6 +64,7 @@ add_library(teta_wot_core
     core/property.cpp
     core/runtime.cpp
     core/settings.cpp
+    core/stream.cpp
     core/uuid.cpp
     core/validate.cpp)
 add_library(teta::wot-core ALIAS teta_wot_core)
@@ -75,6 +77,7 @@ target_link_libraries(teta_wot_core
 add_library(teta_wot_http
     http/binding.cpp
     http/fallback.cpp
+    http/output.cpp
     http/path_uuid.cpp
     http/render.cpp
     http/routes.cpp

@@ -46,6 +46,14 @@ Invocation::Invocation(Uuid id, std::string thing, std::string action, json::Val
       clock_(or_steady(std::move(clock))),
       requested_(std::chrono::system_clock::now()) {}
 
+std::shared_ptr<blob::BlobData> Invocation::output_blob() const {
+    std::lock_guard lock(mutex_);
+    if (!output_) {
+        return nullptr;
+    }
+    return blob::as_blob(*output_, output_blobs_);
+}
+
 InvocationStatus Invocation::status() const {
     std::lock_guard lock(mutex_);
     return status_;
@@ -112,12 +120,14 @@ void Invocation::set_running() {
 }
 
 void Invocation::finish(InvocationStatus status, std::optional<json::Value> output,
-                        std::optional<ProblemDetails> error) {
+                        std::optional<ProblemDetails> error,
+                        std::vector<std::shared_ptr<blob::BlobData>> blobs) {
     std::vector<std::function<void()>> callbacks;
     {
         std::lock_guard lock(mutex_);
         status_ = status;
         output_ = std::move(output);
+        output_blobs_ = std::move(blobs);
         error_ = std::move(error);
         completed_ = std::chrono::system_clock::now();
         expires_ = clock_() + retention_;

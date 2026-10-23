@@ -36,7 +36,7 @@ folder (escaped for a JSON string, for `-j`) and `{port}` a free port. `occupy` 
 with Ctrl-C. The exit code and the output are recorded, without log lines
 (their format isn't contract), with the port, the temporary folder and the
 program's name masked, and with `Registered: …` lists masked (the C++ twins
-lack the Blob and array probes until Phases 7 and 10).
+lack the array probe until Phase 10).
 
 Every request is sent over a real socket with `Host: testserver`, so the URLs
 the server builds don't depend on the port. Redirects aren't followed.
@@ -47,8 +47,11 @@ the text repeated, for large bodies), `wait` (poll the invocation the step
 created until it has finished, and record its final state) and `poll`
 (repeat the request until its answer's `status` is no longer `pending` or
 `running`, or with `until`, is one of those listed, and record that
-answer). Paths and bodies may use `{last}` (the
-most recent invocation's ID) and `{inv:N}` (the N-th, from 0).
+answer), and `ignore_body` (record the status and headers only, for data
+that differs by design, such as an example's JPEG images). Paths and bodies
+may use `{last}` (the most recent invocation's ID), `{inv:N}` (the N-th,
+from 0) and `{blob:N}` (the ID of the N-th Blob that a JSON answer linked
+to, from 0).
 
 Observation steps, instead of a request:
 
@@ -61,7 +64,12 @@ Observation steps, instead of a request:
 - `{"name", "events": "/thing/property", "stream": "s"}` opens a
   server-sent events stream (recording the answer's status and headers); then
   steps with `"stream": "s"` and `"receive": N` record the next N events
-  (`event`, `id`, `data`), and `"ended": true` waits for the stream's end.
+  (`event`, `id`, `data`), and `"ended": true` waits for the stream's end;
+- `{"name", "mjpeg": "/thing/stream", "stream": "m"}` opens an MJPEG stream
+  (recording the answer's status and headers); then steps with `"stream":
+  "m"` and `"frames": N` record the next N frames (each part's header and
+  its JPEG data, in hex), `"quiet": S` records whether a frame arrives within
+  S seconds, and `"ended": true` waits for the stream's end.
 
 The handshake's own headers (`upgrade`, `sec-websocket-accept`, …) are the
 transport's, and aren't recorded.
@@ -136,6 +144,8 @@ HEADERS = [
 RUN_STATE = ["status", "timeStarted", "timeCompleted", "timeEnded", "output", "log", "error"]
 
 UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+# A Blob's ID in a response's `href`s, for `{blob:N}`.
+BLOB_HREF = re.compile(r"/blob/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
 NAIVE = r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,9})?"
 UTC = NAIVE + r"(?:Z|\+00:00)"
 
@@ -447,6 +457,84 @@ class WebSocketClient:
 # The end of a server-sent events stream.
 END = object()
 
+# What precedes each frame of an MJPEG answer.
+FRAME_HEADER = b"--frame\r\nContent-Type: image/jpeg\r\n\r\n"
+
+
+class MjpegClient:
+    """An MJPEG stream (`multipart/x-mixed-replace`), read frame by frame:
+    each frame is the JPEG data from its start marker to its end marker.
+    It reads the socket itself (http.client can't read after a timeout),
+    and ends at the last chunk or when the server closes."""
+
+    def __init__(self, port, path, headers):
+        self.sock = socket.create_connection(("127.0.0.1", port), timeout=15)
+        lines = [f"GET {path} HTTP/1.1", f"Host: {HOST}", *(f"{k}: {v}" for k, v in headers.items())]
+        self.sock.sendall(("\r\n".join(lines) + "\r\n\r\n").encode())
+        self.raw = b""
+        self.eof = False
+        while b"\r\n\r\n" not in self.raw and not self.eof:
+            self.fill()
+        head, _, self.raw = self.raw.partition(b"\r\n\r\n")
+        status_line, *header_lines = head.decode("latin-1").split("\r\n")
+        self.status = int(status_line.split()[1])
+        self.headers = {}
+        for line in header_lines:
+            name, _, value = line.partition(":")
+            self.headers[name.strip().lower()] = value.strip()
+        self.chunked = "chunked" in self.headers.get("transfer-encoding", "")
+        self.body = b""
+        self.ended = False
+
+    def fill(self):
+        chunk = self.sock.recv(65536)
+        if chunk:
+            self.raw += chunk
+        else:
+            self.eof = True
+
+    def decode(self):
+        """Moves what has arrived of the body from `raw` to `body`."""
+        if not self.chunked:
+            self.body, self.raw = self.body + self.raw, b""
+            self.ended = self.eof
+            return
+        while not self.ended:
+            size_end = self.raw.find(b"\r\n")
+            if size_end < 0:
+                break
+            size = int(self.raw[:size_end].split(b";")[0], 16)
+            if len(self.raw) < size_end + 2 + size + 2:
+                break
+            self.body += self.raw[size_end + 2:size_end + 2 + size]
+            self.raw = self.raw[size_end + 2 + size + 2:]
+            self.ended = size == 0
+        self.ended = self.ended or self.eof
+
+    def receive(self, timeout):
+        """The next frame as `{header, data}` (hex), END at the end of the
+        stream, or None on a timeout."""
+        deadline = time.monotonic() + timeout
+        while True:
+            self.decode()
+            end = self.body.find(b"\xff\xd9\r\n")
+            if end >= 0:
+                frame, self.body = self.body[:end + 4], self.body[end + 4:]
+                header_end = frame.find(b"\r\n\r\n") + 4
+                return {"header": frame[:header_end].decode("latin-1"), "data": frame[header_end:-2].hex()}
+            if self.ended:
+                return END
+            self.sock.settimeout(max(deadline - time.monotonic(), 0.001))
+            try:
+                self.fill()
+            except (socket.timeout, TimeoutError):
+                return None
+            except ConnectionError:
+                self.eof = True
+
+    def close(self):
+        self.sock.close()
+
 
 class EventStreamClient:
     """A server-sent events stream, read line by line."""
@@ -486,6 +574,23 @@ class EventStreamClient:
         self.conn.close()
 
 
+def note_blobs(blobs, headers, raw):
+    """Notes the Blob IDs in a JSON response, in order, for `{blob:N}`."""
+    if "json" in headers.get("content-type", ""):
+        for found in BLOB_HREF.findall(raw.decode("utf-8")):
+            if found not in blobs:
+                blobs.append(found)
+
+
+def frame(received):
+    """An MJPEG frame as a step records it."""
+    if received is None:
+        return "<timeout>"
+    if received is END:
+        return "<end>"
+    return received
+
+
 def record(status, headers, raw, normaliser, race=False):
     kept = {h: headers[h] for h in HEADERS if h in headers}
     if "allow" in kept:
@@ -517,6 +622,7 @@ def run_steps(server, scenario, prefix):
     `request`); returns what they recorded."""
     normaliser = Normaliser()
     ids = []
+    blobs = []
     steps = []
 
     def resolve(value):
@@ -527,6 +633,7 @@ def run_steps(server, scenario, prefix):
         if not isinstance(value, str):
             return value
         value = value.replace("{last}", ids[-1] if ids else NIL)
+        value = re.sub(r"\{blob:(\d+)\}", lambda m: blobs[int(m.group(1))], value)
         return re.sub(r"\{inv:(\d+)\}", lambda m: ids[int(m.group(1))], value)
 
     sockets = {}
@@ -550,13 +657,14 @@ def run_steps(server, scenario, prefix):
                 "data": parsed, "text": normaliser.text(data)}
 
     try:
-        return run_step_list(server, scenario, prefix, normaliser, ids, steps, resolve, sockets, streams, message)
+        return run_step_list(server, scenario, prefix, normaliser, ids, blobs, steps, resolve, sockets, streams,
+                             message)
     finally:
         for client in [*sockets.values(), *streams.values()]:
             client.close()
 
 
-def run_step_list(server, scenario, prefix, normaliser, ids, steps, resolve, sockets, streams, message):
+def run_step_list(server, scenario, prefix, normaliser, ids, blobs, steps, resolve, sockets, streams, message):
     for step in scenario["steps"]:
         if "websocket" in step:
             ws = WebSocketClient(server.port, resolve(step["websocket"]), step.get("headers", {}))
@@ -591,8 +699,9 @@ def run_step_list(server, scenario, prefix, normaliser, ids, steps, resolve, soc
                 ws.close()
             steps.append(entry)
             continue
-        if "events" in step:
-            stream = EventStreamClient(server.port, resolve(step["events"]), step.get("headers", {}))
+        if "events" in step or "mjpeg" in step:
+            client = EventStreamClient if "events" in step else MjpegClient
+            stream = client(server.port, resolve(step.get("events", step.get("mjpeg"))), step.get("headers", {}))
             streams[step["stream"]] = stream
             steps.append({"step": step, "response": record(stream.status, stream.headers, b"", normaliser)})
             continue
@@ -601,6 +710,10 @@ def run_step_list(server, scenario, prefix, normaliser, ids, steps, resolve, soc
             entry = {"step": step}
             if "receive" in step:
                 entry["events"] = [message(stream.receive(10)) for _ in range(step["receive"])]
+            elif "frames" in step:
+                entry["frames"] = [frame(stream.receive(10)) for _ in range(step["frames"])]
+            elif "quiet" in step:
+                entry["frames"] = [frame(stream.receive(step["quiet"]))]
             elif step.get("ended"):
                 got = stream.receive(10)
                 while isinstance(got, dict):
@@ -655,7 +768,12 @@ def run_step_list(server, scenario, prefix, normaliser, ids, steps, resolve, soc
                 created = found.group(0) if found else None
             if created:
                 ids.append(created)
-        entry = {"step": step, "response": record(status, answer_headers, raw, normaliser, race=created is not None)}
+        note_blobs(blobs, answer_headers, raw)
+        if step.get("ignore_body"):
+            # Data that differs by design, such as an example's JPEG images.
+            entry = {"step": step, "response": {**record(status, answer_headers, b"", normaliser), "body": "<ignored>"}}
+        else:
+            entry = {"step": step, "response": record(status, answer_headers, raw, normaliser, race=created is not None)}
         if step.get("wait") and created:
             deadline = time.monotonic() + 15
             while True:
@@ -665,6 +783,7 @@ def run_step_list(server, scenario, prefix, normaliser, ids, steps, resolve, soc
                 if time.monotonic() > deadline:
                     raise TimeoutError(created)
                 time.sleep(0.02)
+            note_blobs(blobs, final[1], final[2])
             entry["final"] = record(*final, normaliser)
         steps.append(entry)
     return steps

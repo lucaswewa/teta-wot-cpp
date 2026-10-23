@@ -1,0 +1,573 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 5000,
+  "steps": [
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/camera/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "Camera",
+          "properties": {
+            "fps": {
+              "description": "Frames per second of the preview.",
+              "title": "Frames per second of the preview.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": 10.0,
+              "type": "number",
+              "maximum": 30,
+              "exclusiveMinimum": 0,
+              "forms": [
+                {
+                  "href": "/camera/fps",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/camera/fps",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/camera/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "sharpness": {
+              "description": "The size of the next frame, in bytes: sharper images compress less,\nso autofocus routines maximise it.",
+              "title": "The size of the next frame, in bytes: sharper images compress less,",
+              "forms": [
+                {
+                  "href": "/camera/sharpness",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "sharpness_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "sharpness_output",
+                "type": "integer",
+                "minimum": 0
+              },
+              "synchronous": false
+            },
+            "snapshot": {
+              "description": "Save the next frame.",
+              "title": "Save the next frame.",
+              "forms": [
+                {
+                  "href": "/camera/snapshot",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "image/jpeg"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "snapshot_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "snapshot_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "image/jpeg",
+                    "default": "image/jpeg",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A simulated camera with a live preview.",
+          "links": [
+            {
+              "href": "/camera/preview",
+              "type": "multipart/x-mixed-replace",
+              "rel": "alternate"
+            },
+            {
+              "href": "/camera/preview/viewer",
+              "type": "text/html",
+              "rel": "alternate"
+            }
+          ],
+          "forms": [
+            {
+              "href": "/camera/properties",
+              "op": [
+                "readallproperties",
+                "writemultipleproperties"
+              ]
+            },
+            {
+              "href": "/camera/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/camera/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"Camera\",\"properties\":{\"fps\":{\"description\":\"Frames per second of the preview.\",\"title\":\"Frames per second of the preview.\",\"writeOnly\":false,\"readOnly\":false,\"default\":10.0,\"type\":\"number\",\"maximum\":30,\"exclusiveMinimum\":0,\"forms\":[{\"href\":\"/camera/fps\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/camera/fps\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/camera/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"sharpness\":{\"description\":\"The size of the next frame, in bytes: sharper images compress less,\\nso autofocus routines maximise it.\",\"title\":\"The size of the next frame, in bytes: sharper images compress less,\",\"forms\":[{\"href\":\"/camera/sharpness\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"sharpness_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"sharpness_output\",\"type\":\"integer\",\"minimum\":0},\"synchronous\":false},\"snapshot\":{\"description\":\"Save the next frame.\",\"title\":\"Save the next frame.\",\"forms\":[{\"href\":\"/camera/snapshot\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"image/jpeg\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"snapshot_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"snapshot_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false}},\"description\":\"A simulated camera with a live preview.\",\"links\":[{\"href\":\"/camera/preview\",\"type\":\"multipart/x-mixed-replace\",\"rel\":\"alternate\"},{\"href\":\"/camera/preview/viewer\",\"type\":\"text/html\",\"rel\":\"alternate\"}],\"forms\":[{\"href\":\"/camera/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/camera/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/camera/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "viewer",
+        "method": "GET",
+        "path": "/camera/preview/viewer"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/html; charset=utf-8",
+          "vary": "Origin"
+        },
+        "body": "<html><body><img src='/camera/preview'></body></html>"
+      }
+    },
+    {
+      "step": {
+        "name": "preview",
+        "mjpeg": "/camera/preview",
+        "stream": "p"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "multipart/x-mixed-replace; boundary=frame",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "fps",
+        "method": "GET",
+        "path": "/camera/fps"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 10.0,
+        "text": "10.0"
+      }
+    },
+    {
+      "step": {
+        "name": "fps_zero",
+        "method": "PUT",
+        "path": "/camera/fps",
+        "json": 0
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "greater_than",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be greater than 0",
+              "input": 0,
+              "ctx": {
+                "gt": 0.0
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"greater_than\",\"loc\":[\"body\"],\"msg\":\"Input should be greater than 0\",\"input\":0,\"ctx\":{\"gt\":0.0}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "fps_too_fast",
+        "method": "PUT",
+        "path": "/camera/fps",
+        "json": 31
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "less_than_equal",
+              "loc": [
+                "body"
+              ],
+              "msg": "Input should be less than or equal to 30",
+              "input": 31,
+              "ctx": {
+                "le": 30.0
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"less_than_equal\",\"loc\":[\"body\"],\"msg\":\"Input should be less than or equal to 30\",\"input\":31,\"ctx\":{\"le\":30.0}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "fps_faster",
+        "method": "PUT",
+        "path": "/camera/fps",
+        "json": 20
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "fps_after",
+        "method": "GET",
+        "path": "/camera/fps"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 20.0,
+        "text": "20.0"
+      }
+    },
+    {
+      "step": {
+        "name": "snapshot",
+        "method": "POST",
+        "path": "/camera/snapshot",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:1>",
+          "action": "/camera/snapshot",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:1>",
+          "action": "/camera/snapshot",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": {
+            "href": "http://testserver/blob/<uuid:2>",
+            "media_type": "image/jpeg",
+            "rel": "output",
+            "description": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file."
+          },
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:1>\",\"action\":\"/camera/snapshot\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":{\"href\":\"http://testserver/blob/<uuid:2>\",\"media_type\":\"image/jpeg\",\"rel\":\"output\",\"description\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\"},\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "snapshot_output",
+        "method": "GET",
+        "path": "/action_invocations/{last}/output",
+        "ignore_body": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "image/jpeg",
+          "vary": "Origin"
+        },
+        "body": "<ignored>"
+      }
+    },
+    {
+      "step": {
+        "name": "snapshot_download",
+        "method": "GET",
+        "path": "/blob/{blob:0}",
+        "ignore_body": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "image/jpeg",
+          "vary": "Origin"
+        },
+        "body": "<ignored>"
+      }
+    },
+    {
+      "step": {
+        "name": "sharpness",
+        "method": "POST",
+        "path": "/camera/sharpness"
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:3>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:3>",
+          "action": "/camera/sharpness",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "sharpness_status",
+        "method": "GET",
+        "path": "/action_invocations/{last}",
+        "poll": true,
+        "ignore_body": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": "<ignored>"
+      }
+    },
+    {
+      "step": {
+        "name": "unknown_stream",
+        "method": "GET",
+        "path": "/camera/nope/viewer"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    }
+  ]
+}

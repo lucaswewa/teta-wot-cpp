@@ -1,13 +1,14 @@
 #include "twins.hpp"
 
 #include <algorithm>
+#include <fstream>
 #include <initializer_list>
 #include <stdexcept>
 
 namespace twins {
 
-const std::vector<std::string> names = {"mything",    "broken",         "counter", "types",
-                                        "http_probe", "settings_probe", "ws_probe"};
+const std::vector<std::string> names = {"mything",    "broken",         "counter",  "types",
+                                        "http_probe", "settings_probe", "ws_probe", "blob_probe"};
 
 void add(tw::RuntimeBuilder& builder, std::string_view name) {
     const std::string n(name);
@@ -25,6 +26,8 @@ void add(tw::RuntimeBuilder& builder, std::string_view name) {
         builder.thing<SettingsProbe>(n);
     } else if (name == "ws_probe") {
         builder.thing<ThingWithProperties>(n);
+    } else if (name == "blob_probe") {
+        builder.thing<BlobProbe>(n);
     } else {
         throw std::invalid_argument("no twin named `" + n + "`");
     }
@@ -44,6 +47,7 @@ tw::ThingRegistry registry() {
         .add<HttpProbe>({"twins.http_probe:HttpProbe", "twins:HttpProbe"})
         .add<SettingsProbe>({"twins.settings_probe:SettingsProbe", "twins:SettingsProbe"})
         .add<ThingWithProperties>({"twins.ws_probe:ThingWithProperties", "twins:ThingWithProperties"})
+        .add<BlobProbe>({"twins.blob_probe:BlobProbe", "twins:BlobProbe"})
         .add<EventProbe>({"twins.event_probe:EventProbe", "twins:EventProbe"});
     return registry;
 }
@@ -342,6 +346,83 @@ void ThingWithProperties::define(tw::ThingSpec<ThingWithProperties>& t) {
         .doc("Raise an exception to test for error status.");
     t.action("cancel_myself", &ThingWithProperties::cancel_myself)
         .doc("Increment the data property, then pretend to be cancelled.");
+}
+
+// ---- BlobProbe ----------------------------------------------------------------------------
+
+namespace {
+
+/// Enough of a JPEG for the stream's check of its start and end markers.
+const std::string fake_jpeg = "\xff\xd8 not really a JPEG \xff\xd9";
+
+}  // namespace
+
+tw::Blob<tw::blob::Jpeg> BlobProbe::capture() {
+    return tw::Blob<tw::blob::Jpeg>::from_bytes(fake_jpeg);
+}
+
+tw::Blob<tw::blob::Jpeg> BlobProbe::capture_to_file() {
+    tw::blob::TemporaryDirectory folder;
+    std::ofstream(folder.path() / "image.jpg", std::ios::binary) << fake_jpeg;
+    return tw::Blob<tw::blob::Jpeg>::from_temporary_directory(std::move(folder), "image.jpg");
+}
+
+tw::Blob<tw::blob::TextPlain> BlobProbe::text() {
+    return tw::Blob<tw::blob::TextPlain>::from_bytes("Some text from the probe.");
+}
+
+tw::Blob<VagueText> BlobProbe::csv() {
+    return tw::Blob<VagueText>::from_bytes_as("a,b\n1,2\n", "text/csv");
+}
+
+tw::OrderedMap<tw::Blob<tw::blob::TextPlain>> BlobProbe::two_texts() {
+    tw::OrderedMap<tw::Blob<tw::blob::TextPlain>> out;
+    out["first"] = tw::Blob<tw::blob::TextPlain>::from_bytes("first");
+    out["second"] = tw::Blob<tw::blob::TextPlain>::from_bytes("second");
+    return out;
+}
+
+tw::Blob<tw::blob::TextPlain> BlobProbe::passthrough(tw::Blob<tw::blob::TextPlain> blob) {
+    return blob;
+}
+
+std::int64_t BlobProbe::jpeg_size(tw::Blob<tw::blob::Jpeg> image) {
+    return static_cast<std::int64_t>(image.bytes().size());
+}
+
+std::int64_t BlobProbe::add_frames(std::int64_t count) {
+    for (std::int64_t i = 0; i < count; ++i) {
+        stream.add_frame(fake_jpeg);
+    }
+    return count;
+}
+
+void BlobProbe::stop_stream() {
+    stream.stop();
+}
+
+void BlobProbe::restart_stream() {
+    stream.reset();
+}
+
+void BlobProbe::define(tw::ThingSpec<BlobProbe>& t) {
+    t.doc("A Thing for probing Blobs and MJPEG streams.");
+    t.stream("stream", &BlobProbe::stream);
+    t.action("capture", &BlobProbe::capture).doc("Capture an image, held in memory.");
+    t.action("capture_to_file", &BlobProbe::capture_to_file)
+        .doc("Capture an image, saved in a temporary directory.");
+    t.action("text", &BlobProbe::text).doc("Return some text as a Blob.");
+    t.action("csv", &BlobProbe::csv).doc("Return CSV data as a vaguely typed Blob.");
+    t.action("two_texts", &BlobProbe::two_texts).doc("Return two Blobs in a dictionary.");
+    t.action<"blob">("passthrough", &BlobProbe::passthrough).doc("Return the Blob it is given.");
+    t.action<"image">("jpeg_size", &BlobProbe::jpeg_size).doc("Return the size of an image, in bytes.");
+    t.action<"count">("add_frames", &BlobProbe::add_frames)
+        .doc("Add frames to the stream, and return how many there were.")
+        .param("count")
+        .default_value(3);
+    t.action("stop_stream", &BlobProbe::stop_stream).doc("Stop the stream: its clients' responses end.");
+    t.action("restart_stream", &BlobProbe::restart_stream)
+        .doc("Start the stream again, with an empty buffer.");
 }
 
 // ---- EventProbe ---------------------------------------------------------------------------

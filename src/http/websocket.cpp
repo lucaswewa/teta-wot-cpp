@@ -54,10 +54,11 @@ std::string_view debug(Refusal refusal) {
 class ThingSocket final : public WebSocketSession, public std::enable_shared_from_this<ThingSocket> {
   public:
     ThingSocket(std::shared_ptr<MessageBroker> broker, std::shared_ptr<const ThingHandle> thing,
-                std::shared_ptr<WebSocketPeer> peer)
+                std::shared_ptr<WebSocketPeer> peer, Urls urls)
         : broker_(std::move(broker)),
           thing_(std::move(thing)),
           peer_(std::move(peer)),
+          urls_(std::move(urls)),
           subscription_(broker_->subscription()) {}
 
     void start() {
@@ -105,7 +106,7 @@ class ThingSocket final : public WebSocketSession, public std::enable_shared_fro
             if (!message) {
                 break;
             }
-            if (!peer_->send_text(json::dump(relay(*message)))) {
+            if (!peer_->send_text(json::dump(relay(*message, urls_)))) {
                 gone_ = true;
                 return;
             }
@@ -176,6 +177,7 @@ class ThingSocket final : public WebSocketSession, public std::enable_shared_fro
     std::shared_ptr<MessageBroker> broker_;
     std::shared_ptr<const ThingHandle> thing_;
     std::shared_ptr<WebSocketPeer> peer_;
+    Urls urls_;
     Subscription subscription_;
     std::mutex mutex_;
     bool gone_ = false;
@@ -222,24 +224,26 @@ json::Value error_response(std::string_view name, Target target, Refusal refusal
     return response;
 }
 
-json::Value relay(const Message& message) {
+json::Value relay(const Message& message, const Urls& urls) {
+    json::Value payload = message.payload;
+    resolve_blobs(payload, urls);
     json::Value out = json::Value::object();
     json::Value data = json::Value::object();
     switch (message.kind) {
         case MessageKind::property:
             out["messageType"] = "propertyStatus";
-            data[message.affordance] = message.payload;
+            data[message.affordance] = std::move(payload);
             break;
         case MessageKind::action:
             out["messageType"] = "actionStatus";
             data["action name"] = message.affordance;
-            data["status"] = message.payload;
+            data["status"] = std::move(payload);
             break;
         case MessageKind::event: {
             // A Mozilla Web Thing API dialect.
             out["messageType"] = "event";
             json::Value event = json::Value::object();
-            event["data"] = message.payload;
+            event["data"] = std::move(payload);
             event["timestamp"] = rfc3339(message.time, 6);
             data[message.affordance] = std::move(event);
             break;
@@ -251,8 +255,9 @@ json::Value relay(const Message& message) {
 
 std::shared_ptr<WebSocketSession> open_session(std::shared_ptr<MessageBroker> broker,
                                                std::shared_ptr<const ThingHandle> thing,
-                                               std::shared_ptr<WebSocketPeer> peer) {
-    auto session = std::make_shared<ThingSocket>(std::move(broker), std::move(thing), std::move(peer));
+                                               std::shared_ptr<WebSocketPeer> peer, Urls urls) {
+    auto session =
+        std::make_shared<ThingSocket>(std::move(broker), std::move(thing), std::move(peer), std::move(urls));
     session->start();
     return session;
 }

@@ -51,12 +51,12 @@ enum class Refusal { not_found, not_observable };
 /// (`observation_error_response`).
 json::Value error_response(std::string_view name, Target target, Refusal refusal);
 
-/// A notification, as the socket sends it.
-json::Value relay(const Message& message);
+/// A notification, as the socket sends it, with Blob `href`s made absolute.
+json::Value relay(const Message& message, const Urls& urls);
 
-/// Serves one connection to `thing`'s WebSocket.
+/// Serves one connection to `thing`'s WebSocket, opened with `urls`.
 std::shared_ptr<WebSocketSession> open_session(std::shared_ptr<MessageBroker> broker,
                                                std::shared_ptr<const ThingHandle> thing,
-                                               std::shared_ptr<WebSocketPeer> peer);
+                                               std::shared_ptr<WebSocketPeer> peer, Urls urls);
 
 }  // namespace teta::wot::http::detail

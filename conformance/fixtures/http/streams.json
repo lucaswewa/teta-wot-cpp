@@ -1,0 +1,868 @@
+{
+  "config": {
+    "things": {
+      "blob_probe": "twins.blob_probe:BlobProbe"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "viewer",
+        "method": "GET",
+        "path": "/blob_probe/stream/viewer"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/html; charset=utf-8",
+          "vary": "Origin"
+        },
+        "body": "<html><body><img src='/blob_probe/stream'></body></html>"
+      }
+    },
+    {
+      "step": {
+        "name": "viewer_post",
+        "method": "POST",
+        "path": "/blob_probe/stream/viewer"
+      },
+      "response": {
+        "status": 405,
+        "headers": {
+          "content-type": "application/json",
+          "allow": "GET",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Method Not Allowed"
+        },
+        "text": "{\"detail\":\"Method Not Allowed\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "stream_post",
+        "method": "POST",
+        "path": "/blob_probe/stream"
+      },
+      "response": {
+        "status": 405,
+        "headers": {
+          "content-type": "application/json",
+          "allow": "GET",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Method Not Allowed"
+        },
+        "text": "{\"detail\":\"Method Not Allowed\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "unknown_stream",
+        "method": "GET",
+        "path": "/blob_probe/nope"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "unknown_viewer",
+        "method": "GET",
+        "path": "/blob_probe/nope/viewer"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Not Found"
+        },
+        "text": "{\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "open_a",
+        "mjpeg": "/blob_probe/stream",
+        "stream": "a"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "multipart/x-mixed-replace; boundary=frame",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "add_one",
+        "method": "POST",
+        "path": "/blob_probe/add_frames",
+        "json": {
+          "count": 1
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:0>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:0>",
+          "action": "/blob_probe/add_frames",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "count": 1
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:0>",
+          "action": "/blob_probe/add_frames",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:0>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "count": 1
+          },
+          "output": 1,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:0>\",\"action\":\"/blob_probe/add_frames\",\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:0>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"count\":1},\"output\":1,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "a_frame",
+        "stream": "a",
+        "frames": 1
+      },
+      "frames": [
+        {
+          "header": "--frame\r\nContent-Type: image/jpeg\r\n\r\n",
+          "data": "ffd8206e6f74207265616c6c792061204a50454720ffd9"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "a_nothing_more",
+        "stream": "a",
+        "quiet": 0.3
+      },
+      "frames": [
+        "<timeout>"
+      ]
+    },
+    {
+      "step": {
+        "name": "add_another",
+        "method": "POST",
+        "path": "/blob_probe/add_frames",
+        "json": {
+          "count": 1
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:1>",
+          "action": "/blob_probe/add_frames",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "count": 1
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:1>",
+          "action": "/blob_probe/add_frames",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "count": 1
+          },
+          "output": 1,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:1>\",\"action\":\"/blob_probe/add_frames\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"count\":1},\"output\":1,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "a_another",
+        "stream": "a",
+        "frames": 1
+      },
+      "frames": [
+        {
+          "header": "--frame\r\nContent-Type: image/jpeg\r\n\r\n",
+          "data": "ffd8206e6f74207265616c6c792061204a50454720ffd9"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "open_b",
+        "mjpeg": "/blob_probe/stream",
+        "stream": "b"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "multipart/x-mixed-replace; boundary=frame",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "add_for_both",
+        "method": "POST",
+        "path": "/blob_probe/add_frames",
+        "json": {
+          "count": 1
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:2>",
+          "action": "/blob_probe/add_frames",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "count": 1
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:2>",
+          "action": "/blob_probe/add_frames",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "count": 1
+          },
+          "output": 1,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/blob_probe/add_frames\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"count\":1},\"output\":1,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "a_for_both",
+        "stream": "a",
+        "frames": 1
+      },
+      "frames": [
+        {
+          "header": "--frame\r\nContent-Type: image/jpeg\r\n\r\n",
+          "data": "ffd8206e6f74207265616c6c792061204a50454720ffd9"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "b_for_both",
+        "stream": "b",
+        "frames": 1
+      },
+      "frames": [
+        {
+          "header": "--frame\r\nContent-Type: image/jpeg\r\n\r\n",
+          "data": "ffd8206e6f74207265616c6c792061204a50454720ffd9"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "stop",
+        "method": "POST",
+        "path": "/blob_probe/stop_stream",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:3>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:3>",
+          "action": "/blob_probe/stop_stream",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:3>",
+          "action": "/blob_probe/stop_stream",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:3>\",\"action\":\"/blob_probe/stop_stream\",\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:3>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "a_ended",
+        "stream": "a",
+        "ended": true
+      },
+      "ended": "<end>"
+    },
+    {
+      "step": {
+        "name": "b_ended",
+        "stream": "b",
+        "ended": true
+      },
+      "ended": "<end>"
+    },
+    {
+      "step": {
+        "name": "open_stopped",
+        "mjpeg": "/blob_probe/stream",
+        "stream": "c"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "multipart/x-mixed-replace; boundary=frame",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "stopped_ended",
+        "stream": "c",
+        "ended": true
+      },
+      "ended": "<end>"
+    },
+    {
+      "step": {
+        "name": "add_while_stopped",
+        "method": "POST",
+        "path": "/blob_probe/add_frames",
+        "json": {
+          "count": 1
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:4>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:4>",
+          "action": "/blob_probe/add_frames",
+          "href": "http://testserver/action_invocations/<uuid:4>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:4>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:4>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "count": 1
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:4>",
+          "action": "/blob_probe/add_frames",
+          "href": "http://testserver/action_invocations/<uuid:4>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:4>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:4>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "count": 1
+          },
+          "output": 1,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:4>\",\"action\":\"/blob_probe/add_frames\",\"href\":\"http://testserver/action_invocations/<uuid:4>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:4>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:4>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"count\":1},\"output\":1,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "restart_stream",
+        "method": "POST",
+        "path": "/blob_probe/restart_stream",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:5>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:5>",
+          "action": "/blob_probe/restart_stream",
+          "href": "http://testserver/action_invocations/<uuid:5>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:5>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:5>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:5>",
+          "action": "/blob_probe/restart_stream",
+          "href": "http://testserver/action_invocations/<uuid:5>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:5>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:5>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:5>\",\"action\":\"/blob_probe/restart_stream\",\"href\":\"http://testserver/action_invocations/<uuid:5>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:5>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:5>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "open_d",
+        "mjpeg": "/blob_probe/stream",
+        "stream": "d"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "multipart/x-mixed-replace; boundary=frame",
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "add_after_restart",
+        "method": "POST",
+        "path": "/blob_probe/add_frames",
+        "json": {
+          "count": 1
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:6>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:6>",
+          "action": "/blob_probe/add_frames",
+          "href": "http://testserver/action_invocations/<uuid:6>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:6>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:6>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "count": 1
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:6>",
+          "action": "/blob_probe/add_frames",
+          "href": "http://testserver/action_invocations/<uuid:6>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:6>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:6>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "count": 1
+          },
+          "output": 1,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:6>\",\"action\":\"/blob_probe/add_frames\",\"href\":\"http://testserver/action_invocations/<uuid:6>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:6>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:6>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"count\":1},\"output\":1,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "d_frame",
+        "stream": "d",
+        "frames": 1
+      },
+      "frames": [
+        {
+          "header": "--frame\r\nContent-Type: image/jpeg\r\n\r\n",
+          "data": "ffd8206e6f74207265616c6c792061204a50454720ffd9"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "shutdown",
+        "restart": true
+      }
+    },
+    {
+      "step": {
+        "name": "d_ended",
+        "stream": "d",
+        "ended": true
+      },
+      "ended": "<end>"
+    },
+    {
+      "step": {
+        "name": "viewer_after_restart",
+        "method": "GET",
+        "path": "/blob_probe/stream/viewer"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/html; charset=utf-8",
+          "vary": "Origin"
+        },
+        "body": "<html><body><img src='/blob_probe/stream'></body></html>"
+      }
+    }
+  ]
+}
