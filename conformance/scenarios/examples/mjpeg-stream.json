@@ -2,6 +2,7 @@
   "serve": ["--serve"],
   "port": 5000,
   "steps": [
+    {"name": "openapi", "method": "GET", "path": "/openapi.json"},
     {"name": "td", "method": "GET", "path": "/camera/"},
     {"name": "viewer", "method": "GET", "path": "/camera/preview/viewer"},
     {"name": "preview", "mjpeg": "/camera/preview", "stream": "p"},

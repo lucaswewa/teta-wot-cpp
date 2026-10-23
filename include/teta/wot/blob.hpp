@@ -379,6 +379,9 @@ template <BlobMediaType M>
 struct Codec<Blob<M>> {
     static constexpr bool referenced = false;
 
+    /// schemars' name for the schema: the media type's title.
+    static std::string schema_name() { return std::string(M::title); }
+
     static json::Value json_schema() {
         json::Value media_type = json::Value::object();
         media_type["title"] = "Media Type";

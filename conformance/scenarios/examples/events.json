@@ -5,6 +5,11 @@
   "port": 5000,
   "steps": [
     {
+      "name": "openapi",
+      "method": "GET",
+      "path": "/openapi.json"
+    },
+    {
       "name": "td",
       "method": "GET",
       "path": "/laser/"

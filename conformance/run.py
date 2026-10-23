@@ -15,7 +15,9 @@ A server is any executable with teta-wot's command line: it is started as
 `PATH -c CONFIG --host 127.0.0.1 --port PORT`, with the scenario's
 configuration (and a temporary settings folder), and stopped with Ctrl-C.
 A scenario's `files` (`{"thing/Settings-Class.json": "text"}`) are written
-into the settings folder before the server starts.
+into the settings folder before the server starts. With `workdir_files`, the
+server runs in a temporary working directory holding those files (which a
+server must not serve as static files).
 
 With `--examples`, the scenarios are `conformance/scenarios/examples/*.json`
 and the fixtures `conformance/fixtures/examples/`: each scenario is named
@@ -270,6 +272,13 @@ class Server:
         self.written = {}
         for name, text in scenario.get("files", {}).items():
             self.write(name, text)
+        self.workdir = None
+        if "workdir_files" in scenario:
+            self.workdir = Path(self.folder.name) / "workdir"
+            for name, text in scenario["workdir_files"].items():
+                path = self.workdir / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(text, encoding="utf-8")
         self.log_path = Path(self.folder.name) / "server.log"
         self.log = None
         try:
@@ -290,7 +299,8 @@ class Server:
             self.port = free_port()
             command = [self.executable, "-c", str(config_path), "--host", "127.0.0.1", "--port", str(self.port)]
         self.log = open(self.log_path, "wb")
-        self.process = subprocess.Popen(command, stdout=self.log, stderr=subprocess.STDOUT, creationflags=new_group())
+        self.process = subprocess.Popen(command, stdout=self.log, stderr=subprocess.STDOUT, creationflags=new_group(),
+                                        cwd=self.workdir)
         try:
             wait_listening(self.process, self.port, self.executable, self.output)
         except BaseException:

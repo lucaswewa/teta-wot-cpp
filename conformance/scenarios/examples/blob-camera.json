@@ -2,6 +2,7 @@
   "serve": ["--serve"],
   "port": 5000,
   "steps": [
+    {"name": "openapi", "method": "GET", "path": "/openapi.json"},
     {"name": "td", "method": "GET", "path": "/camera/"},
     {"name": "captures_before", "method": "GET", "path": "/camera/captures"},
     {"name": "capture", "method": "POST", "path": "/camera/capture", "wait": true},

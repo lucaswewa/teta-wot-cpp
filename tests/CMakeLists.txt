@@ -19,6 +19,7 @@ add_executable(teta-wot-tests
     http/fallback_test.cpp
     http/fixtures_test.cpp
     http/http_test.cpp
+    http/openapi_test.cpp
     http/options_test.cpp
     http/output_test.cpp
     http/websocket_test.cpp
@@ -53,11 +54,17 @@ add_subdirectory(compile_fail)
 # `tds` and `tds-wot` need Things of later phases.
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
+    set(http_scenarios counter validation default locked prefixed wot settings settings-load ws sse sse-wot events
+        blobs blobs-wot streams openapi openapi-wot openapi-prefixed)
+    if(NOT TETA_WOT_DOCS_OFFLINE)
+        # The reference serves the docs pages without their assets; with the
+        # option, the pages load them from the server (the docs-offline
+        # example's scenario).
+        list(APPEND http_scenarios docs)
+    endif()
     add_test(NAME conformance.http
         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/conformance/run.py check
-            --server $<TARGET_FILE:twin-server>
-            counter validation default locked prefixed wot settings settings-load ws sse sse-wot events
-            blobs blobs-wot streams)
+            --server $<TARGET_FILE:twin-server> ${http_scenarios})
     set_tests_properties(conformance.http PROPERTIES LABELS conformance TIMEOUT 600)
     # The command line: exit codes, output, the fallback server.
     add_test(NAME conformance.cli
@@ -67,11 +74,37 @@ if(Python3_Interpreter_FOUND)
     # The examples that serve, against their Rust originals' answers (plan
     # section 6.1). They listen on port 5000.
     if(TETA_WOT_BUILD_EXAMPLES)
+        set(examples_pattern ${PROJECT_BINARY_DIR}/examples/{name}/example-{name}${CMAKE_EXECUTABLE_SUFFIX})
+        file(GLOB example_scenarios CONFIGURE_DEPENDS RELATIVE ${PROJECT_SOURCE_DIR}/conformance/scenarios/examples
+            ${PROJECT_SOURCE_DIR}/conformance/scenarios/examples/*.json)
+        list(TRANSFORM example_scenarios REPLACE "[.]json$" "")
+        if(NOT TETA_WOT_DOCS_OFFLINE)
+            # Its pages load their assets from the server only with the option.
+            list(REMOVE_ITEM example_scenarios docs-offline)
+        endif()
         add_test(NAME conformance.examples
             COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/conformance/run.py check --examples
-                --server ${PROJECT_BINARY_DIR}/examples/{name}/example-{name}${CMAKE_EXECUTABLE_SUFFIX})
+                --server ${examples_pattern} ${example_scenarios})
         set_tests_properties(conformance.examples PROPERTIES LABELS conformance TIMEOUT 600 RESOURCE_LOCK port-5000)
     endif()
+    # Every OpenAPI document served is valid (skipped without
+    # openapi-spec-validator).
+    add_test(NAME conformance.openapi
+        COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/conformance/validate_openapi.py
+            --server $<TARGET_FILE:twin-server>
+            $<$<BOOL:${TETA_WOT_BUILD_EXAMPLES}>:--examples=${PROJECT_BINARY_DIR}/examples/{name}/example-{name}${CMAKE_EXECUTABLE_SUFFIX}>)
+    set_tests_properties(conformance.openapi PROPERTIES LABELS conformance TIMEOUT 600 RESOURCE_LOCK port-5000
+        SKIP_RETURN_CODE 77)
 else()
     message(STATUS "Python 3 not found: the conformance.http test is skipped")
+endif()
+# openapi-export writes the OpenAPI document byte for byte as teta-wot's
+# example writes it.
+if(TETA_WOT_BUILD_EXAMPLES)
+    add_test(NAME conformance.openapi-export
+        COMMAND ${CMAKE_COMMAND} -DEXAMPLE=$<TARGET_FILE:example-openapi-export>
+            -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/openapi-export
+            -DEXPECTED=${PROJECT_SOURCE_DIR}/conformance/fixtures/examples/openapi-export/openapi.json
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/compare_export.cmake)
+    set_tests_properties(conformance.openapi-export PROPERTIES LABELS conformance)
 endif()

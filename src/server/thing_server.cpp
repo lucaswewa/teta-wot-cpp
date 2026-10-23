@@ -377,9 +377,14 @@ void ThingServer::serve(const std::string& host, std::uint16_t port, std::stop_t
     }
 
     const auto handler = drogon_adapter::mount(binding_, drogon::app());
-    // The application is the server's alone: every WebSocket request that
-    // isn't a Thing's is answered as teta-wot answers its path.
-    drogon_adapter::answer_upgrades(binding_, drogon::app(), [](const http::Request&) { return true; });
+    // The application is the server's alone: the binding answers every
+    // request, before Drogon's routing (and its static files), but the
+    // Things' WebSockets, which their controller serves.
+    drogon_adapter::answer_all(
+        handler, drogon::app(), [binding = binding_](const drogon::HttpRequest& request) {
+            return http::equals_ignoring_case(request.getHeader("upgrade"), "websocket") &&
+                   binding->is_websocket(drogon_adapter::to_request(request));
+        });
     const bool stopped = run_drogon(
         address, stop,
         [&](std::uint16_t bound) {
@@ -426,11 +431,13 @@ void serve_fallback(const http::FallbackPage& page, const std::string& host, std
         throw ServeError(error.what());
     }
     claim_drogon();
-    drogon_adapter::mount(drogon_adapter::Service([html = page.html()](http::Request request,
-                                                                       http::HttpBinding::Respond respond) {
-                              respond(http::fallback_answer(html, request));
-                          }),
-                          drogon::app());
+    const auto handler = drogon_adapter::mount(
+        drogon_adapter::Service(
+            [html = page.html()](http::Request request, http::HttpBinding::Respond respond) {
+                respond(http::fallback_answer(html, request));
+            }),
+        drogon::app());
+    drogon_adapter::answer_all(handler, drogon::app());
     const bool stopped = run_drogon(address, stop, listening, {});
     mark_finished();
     if (!stopped) {

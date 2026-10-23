@@ -6,6 +6,1566 @@
   "steps": [
     {
       "step": {
+        "name": "openapi",
+        "method": "GET",
+        "path": "/openapi.json"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "openapi": "3.1.0",
+          "info": {
+            "title": "teta-wot",
+            "version": "0.1.0"
+          },
+          "paths": {
+            "/action_invocations": {
+              "get": {
+                "summary": "List All Invocations",
+                "description": "Every invocation the server is keeping, of every action.",
+                "operationId": "list_all_invocations_action_invocations_get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/InvocationSummary"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/action_invocations/{id}": {
+              "get": {
+                "summary": "Action Invocation",
+                "description": "One invocation: its status, input, output, log and error.",
+                "operationId": "action_invocation_action_invocations__id__get",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Invocation"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "description": "Invocation ID not found"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "delete": {
+                "summary": "Delete Invocation",
+                "description": "Cancel an invocation (`cancelaction`). The action stops at its next cancellation check.",
+                "operationId": "delete_invocation_action_invocations__id__delete",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Cancel request sent",
+                    "content": {
+                      "application/json": {
+                        "schema": {}
+                      }
+                    }
+                  },
+                  "503": {
+                    "description": "Invocation may not be cancelled"
+                  },
+                  "404": {
+                    "description": "Invocation ID not found"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/action_invocations/{id}/output": {
+              "get": {
+                "summary": "Action Invocation Output",
+                "description": "The output of a completed invocation. When the output is a Blob, this is its data.",
+                "operationId": "action_invocation_output_action_invocations__id__output_get",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Action invocation output",
+                    "content": {
+                      "application/json": {
+                        "schema": {}
+                      },
+                      "*/*": {}
+                    }
+                  },
+                  "503": {
+                    "description": "No result is available for this invocation"
+                  },
+                  "404": {
+                    "description": "Invocation ID not found"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/blob/{blob_id}": {
+              "get": {
+                "summary": "Download Blob",
+                "description": "A Blob's data, while an invocation or the Thing still holds it.",
+                "operationId": "download_blob_blob__blob_id__get",
+                "parameters": [
+                  {
+                    "name": "blob_id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "*/*": {}
+                    }
+                  },
+                  "404": {
+                    "description": "Blob not found"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/thing_descriptions/": {
+              "get": {
+                "summary": "Thing Descriptions",
+                "description": "The Thing Description of every Thing, by name.",
+                "operationId": "thing_descriptions_thing_descriptions__get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/ThingDescription"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/things/": {
+              "get": {
+                "summary": "Thing Paths",
+                "description": "The URL of every Thing's Thing Description, by name.",
+                "operationId": "thing_paths_things__get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/.well-known/wot": {
+              "get": {
+                "summary": "Thing Description Directory",
+                "description": "The TD of this server's Thing Description Directory (W3C WoT Discovery).",
+                "operationId": "well_known_wot__well_known_wot_get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/td+json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/ThingDescription"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/directory/things": {
+              "get": {
+                "summary": "Thing Descriptions",
+                "description": "Every Thing's TD, sorted by `id`. With `limit`, a page, with `next` and `canonical` links.",
+                "operationId": "directory_things_directory_things_get",
+                "parameters": [
+                  {
+                    "name": "offset",
+                    "in": "query",
+                    "required": false,
+                    "description": "How many TDs to skip",
+                    "schema": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  {
+                    "name": "limit",
+                    "in": "query",
+                    "required": false,
+                    "description": "How many TDs in a page (at least 1)",
+                    "schema": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  {
+                    "name": "format",
+                    "in": "query",
+                    "required": false,
+                    "schema": {
+                      "type": "string",
+                      "enum": [
+                        "array",
+                        "collection"
+                      ],
+                      "default": "array"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/ld+json": {
+                        "schema": {
+                          "oneOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/ThingDescription"
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "description": "A ThingCollection"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "400": {
+                    "content": {
+                      "application/problem+json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Problem"
+                        }
+                      }
+                    },
+                    "description": "Invalid query arguments"
+                  }
+                }
+              }
+            },
+            "/directory/things/{id}": {
+              "get": {
+                "summary": "Thing Description",
+                "description": "One TD, by its `id`.",
+                "operationId": "directory_thing_directory_things__id__get",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "iri-reference"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/td+json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/ThingDescription"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "content": {
+                      "application/problem+json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Problem"
+                        }
+                      }
+                    },
+                    "description": "No TD has this ID"
+                  }
+                }
+              }
+            },
+            "/camera/capture": {
+              "get": {
+                "summary": "All invocations of capture.",
+                "description": "List all the invocations of capture that the server is keeping, with their times and links.",
+                "operationId": "list_invocations_camera_capture_get",
+                "responses": {
+                  "200": {
+                    "description": "A list of every invocation of capture.",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/InvocationSummary"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "post": {
+                "summary": "Capture an image, returned from memory.",
+                "description": "## Capture an image, returned from memory.\n\nCapture an image, returned from memory.\n\n## Important note\n\nThis `POST` request starts an action: the server may carry on after answering. The answer is always a 201 with the invocation, whose `href` can be polled to follow it, and whose `output` link gives the result when it has completed.",
+                "operationId": "start_action_camera_capture_post",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/camera_capture_input"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "201": {
+                    "description": "Action has been invoked (and may still be running).",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/camera_capture_invocation"
+                        }
+                      }
+                    }
+                  },
+                  "200": {
+                    "description": "Action completed.",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/camera_capture_output"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/camera/capture_to_file": {
+              "get": {
+                "summary": "All invocations of capture_to_file.",
+                "description": "List all the invocations of capture_to_file that the server is keeping, with their times and links.",
+                "operationId": "list_invocations_camera_capture_to_file_get",
+                "responses": {
+                  "200": {
+                    "description": "A list of every invocation of capture_to_file.",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/InvocationSummary"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "post": {
+                "summary": "Capture an image, saved to a file in a temporary directory.",
+                "description": "## Capture an image, saved to a file in a temporary directory.\n\nThe directory is deleted with the Blob, when the invocation expires.\n\n## Important note\n\nThis `POST` request starts an action: the server may carry on after answering. The answer is always a 201 with the invocation, whose `href` can be polled to follow it, and whose `output` link gives the result when it has completed.",
+                "operationId": "start_action_camera_capture_to_file_post",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/camera_capture_to_file_input"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "201": {
+                    "description": "Action has been invoked (and may still be running).",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/camera_capture_to_file_invocation"
+                        }
+                      }
+                    }
+                  },
+                  "200": {
+                    "description": "Action completed.",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/camera_capture_to_file_output"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/camera/captures": {
+              "get": {
+                "summary": "How many images have been captured.",
+                "description": "## How many images have been captured.\n\nHow many images have been captured.",
+                "operationId": "get_property_camera_captures_get",
+                "responses": {
+                  "200": {
+                    "description": "Value of captures",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/camera_captures_value"
+                        }
+                      },
+                      "text/event-stream": {
+                        "schema": {
+                          "type": "string",
+                          "description": "Server-sent events: each new value as JSON in a `data:` line. Ask for them with `Accept: text/event-stream`."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/camera/describe": {
+              "get": {
+                "summary": "All invocations of describe.",
+                "description": "List all the invocations of describe that the server is keeping, with their times and links.",
+                "operationId": "list_invocations_camera_describe_get",
+                "responses": {
+                  "200": {
+                    "description": "A list of every invocation of describe.",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/InvocationSummary"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "post": {
+                "summary": "Describe an image: its size in bytes and in pixels.",
+                "description": "## Describe an image: its size in bytes and in pixels.\n\nDescribe an image: its size in bytes and in pixels.\n\n## Important note\n\nThis `POST` request starts an action: the server may carry on after answering. The answer is always a 201 with the invocation, whose `href` can be polled to follow it, and whose `output` link gives the result when it has completed.",
+                "operationId": "start_action_camera_describe_post",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/camera_describe_input"
+                      }
+                    }
+                  },
+                  "required": true
+                },
+                "responses": {
+                  "201": {
+                    "description": "Action has been invoked (and may still be running).",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/camera_describe_invocation"
+                        }
+                      }
+                    }
+                  },
+                  "200": {
+                    "description": "Action completed.",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/camera_describe_output"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/camera/properties": {
+              "get": {
+                "summary": "Read All Properties",
+                "description": "Every property of `camera` (`readallproperties`), or their changes (`observeallproperties`).",
+                "operationId": "read_all_properties_camera_properties_get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "description": "Each property's value, by name."
+                        }
+                      },
+                      "text/event-stream": {
+                        "schema": {
+                          "type": "string",
+                          "description": "Server-sent events: each observable property's new values, as events named after it. Ask for them with `Accept: text/event-stream`."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/camera/actions": {
+              "get": {
+                "summary": "Query All Actions",
+                "description": "The invocations of each action of `camera`, newest first (`queryallactions`).",
+                "operationId": "query_all_actions_camera_actions_get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/components/schemas/InvocationSummary"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/camera/": {
+              "get": {
+                "summary": "Thing Description",
+                "description": "The W3C Thing Description of `camera`: its properties, actions and events, and how to use them.",
+                "operationId": "things_camera_camera__get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/ThingDescription"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "InvocationStatus": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "running",
+                  "completed",
+                  "cancelled",
+                  "error"
+                ],
+                "description": "Where an invocation is in its life."
+              },
+              "InvocationSummary": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/InvocationStatus"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string"
+                  },
+                  "href": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "timeStarted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeRequested": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeCompleted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LinkElement"
+                    }
+                  }
+                },
+                "required": [
+                  "status",
+                  "id",
+                  "action",
+                  "href",
+                  "timeStarted",
+                  "timeRequested",
+                  "timeCompleted"
+                ],
+                "description": "An invocation, as lists show it."
+              },
+              "Invocation": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/InvocationStatus"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string"
+                  },
+                  "href": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "timeStarted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeRequested": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeCompleted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LinkElement"
+                    }
+                  },
+                  "input": {},
+                  "output": {
+                    "oneOf": [
+                      {},
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "log": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LogRecordModel"
+                    }
+                  },
+                  "error": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "status",
+                  "id",
+                  "action",
+                  "href",
+                  "timeStarted",
+                  "timeRequested",
+                  "timeCompleted",
+                  "input",
+                  "log"
+                ]
+              },
+              "LinkElement": {
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rel": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "anchor": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "href"
+                ],
+                "additionalProperties": true,
+                "description": "A link: see https://www.w3.org/TR/wot-thing-description11/#link."
+              },
+              "LogRecordModel": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "levelname": {
+                    "type": "string"
+                  },
+                  "levelno": {
+                    "type": "integer"
+                  },
+                  "lineno": "<lineno>",
+                  "filename": "<filename>",
+                  "created": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "exception_type": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "traceback": "<traceback>"
+                },
+                "required": [
+                  "message",
+                  "levelname",
+                  "levelno",
+                  "lineno",
+                  "filename",
+                  "created"
+                ],
+                "description": "A message logged during an invocation."
+              },
+              "ProblemDetails": {
+                "type": "object",
+                "properties": {
+                  "detail": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "title": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "instance": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": true,
+                "description": "What went wrong in an invocation (RFC 9457 problem details)."
+              },
+              "HTTPValidationError": {
+                "type": "object",
+                "properties": {
+                  "detail": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ValidationError"
+                    }
+                  }
+                }
+              },
+              "ValidationError": {
+                "type": "object",
+                "properties": {
+                  "loc": {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "integer"
+                        }
+                      ]
+                    }
+                  },
+                  "msg": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "input": {},
+                  "ctx": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "loc",
+                  "msg",
+                  "type"
+                ]
+              },
+              "ThingDescription": {
+                "type": "object",
+                "description": "A W3C Web of Things Thing Description (TD 1.1).",
+                "externalDocs": {
+                  "url": "https://www.w3.org/TR/wot-thing-description11/"
+                }
+              },
+              "Problem": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "format": "uri-reference"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "integer"
+                  },
+                  "detail": {
+                    "type": "string"
+                  },
+                  "instance": {
+                    "type": "string"
+                  },
+                  "invalid-params": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "in": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "additionalProperties": true,
+                "description": "Problem details (RFC 9457). The framework's types are documented at https://github.com/lucaswewa/wot/blob/main/docs/problems.md."
+              },
+              "camera_capture_input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "camera_capture_output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "image/jpeg",
+                    "default": "image/jpeg",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "camera_capture_invocation": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/InvocationStatus"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string"
+                  },
+                  "href": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "timeStarted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeRequested": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeCompleted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LinkElement"
+                    }
+                  },
+                  "input": {
+                    "$ref": "#/components/schemas/camera_capture_input"
+                  },
+                  "output": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/camera_capture_output"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "log": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LogRecordModel"
+                    }
+                  },
+                  "error": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "status",
+                  "id",
+                  "action",
+                  "href",
+                  "timeStarted",
+                  "timeRequested",
+                  "timeCompleted",
+                  "input",
+                  "log"
+                ]
+              },
+              "camera_capture_to_file_input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "camera_capture_to_file_output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "image/jpeg",
+                    "default": "image/jpeg",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "camera_capture_to_file_invocation": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/InvocationStatus"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string"
+                  },
+                  "href": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "timeStarted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeRequested": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeCompleted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LinkElement"
+                    }
+                  },
+                  "input": {
+                    "$ref": "#/components/schemas/camera_capture_to_file_input"
+                  },
+                  "output": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/camera_capture_to_file_output"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "log": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LogRecordModel"
+                    }
+                  },
+                  "error": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "status",
+                  "id",
+                  "action",
+                  "href",
+                  "timeStarted",
+                  "timeRequested",
+                  "timeCompleted",
+                  "input",
+                  "log"
+                ]
+              },
+              "camera_captures_value": {
+                "type": "integer"
+              },
+              "camera_describe_input": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                    "title": "JPEGBlob",
+                    "type": "object",
+                    "properties": {
+                      "href": {
+                        "title": "Href",
+                        "type": "string"
+                      },
+                      "media_type": {
+                        "title": "Media Type",
+                        "const": "image/jpeg",
+                        "default": "image/jpeg",
+                        "type": "string"
+                      },
+                      "rel": {
+                        "title": "Rel",
+                        "const": "output",
+                        "default": "output",
+                        "type": "string"
+                      },
+                      "description": {
+                        "title": "Description",
+                        "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "href",
+                      "media_type"
+                    ]
+                  }
+                },
+                "required": [
+                  "image"
+                ],
+                "additionalProperties": false
+              },
+              "camera_describe_output": {
+                "description": "What `describe` finds in a JPEG.",
+                "type": "object",
+                "properties": {
+                  "bytes": {
+                    "description": "The size of the file, in bytes.",
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "width": {
+                    "description": "The width, in pixels.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "height": {
+                    "description": "The height, in pixels.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                  }
+                },
+                "required": [
+                  "bytes",
+                  "width",
+                  "height"
+                ]
+              },
+              "camera_describe_invocation": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/InvocationStatus"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string"
+                  },
+                  "href": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "timeStarted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeRequested": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeCompleted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LinkElement"
+                    }
+                  },
+                  "input": {
+                    "$ref": "#/components/schemas/camera_describe_input"
+                  },
+                  "output": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/camera_describe_output"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "log": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LogRecordModel"
+                    }
+                  },
+                  "error": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "status",
+                  "id",
+                  "action",
+                  "href",
+                  "timeStarted",
+                  "timeRequested",
+                  "timeCompleted",
+                  "input",
+                  "log"
+                ]
+              }
+            }
+          }
+        },
+        "text": "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"teta-wot\",\"version\":\"0.1.0\"},\"paths\":{\"/action_invocations\":{\"get\":{\"summary\":\"List All Invocations\",\"description\":\"Every invocation the server is keeping, of every action.\",\"operationId\":\"list_all_invocations_action_invocations_get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/InvocationSummary\"}}}}}}}},\"/action_invocations/{id}\":{\"get\":{\"summary\":\"Action Invocation\",\"description\":\"One invocation: its status, input, output, log and error.\",\"operationId\":\"action_invocation_action_invocations__id__get\",\"parameters\":[{\"name\":\"id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/Invocation\"}}}},\"404\":{\"description\":\"Invocation ID not found\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}},\"delete\":{\"summary\":\"Delete Invocation\",\"description\":\"Cancel an invocation (`cancelaction`). The action stops at its next cancellation check.\",\"operationId\":\"delete_invocation_action_invocations__id__delete\",\"parameters\":[{\"name\":\"id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\"}}],\"responses\":{\"200\":{\"description\":\"Cancel request sent\",\"content\":{\"application/json\":{\"schema\":{}}}},\"503\":{\"description\":\"Invocation may not be cancelled\"},\"404\":{\"description\":\"Invocation ID not found\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/action_invocations/{id}/output\":{\"get\":{\"summary\":\"Action Invocation Output\",\"description\":\"The output of a completed invocation. When the output is a Blob, this is its data.\",\"operationId\":\"action_invocation_output_action_invocations__id__output_get\",\"parameters\":[{\"name\":\"id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\"}}],\"responses\":{\"200\":{\"description\":\"Action invocation output\",\"content\":{\"application/json\":{\"schema\":{}},\"*/*\":{}}},\"503\":{\"description\":\"No result is available for this invocation\"},\"404\":{\"description\":\"Invocation ID not found\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/blob/{blob_id}\":{\"get\":{\"summary\":\"Download Blob\",\"description\":\"A Blob's data, while an invocation or the Thing still holds it.\",\"operationId\":\"download_blob_blob__blob_id__get\",\"parameters\":[{\"name\":\"blob_id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"*/*\":{}}},\"404\":{\"description\":\"Blob not found\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/thing_descriptions/\":{\"get\":{\"summary\":\"Thing Descriptions\",\"description\":\"The Thing Description of every Thing, by name.\",\"operationId\":\"thing_descriptions_thing_descriptions__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"additionalProperties\":{\"$ref\":\"#/components/schemas/ThingDescription\"}}}}}}}},\"/things/\":{\"get\":{\"summary\":\"Thing Paths\",\"description\":\"The URL of every Thing's Thing Description, by name.\",\"operationId\":\"thing_paths_things__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"additionalProperties\":{\"type\":\"string\"}}}}}}}},\"/.well-known/wot\":{\"get\":{\"summary\":\"Thing Description Directory\",\"description\":\"The TD of this server's Thing Description Directory (W3C WoT Discovery).\",\"operationId\":\"well_known_wot__well_known_wot_get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/td+json\":{\"schema\":{\"$ref\":\"#/components/schemas/ThingDescription\"}}}}}}},\"/directory/things\":{\"get\":{\"summary\":\"Thing Descriptions\",\"description\":\"Every Thing's TD, sorted by `id`. With `limit`, a page, with `next` and `canonical` links.\",\"operationId\":\"directory_things_directory_things_get\",\"parameters\":[{\"name\":\"offset\",\"in\":\"query\",\"required\":false,\"description\":\"How many TDs to skip\",\"schema\":{\"type\":\"integer\",\"minimum\":0}},{\"name\":\"limit\",\"in\":\"query\",\"required\":false,\"description\":\"How many TDs in a page (at least 1)\",\"schema\":{\"type\":\"integer\",\"minimum\":0}},{\"name\":\"format\",\"in\":\"query\",\"required\":false,\"schema\":{\"type\":\"string\",\"enum\":[\"array\",\"collection\"],\"default\":\"array\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/ld+json\":{\"schema\":{\"oneOf\":[{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/ThingDescription\"}},{\"type\":\"object\",\"description\":\"A ThingCollection\"}]}}}},\"400\":{\"content\":{\"application/problem+json\":{\"schema\":{\"$ref\":\"#/components/schemas/Problem\"}}},\"description\":\"Invalid query arguments\"}}}},\"/directory/things/{id}\":{\"get\":{\"summary\":\"Thing Description\",\"description\":\"One TD, by its `id`.\",\"operationId\":\"directory_thing_directory_things__id__get\",\"parameters\":[{\"name\":\"id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"iri-reference\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/td+json\":{\"schema\":{\"$ref\":\"#/components/schemas/ThingDescription\"}}}},\"404\":{\"content\":{\"application/problem+json\":{\"schema\":{\"$ref\":\"#/components/schemas/Problem\"}}},\"description\":\"No TD has this ID\"}}}},\"/camera/capture\":{\"get\":{\"summary\":\"All invocations of capture.\",\"description\":\"List all the invocations of capture that the server is keeping, with their times and links.\",\"operationId\":\"list_invocations_camera_capture_get\",\"responses\":{\"200\":{\"description\":\"A list of every invocation of capture.\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/InvocationSummary\"}}}}}}},\"post\":{\"summary\":\"Capture an image, returned from memory.\",\"description\":\"## Capture an image, returned from memory.\\n\\nCapture an image, returned from memory.\\n\\n## Important note\\n\\nThis `POST` request starts an action: the server may carry on after answering. The answer is always a 201 with the invocation, whose `href` can be polled to follow it, and whose `output` link gives the result when it has completed.\",\"operationId\":\"start_action_camera_capture_post\",\"requestBody\":{\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/camera_capture_input\"}}}},\"responses\":{\"201\":{\"description\":\"Action has been invoked (and may still be running).\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/camera_capture_invocation\"}}}},\"200\":{\"description\":\"Action completed.\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/camera_capture_output\"}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/camera/capture_to_file\":{\"get\":{\"summary\":\"All invocations of capture_to_file.\",\"description\":\"List all the invocations of capture_to_file that the server is keeping, with their times and links.\",\"operationId\":\"list_invocations_camera_capture_to_file_get\",\"responses\":{\"200\":{\"description\":\"A list of every invocation of capture_to_file.\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/InvocationSummary\"}}}}}}},\"post\":{\"summary\":\"Capture an image, saved to a file in a temporary directory.\",\"description\":\"## Capture an image, saved to a file in a temporary directory.\\n\\nThe directory is deleted with the Blob, when the invocation expires.\\n\\n## Important note\\n\\nThis `POST` request starts an action: the server may carry on after answering. The answer is always a 201 with the invocation, whose `href` can be polled to follow it, and whose `output` link gives the result when it has completed.\",\"operationId\":\"start_action_camera_capture_to_file_post\",\"requestBody\":{\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/camera_capture_to_file_input\"}}}},\"responses\":{\"201\":{\"description\":\"Action has been invoked (and may still be running).\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/camera_capture_to_file_invocation\"}}}},\"200\":{\"description\":\"Action completed.\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/camera_capture_to_file_output\"}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/camera/captures\":{\"get\":{\"summary\":\"How many images have been captured.\",\"description\":\"## How many images have been captured.\\n\\nHow many images have been captured.\",\"operationId\":\"get_property_camera_captures_get\",\"responses\":{\"200\":{\"description\":\"Value of captures\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/camera_captures_value\"}},\"text/event-stream\":{\"schema\":{\"type\":\"string\",\"description\":\"Server-sent events: each new value as JSON in a `data:` line. Ask for them with `Accept: text/event-stream`.\"}}}}}}},\"/camera/describe\":{\"get\":{\"summary\":\"All invocations of describe.\",\"description\":\"List all the invocations of describe that the server is keeping, with their times and links.\",\"operationId\":\"list_invocations_camera_describe_get\",\"responses\":{\"200\":{\"description\":\"A list of every invocation of describe.\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/InvocationSummary\"}}}}}}},\"post\":{\"summary\":\"Describe an image: its size in bytes and in pixels.\",\"description\":\"## Describe an image: its size in bytes and in pixels.\\n\\nDescribe an image: its size in bytes and in pixels.\\n\\n## Important note\\n\\nThis `POST` request starts an action: the server may carry on after answering. The answer is always a 201 with the invocation, whose `href` can be polled to follow it, and whose `output` link gives the result when it has completed.\",\"operationId\":\"start_action_camera_describe_post\",\"requestBody\":{\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/camera_describe_input\"}}},\"required\":true},\"responses\":{\"201\":{\"description\":\"Action has been invoked (and may still be running).\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/camera_describe_invocation\"}}}},\"200\":{\"description\":\"Action completed.\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/camera_describe_output\"}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/camera/properties\":{\"get\":{\"summary\":\"Read All Properties\",\"description\":\"Every property of `camera` (`readallproperties`), or their changes (`observeallproperties`).\",\"operationId\":\"read_all_properties_camera_properties_get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"description\":\"Each property's value, by name.\"}},\"text/event-stream\":{\"schema\":{\"type\":\"string\",\"description\":\"Server-sent events: each observable property's new values, as events named after it. Ask for them with `Accept: text/event-stream`.\"}}}}}}},\"/camera/actions\":{\"get\":{\"summary\":\"Query All Actions\",\"description\":\"The invocations of each action of `camera`, newest first (`queryallactions`).\",\"operationId\":\"query_all_actions_camera_actions_get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"additionalProperties\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/InvocationSummary\"}}}}}}}}},\"/camera/\":{\"get\":{\"summary\":\"Thing Description\",\"description\":\"The W3C Thing Description of `camera`: its properties, actions and events, and how to use them.\",\"operationId\":\"things_camera_camera__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/ThingDescription\"}}}}}}}},\"components\":{\"schemas\":{\"InvocationStatus\":{\"type\":\"string\",\"enum\":[\"pending\",\"running\",\"completed\",\"cancelled\",\"error\"],\"description\":\"Where an invocation is in its life.\"},\"InvocationSummary\":{\"type\":\"object\",\"properties\":{\"status\":{\"$ref\":\"#/components/schemas/InvocationStatus\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"action\":{\"type\":\"string\"},\"href\":{\"type\":\"string\",\"format\":\"uri\"},\"timeStarted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeRequested\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeCompleted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"links\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LinkElement\"}}},\"required\":[\"status\",\"id\",\"action\",\"href\",\"timeStarted\",\"timeRequested\",\"timeCompleted\"],\"description\":\"An invocation, as lists show it.\"},\"Invocation\":{\"type\":\"object\",\"properties\":{\"status\":{\"$ref\":\"#/components/schemas/InvocationStatus\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"action\":{\"type\":\"string\"},\"href\":{\"type\":\"string\",\"format\":\"uri\"},\"timeStarted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeRequested\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeCompleted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"links\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LinkElement\"}},\"input\":{},\"output\":{\"oneOf\":[{},{\"type\":\"null\"}]},\"log\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LogRecordModel\"}},\"error\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/ProblemDetails\"},{\"type\":\"null\"}]}},\"required\":[\"status\",\"id\",\"action\",\"href\",\"timeStarted\",\"timeRequested\",\"timeCompleted\",\"input\",\"log\"]},\"LinkElement\":{\"type\":\"object\",\"properties\":{\"href\":{\"type\":\"string\"},\"type\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"rel\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"anchor\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"required\":[\"href\"],\"additionalProperties\":true,\"description\":\"A link: see https://www.w3.org/TR/wot-thing-description11/#link.\"},\"LogRecordModel\":{\"type\":\"object\",\"properties\":{\"message\":{\"type\":\"string\"},\"levelname\":{\"type\":\"string\"},\"levelno\":{\"type\":\"integer\"},\"lineno\":{\"type\":\"integer\"},\"filename\":{\"type\":\"string\"},\"created\":{\"type\":\"string\",\"format\":\"date-time\"},\"exception_type\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"traceback\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"required\":[\"message\",\"levelname\",\"levelno\",\"lineno\",\"filename\",\"created\"],\"description\":\"A message logged during an invocation.\"},\"ProblemDetails\":{\"type\":\"object\",\"properties\":{\"detail\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"type\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"status\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"null\"}]},\"title\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"instance\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"additionalProperties\":true,\"description\":\"What went wrong in an invocation (RFC 9457 problem details).\"},\"HTTPValidationError\":{\"type\":\"object\",\"properties\":{\"detail\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/ValidationError\"}}}},\"ValidationError\":{\"type\":\"object\",\"properties\":{\"loc\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"integer\"}]}},\"msg\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"},\"input\":{},\"ctx\":{\"type\":\"object\"}},\"required\":[\"loc\",\"msg\",\"type\"]},\"ThingDescription\":{\"type\":\"object\",\"description\":\"A W3C Web of Things Thing Description (TD 1.1).\",\"externalDocs\":{\"url\":\"https://www.w3.org/TR/wot-thing-description11/\"}},\"Problem\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\",\"format\":\"uri-reference\"},\"title\":{\"type\":\"string\"},\"status\":{\"type\":\"integer\"},\"detail\":{\"type\":\"string\"},\"instance\":{\"type\":\"string\"},\"invalid-params\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"in\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"reason\":{\"type\":\"string\"},\"code\":{\"type\":\"string\"}}}}},\"additionalProperties\":true,\"description\":\"Problem details (RFC 9457). The framework's types are documented at https://github.com/lucaswewa/wot/blob/main/docs/problems.md.\"},\"camera_capture_input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"camera_capture_output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"camera_capture_invocation\":{\"type\":\"object\",\"properties\":{\"status\":{\"$ref\":\"#/components/schemas/InvocationStatus\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"action\":{\"type\":\"string\"},\"href\":{\"type\":\"string\",\"format\":\"uri\"},\"timeStarted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeRequested\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeCompleted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"links\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LinkElement\"}},\"input\":{\"$ref\":\"#/components/schemas/camera_capture_input\"},\"output\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/camera_capture_output\"},{\"type\":\"null\"}]},\"log\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LogRecordModel\"}},\"error\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/ProblemDetails\"},{\"type\":\"null\"}]}},\"required\":[\"status\",\"id\",\"action\",\"href\",\"timeStarted\",\"timeRequested\",\"timeCompleted\",\"input\",\"log\"]},\"camera_capture_to_file_input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"camera_capture_to_file_output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"camera_capture_to_file_invocation\":{\"type\":\"object\",\"properties\":{\"status\":{\"$ref\":\"#/components/schemas/InvocationStatus\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"action\":{\"type\":\"string\"},\"href\":{\"type\":\"string\",\"format\":\"uri\"},\"timeStarted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeRequested\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeCompleted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"links\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LinkElement\"}},\"input\":{\"$ref\":\"#/components/schemas/camera_capture_to_file_input\"},\"output\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/camera_capture_to_file_output\"},{\"type\":\"null\"}]},\"log\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LogRecordModel\"}},\"error\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/ProblemDetails\"},{\"type\":\"null\"}]}},\"required\":[\"status\",\"id\",\"action\",\"href\",\"timeStarted\",\"timeRequested\",\"timeCompleted\",\"input\",\"log\"]},\"camera_captures_value\":{\"type\":\"integer\"},\"camera_describe_input\":{\"type\":\"object\",\"properties\":{\"image\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"JPEGBlob\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]}},\"required\":[\"image\"],\"additionalProperties\":false},\"camera_describe_output\":{\"description\":\"What `describe` finds in a JPEG.\",\"type\":\"object\",\"properties\":{\"bytes\":{\"description\":\"The size of the file, in bytes.\",\"type\":\"integer\",\"minimum\":0},\"width\":{\"description\":\"The width, in pixels.\",\"type\":\"integer\",\"minimum\":0,\"maximum\":65535},\"height\":{\"description\":\"The height, in pixels.\",\"type\":\"integer\",\"minimum\":0,\"maximum\":65535}},\"required\":[\"bytes\",\"width\",\"height\"]},\"camera_describe_invocation\":{\"type\":\"object\",\"properties\":{\"status\":{\"$ref\":\"#/components/schemas/InvocationStatus\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"action\":{\"type\":\"string\"},\"href\":{\"type\":\"string\",\"format\":\"uri\"},\"timeStarted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeRequested\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeCompleted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"links\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LinkElement\"}},\"input\":{\"$ref\":\"#/components/schemas/camera_describe_input\"},\"output\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/camera_describe_output\"},{\"type\":\"null\"}]},\"log\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LogRecordModel\"}},\"error\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/ProblemDetails\"},{\"type\":\"null\"}]}},\"required\":[\"status\",\"id\",\"action\",\"href\",\"timeStarted\",\"timeRequested\",\"timeCompleted\",\"input\",\"log\"]}}}}"
+      }
+    },
+    {
+      "step": {
         "name": "td",
         "method": "GET",
         "path": "/camera/"

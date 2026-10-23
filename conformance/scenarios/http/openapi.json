@@ -1,0 +1,23 @@
+{
+  "config": {
+    "things": {
+      "mything": "labthings_fastapi.example_things:MyThing",
+      "broken": "labthings_fastapi.example_things:ThingWithBrokenAffordances",
+      "counter": "twins.counter:TestThing",
+      "types": "twins.types_probe:TypesThing",
+      "http_probe": "twins.http_probe:HttpProbe",
+      "settings_probe": "twins.settings_probe:SettingsProbe",
+      "ws_probe": "twins.ws_probe:ThingWithProperties",
+      "blob_probe": "twins.blob_probe:BlobProbe",
+      "event_probe": "twins.event_probe:EventProbe"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "name": "openapi",
+      "method": "GET",
+      "path": "/openapi.json"
+    }
+  ]
+}

@@ -320,6 +320,8 @@ Blob outputs and inputs, the Blob store and downloads, MJPEG streams and the vie
 
 ### Phase 8: OpenAPI and docs (S–M)
 
+**Done** (2026-10-23): see the [Phase 8 note](notes/phase-08-openapi.md). The fixtures are `fixtures/http/openapi.json`, `openapi-wot.json`, `openapi-prefixed.json` and `docs.json`, and every example's document.
+
 OpenAPI 3.1 generation with `teta-wot`'s `operationId`s, Swagger UI and ReDoc pages, offline assets compiled in (CMake generates byte arrays; no `#embed`).
 
 **Gate:** `/openapi.json` byte-equal to the Rust server's for every twin configuration and both profiles; `openapi-spec-validator` passes; `openapi-export`, `docs-offline` examples.

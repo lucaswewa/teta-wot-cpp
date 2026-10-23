@@ -17,6 +17,7 @@
 #include "teta/wot/http/binding.hpp"
 #include "teta/wot/http/fallback.hpp"
 #include "teta/wot/http/message.hpp"
+#include "teta/wot/http/openapi.hpp"
 #include "teta/wot/invocation.hpp"
 #include "teta/wot/json.hpp"
 #include "teta/wot/lock.hpp"

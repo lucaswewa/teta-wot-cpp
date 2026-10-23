@@ -120,4 +120,14 @@ void answer_upgrades(std::shared_ptr<const http::HttpBinding> binding, drogon::H
 /// Serves `service` from `app`, as `mount` serves a binding.
 std::shared_ptr<Handler> mount(Service service, drogon::HttpAppFramework& app = drogon::app());
 
+/// Answers every request with `handler` before Drogon routes it, but those
+/// that `passes` lets through (the Things' WebSockets, for their
+/// controller): for a server that owns the whole application (ThingServer,
+/// the fallback server), so that none of Drogon's own routing applies, its
+/// static files from the working directory in particular. `mount` alone
+/// leaves an application's routes, and its static files, before the
+/// binding.
+void answer_all(std::shared_ptr<Handler> handler, drogon::HttpAppFramework& app,
+                std::function<bool(const drogon::HttpRequest&)> passes = {});
+
 }  // namespace teta::wot::drogon_adapter
