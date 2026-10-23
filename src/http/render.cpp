@@ -147,6 +147,23 @@ std::string rfc3339(std::chrono::system_clock::time_point time, int digits) {
 
 // ---- Invocations --------------------------------------------------------------------------
 
+void resolve_blobs(json::Value& value, const Urls& urls) {
+    if (value.is_object()) {
+        if (const auto href = value.find("href"); href != value.end() && href->is_string()) {
+            if (const auto id = blob::local_href_id(href->get<std::string>())) {
+                *href = urls.absolute(urls.prefix + "/blob/" + id->to_string());
+            }
+        }
+        for (auto& [key, item] : value.items()) {
+            resolve_blobs(item, urls);
+        }
+    } else if (value.is_array()) {
+        for (auto& item : value) {
+            resolve_blobs(item, urls);
+        }
+    }
+}
+
 json::Value invocation_json(const InvocationRecord& record, const Urls& urls, bool full) {
     const std::string href = urls.invocation_href(record.id);
     auto link = [](std::string target, const char* rel) {
@@ -164,6 +181,8 @@ json::Value invocation_json(const InvocationRecord& record, const Urls& urls, bo
     if (full) {
         out["input"] = record.input;
         out["output"] = record.output ? *record.output : json::Value(nullptr);
+        resolve_blobs(out["input"], urls);
+        resolve_blobs(out["output"], urls);
         json::Value log = json::Value::array();
         for (const auto& entry : record.log) {
             log.push_back(to_json(entry));
@@ -194,6 +213,7 @@ json::Value action_status(const InvocationRecord& record, const Urls& urls, bool
     out["status"] = status;
     if (record.status == InvocationStatus::completed && has_output) {
         out["output"] = record.output ? *record.output : json::Value(nullptr);
+        resolve_blobs(out["output"], urls);
     }
     if (std::string_view(status) == "failed") {
         out["error"] = wot_problem(record.error.value_or(cancelled_problem())).second;

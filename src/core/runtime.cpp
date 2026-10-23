@@ -220,6 +220,8 @@ void run_invocation(const std::shared_ptr<Invocation>& invocation,
     }
     invocation->set_running();
     json::Value output;
+    // The output keeps the data of the Blobs in it.
+    blob::Capture blobs;
     try {
         output = run(ctx);
     } catch (...) {
@@ -239,7 +241,7 @@ void run_invocation(const std::shared_ptr<Invocation>& invocation,
         return;
     }
     guard.reset();
-    invocation->finish(InvocationStatus::completed, std::move(output), std::nullopt);
+    invocation->finish(InvocationStatus::completed, std::move(output), std::nullopt, blobs.take());
 }
 
 }  // namespace
@@ -271,11 +273,13 @@ std::shared_ptr<Invocation> ActionEntry::invoke(const json::Value& input) const 
     CancelToken cancel;
     auto logs = std::make_shared<LogBuffer>(id);
     InvocationScope scope(id, owner, cancel, logs);
+    blob::Capture input_blobs;
     auto prepared = handler_->prepare(input);
 
     auto invocation =
         std::make_shared<Invocation>(id, thing_, name_, std::move(prepared.echo), meta_.retention, cancel,
                                      logs, shared_->broker, shared_->invocations->clock());
+    invocation->hold_input_blobs(input_blobs.take());
     shared_->invocations->insert(invocation);
     invocation->announce();
 
@@ -329,6 +333,15 @@ const EventEntry* ThingHandle::event(std::string_view name) const {
     return nullptr;
 }
 
+const MjpegStream* ThingHandle::stream(std::string_view name) const {
+    for (const auto& [stream_name, stream] : streams_) {
+        if (stream_name == name) {
+            return &stream;
+        }
+    }
+    return nullptr;
+}
+
 json::Value ThingHandle::thing_state() const {
     if (thing_state_) {
         return thing_state_();
@@ -352,6 +365,9 @@ td::ThingInfo ThingHandle::info() const {
     }
     for (const auto& e : events_) {
         info.events.push_back({e.name, e.title, e.description, e.data, e.semantic_types});
+    }
+    for (const auto& [name, stream] : streams_) {
+        info.streams.push_back(name);
     }
     for (const auto& e : endpoints_) {
         if (e.meta.link) {

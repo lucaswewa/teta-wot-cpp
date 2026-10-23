@@ -7,6 +7,7 @@
 #include <utility>
 #include <variant>
 
+#include "output.hpp"
 #include "path_uuid.hpp"
 #include "render.hpp"
 #include "routes.hpp"
@@ -292,7 +293,9 @@ struct HttpBinding::State {
                     return error(HttpError::not_found());
                 }
                 try {
-                    return detail::json_response(200, entry->read());
+                    auto value = entry->read();
+                    detail::resolve_blobs(value, urls);
+                    return detail::json_response(200, value);
                 } catch (const PropertyError& failure) {
                     return property_error(endpoint.thing, failure);
                 }
@@ -339,7 +342,9 @@ struct HttpBinding::State {
                 json::Value values = json::Value::object();
                 for (const auto* p : properties) {
                     try {
-                        values[p->name()] = p->read();
+                        auto value = p->read();
+                        detail::resolve_blobs(value, urls);
+                        values[p->name()] = std::move(value);
                     } catch (const PropertyError& failure) {
                         return property_error(endpoint.thing, failure);
                     }
@@ -430,16 +435,33 @@ struct HttpBinding::State {
                     return error(HttpError::with_status(
                         404, "No action invocation found with ID " + uuid.to_string()));
                 }
+                // A Blob output is its data.
+                if (const auto blob = found->output_blob()) {
+                    return detail::blob_response(blob);
+                }
                 // Falsy outputs such as 0 are returned; only a missing or
                 // null output is "no result" (reference bug B3 fixed).
                 if (auto output = found->output(); output && !output->is_null()) {
+                    detail::resolve_blobs(*output, urls);
                     return detail::json_response(200, *output);
                 }
                 return error(HttpError::typed(503, 404, "no-output", "No output",
                                               "No result is available for this invocation"));
             }
+            case Kind::download_blob: {
+                auto id = parse_id(param, "blob_id");
+                if (auto* refused = std::get_if<Response>(&id)) {
+                    return std::move(*refused);
+                }
+                if (const auto data = blob::BlobData::find(std::get<Uuid>(id))) {
+                    return detail::blob_response(data);
+                }
+                return error(HttpError::with_status(404, "Blob not found"));
+            }
             case Kind::subscribe_event:
             case Kind::subscribe_all_events:
+            case Kind::stream:
+            case Kind::stream_viewer:
             case Kind::custom:
                 break;  // answered by `route`
         }
@@ -471,7 +493,9 @@ struct HttpBinding::State {
                 if (!entry->has_output()) {
                     return detail::no_content();
                 }
-                return detail::json_response(200, record.output.value_or(nullptr));
+                auto output = record.output.value_or(nullptr);
+                detail::resolve_blobs(output, urls);
+                return detail::json_response(200, output);
             }
             return error(HttpError::from_problem(record.error.value_or(ProblemDetails::teta_wot_things(
                 "InvocationCancelledError", "The action was cancelled.", 500))));
@@ -487,7 +511,7 @@ struct HttpBinding::State {
 
     // A server-sent events answer for several affordances of a Thing: its
     // observable properties, or its events. Always named.
-    Response all_stream(const std::string& thing, bool events) const {
+    Response all_stream(const std::string& thing, bool events, const Urls& urls) const {
         const auto* handle = runtime->thing(thing);
         if (!handle) {
             return error(HttpError::not_found());
@@ -505,7 +529,7 @@ struct HttpBinding::State {
                 }
             }
         }
-        return streams->response(std::move(subscription), true);
+        return streams->response(std::move(subscription), true, urls);
     }
 
     // Whether answering the endpoint may run Thing code, or read and parse a
@@ -537,23 +561,33 @@ struct HttpBinding::State {
                 if (detail::wants_event_stream(request.headers)) {
                     if (const auto* entry = state->property(endpoint); entry && entry->is_observable()) {
                         respond(state->streams->response(
-                            broker->subscribe(endpoint.thing, endpoint.affordance), state->wot()));
+                            broker->subscribe(endpoint.thing, endpoint.affordance), state->wot(), urls));
                         return;
                     }
                 }
                 break;
             case Kind::subscribe_event:
                 respond(state->streams->response(broker->subscribe(endpoint.thing, endpoint.affordance),
-                                                 state->wot()));
+                                                 state->wot(), urls));
                 return;
             case Kind::read_all_properties:
                 if (detail::wants_event_stream(request.headers)) {
-                    respond(state->all_stream(endpoint.thing, false));
+                    respond(state->all_stream(endpoint.thing, false, urls));
                     return;
                 }
                 break;
             case Kind::subscribe_all_events:
-                respond(state->all_stream(endpoint.thing, true));
+                respond(state->all_stream(endpoint.thing, true, urls));
+                return;
+            case Kind::stream: {
+                const auto* thing = state->runtime->thing(endpoint.thing);
+                const auto* stream = thing ? thing->stream(endpoint.affordance) : nullptr;
+                respond(stream ? detail::mjpeg_response(*stream, broker)
+                               : state->error(HttpError::not_found()));
+                return;
+            }
+            case Kind::stream_viewer:
+                respond(detail::viewer_page(urls.thing_path(endpoint.thing) + endpoint.affordance));
                 return;
             default:
                 break;
@@ -684,7 +718,8 @@ std::shared_ptr<WebSocketSession> HttpBinding::open_websocket(const Request& req
     if (!thing) {
         throw std::invalid_argument("`" + request.path + "` isn't a Thing's WebSocket");
     }
-    return detail::open_session(state_->runtime->broker(), thing->shared_from_this(), std::move(peer));
+    return detail::open_session(state_->runtime->broker(), thing->shared_from_this(), std::move(peer),
+                                Urls::from_request(request, state_->options.api_prefix));
 }
 
 const std::shared_ptr<Runtime>& HttpBinding::runtime() const {

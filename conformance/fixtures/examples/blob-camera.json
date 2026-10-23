@@ -1,0 +1,774 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 5000,
+  "steps": [
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/camera/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "Camera",
+          "properties": {
+            "captures": {
+              "description": "How many images have been captured.",
+              "title": "How many images have been captured.",
+              "writeOnly": false,
+              "readOnly": true,
+              "default": 0,
+              "type": "integer",
+              "forms": [
+                {
+                  "href": "/camera/captures",
+                  "op": [
+                    "readproperty"
+                  ]
+                },
+                {
+                  "href": "/camera/captures",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/camera/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "capture": {
+              "description": "Capture an image, returned from memory.",
+              "title": "Capture an image, returned from memory.",
+              "forms": [
+                {
+                  "href": "/camera/capture",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "image/jpeg"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "capture_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "capture_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "image/jpeg",
+                    "default": "image/jpeg",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            },
+            "capture_to_file": {
+              "description": "The directory is deleted with the Blob, when the invocation expires.",
+              "title": "Capture an image, saved to a file in a temporary directory.",
+              "forms": [
+                {
+                  "href": "/camera/capture_to_file",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "image/jpeg"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "capture_to_file_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "capture_to_file_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "image/jpeg",
+                    "default": "image/jpeg",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            },
+            "describe": {
+              "description": "Describe an image: its size in bytes and in pixels.",
+              "title": "Describe an image: its size in bytes and in pixels.",
+              "forms": [
+                {
+                  "href": "/camera/describe",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "describe_input",
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                    "title": "JPEGBlob",
+                    "type": "object",
+                    "properties": {
+                      "href": {
+                        "title": "Href",
+                        "type": "string"
+                      },
+                      "media_type": {
+                        "title": "Media Type",
+                        "const": "image/jpeg",
+                        "default": "image/jpeg",
+                        "type": "string"
+                      },
+                      "rel": {
+                        "title": "Rel",
+                        "const": "output",
+                        "default": "output",
+                        "type": "string"
+                      },
+                      "description": {
+                        "title": "Description",
+                        "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "href",
+                      "media_type"
+                    ]
+                  }
+                },
+                "required": [
+                  "image"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "description": "What `describe` finds in a JPEG.",
+                "title": "describe_output",
+                "type": "object",
+                "properties": {
+                  "bytes": {
+                    "description": "The size of the file, in bytes.",
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "width": {
+                    "description": "The width, in pixels.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "height": {
+                    "description": "The height, in pixels.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                  }
+                },
+                "required": [
+                  "bytes",
+                  "width",
+                  "height"
+                ]
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A simulated camera.",
+          "forms": [
+            {
+              "href": "/camera/properties",
+              "op": [
+                "readallproperties"
+              ]
+            },
+            {
+              "href": "/camera/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/camera/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"Camera\",\"properties\":{\"captures\":{\"description\":\"How many images have been captured.\",\"title\":\"How many images have been captured.\",\"writeOnly\":false,\"readOnly\":true,\"default\":0,\"type\":\"integer\",\"forms\":[{\"href\":\"/camera/captures\",\"op\":[\"readproperty\"]},{\"href\":\"/camera/captures\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/camera/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"capture\":{\"description\":\"Capture an image, returned from memory.\",\"title\":\"Capture an image, returned from memory.\",\"forms\":[{\"href\":\"/camera/capture\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"image/jpeg\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"capture_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"capture_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false},\"capture_to_file\":{\"description\":\"The directory is deleted with the Blob, when the invocation expires.\",\"title\":\"Capture an image, saved to a file in a temporary directory.\",\"forms\":[{\"href\":\"/camera/capture_to_file\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"image/jpeg\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"capture_to_file_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"capture_to_file_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false},\"describe\":{\"description\":\"Describe an image: its size in bytes and in pixels.\",\"title\":\"Describe an image: its size in bytes and in pixels.\",\"forms\":[{\"href\":\"/camera/describe\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"describe_input\",\"type\":\"object\",\"properties\":{\"image\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"JPEGBlob\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]}},\"required\":[\"image\"],\"additionalProperties\":false},\"output\":{\"description\":\"What `describe` finds in a JPEG.\",\"title\":\"describe_output\",\"type\":\"object\",\"properties\":{\"bytes\":{\"description\":\"The size of the file, in bytes.\",\"type\":\"integer\",\"minimum\":0},\"width\":{\"description\":\"The width, in pixels.\",\"type\":\"integer\",\"minimum\":0,\"maximum\":65535},\"height\":{\"description\":\"The height, in pixels.\",\"type\":\"integer\",\"minimum\":0,\"maximum\":65535}},\"required\":[\"bytes\",\"width\",\"height\"]},\"synchronous\":false}},\"description\":\"A simulated camera.\",\"forms\":[{\"href\":\"/camera/properties\",\"op\":[\"readallproperties\"]},{\"href\":\"/camera/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/camera/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "captures_before",
+        "method": "GET",
+        "path": "/camera/captures"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 0,
+        "text": "0"
+      }
+    },
+    {
+      "step": {
+        "name": "capture",
+        "method": "POST",
+        "path": "/camera/capture",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:1>",
+          "action": "/camera/capture",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:1>",
+          "action": "/camera/capture",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": {
+            "href": "http://testserver/blob/<uuid:2>",
+            "media_type": "image/jpeg",
+            "rel": "output",
+            "description": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file."
+          },
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:1>\",\"action\":\"/camera/capture\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":{\"href\":\"http://testserver/blob/<uuid:2>\",\"media_type\":\"image/jpeg\",\"rel\":\"output\",\"description\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\"},\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "capture_output",
+        "method": "GET",
+        "path": "/action_invocations/{last}/output",
+        "ignore_body": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "image/jpeg",
+          "vary": "Origin"
+        },
+        "body": "<ignored>"
+      }
+    },
+    {
+      "step": {
+        "name": "capture_download",
+        "method": "GET",
+        "path": "/blob/{blob:0}",
+        "ignore_body": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "image/jpeg",
+          "vary": "Origin"
+        },
+        "body": "<ignored>"
+      }
+    },
+    {
+      "step": {
+        "name": "capture_to_file",
+        "method": "POST",
+        "path": "/camera/capture_to_file",
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:3>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:3>",
+          "action": "/camera/capture_to_file",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:3>",
+          "action": "/camera/capture_to_file",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": {
+            "href": "http://testserver/blob/<uuid:4>",
+            "media_type": "image/jpeg",
+            "rel": "output",
+            "description": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file."
+          },
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:3>\",\"action\":\"/camera/capture_to_file\",\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:3>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":{\"href\":\"http://testserver/blob/<uuid:4>\",\"media_type\":\"image/jpeg\",\"rel\":\"output\",\"description\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\"},\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "capture_to_file_download",
+        "method": "GET",
+        "path": "/blob/{blob:1}",
+        "ignore_body": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "image/jpeg",
+          "vary": "Origin"
+        },
+        "body": "<ignored>"
+      }
+    },
+    {
+      "step": {
+        "name": "describe",
+        "method": "POST",
+        "path": "/camera/describe",
+        "json": {
+          "image": {
+            "href": "http://testserver/blob/{blob:1}",
+            "media_type": "image/jpeg"
+          }
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:5>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:5>",
+          "action": "/camera/describe",
+          "href": "http://testserver/action_invocations/<uuid:5>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:5>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:5>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "image": {
+              "href": "http://testserver/blob/<uuid:4>",
+              "media_type": "image/jpeg",
+              "rel": "output",
+              "description": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file."
+            }
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "describe_status",
+        "method": "GET",
+        "path": "/action_invocations/{last}",
+        "poll": true,
+        "ignore_body": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": "<ignored>"
+      }
+    },
+    {
+      "step": {
+        "name": "describe_unknown",
+        "method": "POST",
+        "path": "/camera/describe",
+        "json": {
+          "image": {
+            "href": "http://testserver/blob/00000000-0000-0000-0000-000000000000",
+            "media_type": "image/jpeg"
+          }
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "value_error",
+              "loc": [
+                "body",
+                "image"
+              ],
+              "msg": "Value error, Blob ID <nil-uuid> wasn't found on this server.",
+              "input": {
+                "href": "http://testserver/blob/<nil-uuid>",
+                "media_type": "image/jpeg"
+              },
+              "ctx": {
+                "error": {}
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"image\"],\"msg\":\"Value error, Blob ID <nil-uuid> wasn't found on this server.\",\"input\":{\"href\":\"http://testserver/blob/<nil-uuid>\",\"media_type\":\"image/jpeg\"},\"ctx\":{\"error\":{}}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "describe_not_a_jpeg",
+        "method": "POST",
+        "path": "/camera/describe",
+        "json": {
+          "image": {
+            "href": "http://testserver/blob/{blob:0}",
+            "media_type": "image/png"
+          }
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "literal_error",
+              "loc": [
+                "body",
+                "image",
+                "media_type"
+              ],
+              "msg": "Input should be 'image/jpeg'",
+              "input": "image/png",
+              "ctx": {
+                "expected": "'image/jpeg'"
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"literal_error\",\"loc\":[\"body\",\"image\",\"media_type\"],\"msg\":\"Input should be 'image/jpeg'\",\"input\":\"image/png\",\"ctx\":{\"expected\":\"'image/jpeg'\"}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "captures_after",
+        "method": "GET",
+        "path": "/camera/captures"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 2,
+        "text": "2"
+      }
+    },
+    {
+      "step": {
+        "name": "write_captures",
+        "method": "PUT",
+        "path": "/camera/captures",
+        "json": 0
+      },
+      "response": {
+        "status": 405,
+        "headers": {
+          "content-type": "application/json",
+          "allow": "GET",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": "Method Not Allowed"
+        },
+        "text": "{\"detail\":\"Method Not Allowed\"}"
+      }
+    }
+  ]
+}

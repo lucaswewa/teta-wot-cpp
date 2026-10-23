@@ -2,8 +2,8 @@
 // of the `wot` repository's), served under the same names, so that the C++
 // server can be compared with the reference (ADR-0011).
 //
-// Phase 3 ports seven of the nine; `blob_probe` and `ndarray_probe` follow
-// with Blobs (Phase 7) and arrays (Phase 10).
+// Phase 3 ported seven of the nine, and Phase 7 `blob_probe`; `ndarray_probe`
+// follows with arrays (Phase 10).
 
 #pragma once
 
@@ -182,6 +182,31 @@ class SettingsProbe {
   private:
     mutable std::mutex mutex_;
     double exposure_ = 10.0;
+};
+
+/// Text of any subtype (the probe's `VagueTextBlob`).
+struct VagueText {
+    static constexpr std::string_view media_type = "text/*";
+    static constexpr std::string_view title = "VagueTextBlob";
+    static constexpr std::string_view description = "This URL will download some vague text data.";
+};
+
+/// A Thing for probing Blobs and MJPEG streams.
+class BlobProbe {
+  public:
+    tw::MjpegStream stream;
+
+    tw::Blob<tw::blob::Jpeg> capture();
+    tw::Blob<tw::blob::Jpeg> capture_to_file();
+    tw::Blob<tw::blob::TextPlain> text();
+    tw::Blob<VagueText> csv();
+    tw::OrderedMap<tw::Blob<tw::blob::TextPlain>> two_texts();
+    tw::Blob<tw::blob::TextPlain> passthrough(tw::Blob<tw::blob::TextPlain> blob);
+    std::int64_t jpeg_size(tw::Blob<tw::blob::Jpeg> image);
+    std::int64_t add_frames(std::int64_t count);
+    void stop_stream();
+    void restart_stream();
+    static void define(tw::ThingSpec<BlobProbe>& t);
 };
 
 /// What happened.

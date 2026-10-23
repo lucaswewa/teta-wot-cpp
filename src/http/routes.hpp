@@ -33,6 +33,10 @@ enum class Kind {
     get_invocation,
     cancel_invocation,
     invocation_output,
+    download_blob,
+    /// An MJPEG stream, and its viewer page.
+    stream,
+    stream_viewer,
     thing_paths,
     thing_descriptions,
     /// A custom endpoint: `index` in `Routes::endpoints`.
@@ -42,7 +46,7 @@ enum class Kind {
 struct Endpoint {
     Kind kind;
     std::string thing;
-    /// The property, action or event.
+    /// The property, action, event or stream.
     std::string affordance;
     std::size_t index = 0;
 

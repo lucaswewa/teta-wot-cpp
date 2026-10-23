@@ -1,0 +1,1172 @@
+{
+  "config": {
+    "things": {
+      "blob_probe": "twins.blob_probe:BlobProbe"
+    },
+    "wire_profile": "wot",
+    "api_prefix": "/api",
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/api/blob_probe/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "BlobProbe",
+          "properties": {},
+          "actions": {
+            "add_frames": {
+              "description": "Add frames to the stream, and return how many there were.",
+              "title": "Add frames to the stream, and return how many there were.",
+              "forms": [
+                {
+                  "href": "/api/blob_probe/add_frames",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "add_frames_input",
+                "type": "object",
+                "properties": {
+                  "count": {
+                    "default": 3,
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "add_frames_output",
+                "type": "integer"
+              },
+              "synchronous": false
+            },
+            "capture": {
+              "description": "Capture an image, held in memory.",
+              "title": "Capture an image, held in memory.",
+              "forms": [
+                {
+                  "href": "/api/blob_probe/capture",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "image/jpeg"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "capture_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "capture_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "image/jpeg",
+                    "default": "image/jpeg",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            },
+            "capture_to_file": {
+              "description": "Capture an image, saved in a temporary directory.",
+              "title": "Capture an image, saved in a temporary directory.",
+              "forms": [
+                {
+                  "href": "/api/blob_probe/capture_to_file",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "image/jpeg"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "capture_to_file_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "capture_to_file_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "image/jpeg",
+                    "default": "image/jpeg",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            },
+            "csv": {
+              "description": "Return CSV data as a vaguely typed Blob.",
+              "title": "Return CSV data as a vaguely typed Blob.",
+              "forms": [
+                {
+                  "href": "/api/blob_probe/csv",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "text/*"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "csv_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "csv_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "default": "text/*",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "This URL will download some vague text data.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            },
+            "jpeg_size": {
+              "description": "Return the size of an image, in bytes.",
+              "title": "Return the size of an image, in bytes.",
+              "forms": [
+                {
+                  "href": "/api/blob_probe/jpeg_size",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "jpeg_size_input",
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                    "title": "JPEGBlob",
+                    "type": "object",
+                    "properties": {
+                      "href": {
+                        "title": "Href",
+                        "type": "string"
+                      },
+                      "media_type": {
+                        "title": "Media Type",
+                        "const": "image/jpeg",
+                        "default": "image/jpeg",
+                        "type": "string"
+                      },
+                      "rel": {
+                        "title": "Rel",
+                        "const": "output",
+                        "default": "output",
+                        "type": "string"
+                      },
+                      "description": {
+                        "title": "Description",
+                        "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "href",
+                      "media_type"
+                    ]
+                  }
+                },
+                "required": [
+                  "image"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "jpeg_size_output",
+                "type": "integer"
+              },
+              "synchronous": false
+            },
+            "passthrough": {
+              "description": "Return the Blob it is given.",
+              "title": "Return the Blob it is given.",
+              "forms": [
+                {
+                  "href": "/api/blob_probe/passthrough",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "text/plain"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "passthrough_input",
+                "type": "object",
+                "properties": {
+                  "blob": {
+                    "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                    "title": "TextBlob",
+                    "type": "object",
+                    "properties": {
+                      "href": {
+                        "title": "Href",
+                        "type": "string"
+                      },
+                      "media_type": {
+                        "title": "Media Type",
+                        "const": "text/plain",
+                        "default": "text/plain",
+                        "type": "string"
+                      },
+                      "rel": {
+                        "title": "Rel",
+                        "const": "output",
+                        "default": "output",
+                        "type": "string"
+                      },
+                      "description": {
+                        "title": "Description",
+                        "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "href",
+                      "media_type"
+                    ]
+                  }
+                },
+                "required": [
+                  "blob"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "passthrough_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "text/plain",
+                    "default": "text/plain",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            },
+            "restart_stream": {
+              "description": "Start the stream again, with an empty buffer.",
+              "title": "Start the stream again, with an empty buffer.",
+              "forms": [
+                {
+                  "href": "/api/blob_probe/restart_stream",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "restart_stream_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "restart_stream_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "stop_stream": {
+              "description": "Stop the stream: its clients' responses end.",
+              "title": "Stop the stream: its clients' responses end.",
+              "forms": [
+                {
+                  "href": "/api/blob_probe/stop_stream",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "stop_stream_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "stop_stream_output",
+                "type": "null"
+              },
+              "synchronous": false
+            },
+            "text": {
+              "description": "Return some text as a Blob.",
+              "title": "Return some text as a Blob.",
+              "forms": [
+                {
+                  "href": "/api/blob_probe/text",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}/output",
+                  "op": [
+                    "queryaction"
+                  ],
+                  "response": {
+                    "contentType": "text/plain"
+                  }
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "text_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                "title": "text_output",
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "title": "Href",
+                    "type": "string"
+                  },
+                  "media_type": {
+                    "title": "Media Type",
+                    "const": "text/plain",
+                    "default": "text/plain",
+                    "type": "string"
+                  },
+                  "rel": {
+                    "title": "Rel",
+                    "const": "output",
+                    "default": "output",
+                    "type": "string"
+                  },
+                  "description": {
+                    "title": "Description",
+                    "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "href",
+                  "media_type"
+                ]
+              },
+              "synchronous": false
+            },
+            "two_texts": {
+              "description": "Return two Blobs in a dictionary.",
+              "title": "Return two Blobs in a dictionary.",
+              "forms": [
+                {
+                  "href": "/api/blob_probe/two_texts",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/api/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "two_texts_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "two_texts_output",
+                "type": "object",
+                "additionalProperties": {
+                  "description": "A model for JSON-serialised `.Blob` objects.\n\nThis model describes the JSON representation of a `.Blob`\nand is used to describe the `.Blob` object in JSON responses.\n\nThe binary data may be retrieved with a ``GET`` request to the URL\nspecified in ``href`` which should return it directly in the body of\nthe response.",
+                  "properties": {
+                    "href": {
+                      "title": "Href",
+                      "type": "string"
+                    },
+                    "media_type": {
+                      "const": "text/plain",
+                      "default": "text/plain",
+                      "title": "Media Type",
+                      "type": "string"
+                    },
+                    "rel": {
+                      "const": "output",
+                      "default": "output",
+                      "title": "Rel",
+                      "type": "string"
+                    },
+                    "description": {
+                      "default": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.",
+                      "title": "Description",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "href",
+                    "media_type"
+                  ],
+                  "title": "TextBlob",
+                  "type": "object"
+                }
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A Thing for probing Blobs and MJPEG streams.",
+          "links": [
+            {
+              "href": "/api/blob_probe/stream",
+              "type": "multipart/x-mixed-replace",
+              "rel": "alternate"
+            },
+            {
+              "href": "/api/blob_probe/stream/viewer",
+              "type": "text/html",
+              "rel": "alternate"
+            }
+          ],
+          "forms": [
+            {
+              "href": "/api/blob_probe/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "profile": [
+            "https://www.w3.org/2022/wot/profile/http-basic/v1",
+            "https://www.w3.org/2022/wot/profile/http-sse/v1"
+          ],
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"BlobProbe\",\"properties\":{},\"actions\":{\"add_frames\":{\"description\":\"Add frames to the stream, and return how many there were.\",\"title\":\"Add frames to the stream, and return how many there were.\",\"forms\":[{\"href\":\"/api/blob_probe/add_frames\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"add_frames_input\",\"type\":\"object\",\"properties\":{\"count\":{\"default\":3,\"type\":\"integer\"}},\"additionalProperties\":false},\"output\":{\"title\":\"add_frames_output\",\"type\":\"integer\"},\"synchronous\":false},\"capture\":{\"description\":\"Capture an image, held in memory.\",\"title\":\"Capture an image, held in memory.\",\"forms\":[{\"href\":\"/api/blob_probe/capture\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/api/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"image/jpeg\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"capture_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"capture_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false},\"capture_to_file\":{\"description\":\"Capture an image, saved in a temporary directory.\",\"title\":\"Capture an image, saved in a temporary directory.\",\"forms\":[{\"href\":\"/api/blob_probe/capture_to_file\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/api/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"image/jpeg\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"capture_to_file_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"capture_to_file_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false},\"csv\":{\"description\":\"Return CSV data as a vaguely typed Blob.\",\"title\":\"Return CSV data as a vaguely typed Blob.\",\"forms\":[{\"href\":\"/api/blob_probe/csv\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/api/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"text/*\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"csv_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"csv_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"default\":\"text/*\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"This URL will download some vague text data.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false},\"jpeg_size\":{\"description\":\"Return the size of an image, in bytes.\",\"title\":\"Return the size of an image, in bytes.\",\"forms\":[{\"href\":\"/api/blob_probe/jpeg_size\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"jpeg_size_input\",\"type\":\"object\",\"properties\":{\"image\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"JPEGBlob\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"image/jpeg\",\"default\":\"image/jpeg\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]}},\"required\":[\"image\"],\"additionalProperties\":false},\"output\":{\"title\":\"jpeg_size_output\",\"type\":\"integer\"},\"synchronous\":false},\"passthrough\":{\"description\":\"Return the Blob it is given.\",\"title\":\"Return the Blob it is given.\",\"forms\":[{\"href\":\"/api/blob_probe/passthrough\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/api/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"text/plain\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"passthrough_input\",\"type\":\"object\",\"properties\":{\"blob\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"TextBlob\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"text/plain\",\"default\":\"text/plain\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]}},\"required\":[\"blob\"],\"additionalProperties\":false},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"passthrough_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"text/plain\",\"default\":\"text/plain\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false},\"restart_stream\":{\"description\":\"Start the stream again, with an empty buffer.\",\"title\":\"Start the stream again, with an empty buffer.\",\"forms\":[{\"href\":\"/api/blob_probe/restart_stream\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"restart_stream_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"restart_stream_output\",\"type\":\"null\"},\"synchronous\":false},\"stop_stream\":{\"description\":\"Stop the stream: its clients' responses end.\",\"title\":\"Stop the stream: its clients' responses end.\",\"forms\":[{\"href\":\"/api/blob_probe/stop_stream\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"stop_stream_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"stop_stream_output\",\"type\":\"null\"},\"synchronous\":false},\"text\":{\"description\":\"Return some text as a Blob.\",\"title\":\"Return some text as a Blob.\",\"forms\":[{\"href\":\"/api/blob_probe/text\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]},{\"href\":\"/api/action_invocations/{id}/output\",\"op\":[\"queryaction\"],\"response\":{\"contentType\":\"text/plain\"}}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"text_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"title\":\"text_output\",\"type\":\"object\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"title\":\"Media Type\",\"const\":\"text/plain\",\"default\":\"text/plain\",\"type\":\"string\"},\"rel\":{\"title\":\"Rel\",\"const\":\"output\",\"default\":\"output\",\"type\":\"string\"},\"description\":{\"title\":\"Description\",\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"]},\"synchronous\":false},\"two_texts\":{\"description\":\"Return two Blobs in a dictionary.\",\"title\":\"Return two Blobs in a dictionary.\",\"forms\":[{\"href\":\"/api/blob_probe/two_texts\",\"op\":[\"invokeaction\"]},{\"href\":\"/api/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"two_texts_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"two_texts_output\",\"type\":\"object\",\"additionalProperties\":{\"description\":\"A model for JSON-serialised `.Blob` objects.\\n\\nThis model describes the JSON representation of a `.Blob`\\nand is used to describe the `.Blob` object in JSON responses.\\n\\nThe binary data may be retrieved with a ``GET`` request to the URL\\nspecified in ``href`` which should return it directly in the body of\\nthe response.\",\"properties\":{\"href\":{\"title\":\"Href\",\"type\":\"string\"},\"media_type\":{\"const\":\"text/plain\",\"default\":\"text/plain\",\"title\":\"Media Type\",\"type\":\"string\"},\"rel\":{\"const\":\"output\",\"default\":\"output\",\"title\":\"Rel\",\"type\":\"string\"},\"description\":{\"default\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\",\"title\":\"Description\",\"type\":\"string\"}},\"required\":[\"href\",\"media_type\"],\"title\":\"TextBlob\",\"type\":\"object\"}},\"synchronous\":false}},\"description\":\"A Thing for probing Blobs and MJPEG streams.\",\"links\":[{\"href\":\"/api/blob_probe/stream\",\"type\":\"multipart/x-mixed-replace\",\"rel\":\"alternate\"},{\"href\":\"/api/blob_probe/stream/viewer\",\"type\":\"text/html\",\"rel\":\"alternate\"}],\"forms\":[{\"href\":\"/api/blob_probe/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"profile\":[\"https://www.w3.org/2022/wot/profile/http-basic/v1\",\"https://www.w3.org/2022/wot/profile/http-sse/v1\"],\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "capture",
+        "method": "POST",
+        "path": "/api/blob_probe/capture"
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/api/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "href": "http://testserver/api/action_invocations/<uuid:1>",
+          "timeRequested": "<utc-datetime>"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "capture_status",
+        "method": "GET",
+        "path": "/api/action_invocations/{last}",
+        "poll": true,
+        "until": [
+          "completed"
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "output": {
+            "href": "http://testserver/api/blob/<uuid:2>",
+            "media_type": "image/jpeg",
+            "rel": "output",
+            "description": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file."
+          },
+          "href": "http://testserver/api/action_invocations/<uuid:1>",
+          "timeRequested": "<utc-datetime>",
+          "timeEnded": "<utc-datetime>"
+        },
+        "text": "{\"status\":\"completed\",\"output\":{\"href\":\"http://testserver/api/blob/<uuid:2>\",\"media_type\":\"image/jpeg\",\"rel\":\"output\",\"description\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\"},\"href\":\"http://testserver/api/action_invocations/<uuid:1>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "capture_output",
+        "method": "GET",
+        "path": "/api/action_invocations/{last}/output"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "image/jpeg",
+          "vary": "Origin"
+        },
+        "body": {
+          "hex": "ffd8206e6f74207265616c6c792061204a50454720ffd9"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "capture_download",
+        "method": "GET",
+        "path": "/api/blob/{blob:0}"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "image/jpeg",
+          "vary": "Origin"
+        },
+        "body": {
+          "hex": "ffd8206e6f74207265616c6c792061204a50454720ffd9"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "capture_unprefixed",
+        "method": "GET",
+        "path": "/blob/{blob:0}"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "detail": "Not Found"
+        },
+        "text": "{\"type\":\"about:blank\",\"title\":\"Not Found\",\"status\":404,\"detail\":\"Not Found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "two_texts",
+        "method": "POST",
+        "path": "/api/blob_probe/two_texts"
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/api/action_invocations/<uuid:3>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "href": "http://testserver/api/action_invocations/<uuid:3>",
+          "timeRequested": "<utc-datetime>"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "two_texts_status",
+        "method": "GET",
+        "path": "/api/action_invocations/{last}",
+        "poll": true,
+        "until": [
+          "completed"
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "output": {
+            "first": {
+              "href": "http://testserver/api/blob/<uuid:4>",
+              "media_type": "text/plain",
+              "rel": "output",
+              "description": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file."
+            },
+            "second": {
+              "href": "http://testserver/api/blob/<uuid:5>",
+              "media_type": "text/plain",
+              "rel": "output",
+              "description": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file."
+            }
+          },
+          "href": "http://testserver/api/action_invocations/<uuid:3>",
+          "timeRequested": "<utc-datetime>",
+          "timeEnded": "<utc-datetime>"
+        },
+        "text": "{\"status\":\"completed\",\"output\":{\"first\":{\"href\":\"http://testserver/api/blob/<uuid:4>\",\"media_type\":\"text/plain\",\"rel\":\"output\",\"description\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\"},\"second\":{\"href\":\"http://testserver/api/blob/<uuid:5>\",\"media_type\":\"text/plain\",\"rel\":\"output\",\"description\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\"}},\"href\":\"http://testserver/api/action_invocations/<uuid:3>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "two_texts_output",
+        "method": "GET",
+        "path": "/api/action_invocations/{last}/output"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "first": {
+            "href": "http://testserver/api/blob/<uuid:4>",
+            "media_type": "text/plain",
+            "rel": "output",
+            "description": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file."
+          },
+          "second": {
+            "href": "http://testserver/api/blob/<uuid:5>",
+            "media_type": "text/plain",
+            "rel": "output",
+            "description": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file."
+          }
+        },
+        "text": "{\"first\":{\"href\":\"http://testserver/api/blob/<uuid:4>\",\"media_type\":\"text/plain\",\"rel\":\"output\",\"description\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\"},\"second\":{\"href\":\"http://testserver/api/blob/<uuid:5>\",\"media_type\":\"text/plain\",\"rel\":\"output\",\"description\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\"}}"
+      }
+    },
+    {
+      "step": {
+        "name": "second_download",
+        "method": "GET",
+        "path": "/api/blob/{blob:2}"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/plain; charset=utf-8",
+          "vary": "Origin"
+        },
+        "body": "second"
+      }
+    },
+    {
+      "step": {
+        "name": "passthrough",
+        "method": "POST",
+        "path": "/api/blob_probe/passthrough",
+        "json": {
+          "blob": {
+            "href": "http://testserver/api/blob/{blob:1}",
+            "media_type": "text/plain"
+          }
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/api/action_invocations/<uuid:6>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "href": "http://testserver/api/action_invocations/<uuid:6>",
+          "timeRequested": "<utc-datetime>"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "passthrough_status",
+        "method": "GET",
+        "path": "/api/action_invocations/{last}",
+        "poll": true,
+        "until": [
+          "completed"
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "output": {
+            "href": "http://testserver/api/blob/<uuid:4>",
+            "media_type": "text/plain",
+            "rel": "output",
+            "description": "The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file."
+          },
+          "href": "http://testserver/api/action_invocations/<uuid:6>",
+          "timeRequested": "<utc-datetime>",
+          "timeEnded": "<utc-datetime>"
+        },
+        "text": "{\"status\":\"completed\",\"output\":{\"href\":\"http://testserver/api/blob/<uuid:4>\",\"media_type\":\"text/plain\",\"rel\":\"output\",\"description\":\"The output from this action is not serialised to JSON, so it must be retrieved as a file. This link will return the file.\"},\"href\":\"http://testserver/api/action_invocations/<uuid:6>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "passthrough_unknown",
+        "method": "POST",
+        "path": "/api/blob_probe/passthrough",
+        "json": {
+          "blob": {
+            "href": "blob/00000000-0000-0000-0000-000000000000",
+            "media_type": "text/plain"
+          }
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error",
+          "title": "Validation error",
+          "status": 400,
+          "detail": "1 validation error",
+          "invalid-params": [
+            {
+              "in": "body",
+              "name": "/blob",
+              "reason": "Value error, Blob ID <nil-uuid> wasn't found on this server.",
+              "code": "value_error"
+            }
+          ]
+        },
+        "text": "{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error\",\"title\":\"Validation error\",\"status\":400,\"detail\":\"1 validation error\",\"invalid-params\":[{\"in\":\"body\",\"name\":\"/blob\",\"reason\":\"Value error, Blob ID <nil-uuid> wasn't found on this server.\",\"code\":\"value_error\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "passthrough_jpeg",
+        "method": "POST",
+        "path": "/api/blob_probe/passthrough",
+        "json": {
+          "blob": {
+            "href": "blob/{blob:0}",
+            "media_type": "text/plain"
+          }
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error",
+          "title": "Validation error",
+          "status": 400,
+          "detail": "1 validation error",
+          "invalid-params": [
+            {
+              "in": "body",
+              "name": "/blob",
+              "reason": "Value error, Blob data media_type 'image/jpeg' does not match Blob media_type 'text/plain'.",
+              "code": "value_error"
+            }
+          ]
+        },
+        "text": "{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error\",\"title\":\"Validation error\",\"status\":400,\"detail\":\"1 validation error\",\"invalid-params\":[{\"in\":\"body\",\"name\":\"/blob\",\"reason\":\"Value error, Blob data media_type 'image/jpeg' does not match Blob media_type 'text/plain'.\",\"code\":\"value_error\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "download_unknown",
+        "method": "GET",
+        "path": "/api/blob/00000000-0000-0000-0000-000000000000"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "detail": "Blob not found"
+        },
+        "text": "{\"type\":\"about:blank\",\"title\":\"Not Found\",\"status\":404,\"detail\":\"Blob not found\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "download_not_a_uuid",
+        "method": "GET",
+        "path": "/api/blob/nope"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "detail": "Blob not found"
+        },
+        "text": "{\"type\":\"about:blank\",\"title\":\"Not Found\",\"status\":404,\"detail\":\"Blob not found\"}"
+      }
+    }
+  ]
+}

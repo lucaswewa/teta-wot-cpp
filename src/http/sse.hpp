@@ -16,6 +16,7 @@
 #include <thread>
 #include <vector>
 
+#include "render.hpp"
 #include "teta/wot/broker.hpp"
 #include "teta/wot/http/message.hpp"
 
@@ -43,7 +44,7 @@ class SseStreams : public std::enable_shared_from_this<SseStreams> {
     /// A `text/event-stream` answer relaying `subscription`'s messages: the
     /// payload as `data`, and with `named` the affordance as `event` and the
     /// time as `id`.
-    Response response(Subscription subscription, bool named);
+    Response response(Subscription subscription, bool named, Urls urls);
 
   private:
     friend class SseStream;

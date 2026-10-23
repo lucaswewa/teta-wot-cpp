@@ -78,11 +78,12 @@ TEST(WebSocket, RelayedMessages) {
     const auto message = [](tw::MessageKind kind, Value payload) {
         return tw::Message::now("thing", "name", kind, std::move(payload));
     };
-    EXPECT_EQ(tw::json::dump(http::detail::relay(message(tw::MessageKind::property, 3))),
+    const http::detail::Urls urls{"http://host", ""};
+    EXPECT_EQ(tw::json::dump(http::detail::relay(message(tw::MessageKind::property, 3), urls)),
               R"({"messageType":"propertyStatus","data":{"name":3}})");
-    EXPECT_EQ(tw::json::dump(http::detail::relay(message(tw::MessageKind::action, "running"))),
+    EXPECT_EQ(tw::json::dump(http::detail::relay(message(tw::MessageKind::action, "running"), urls)),
               R"({"messageType":"actionStatus","data":{"action name":"name","status":"running"}})");
-    const auto event = http::detail::relay(message(tw::MessageKind::event, Value{{"a", 1}}));
+    const auto event = http::detail::relay(message(tw::MessageKind::event, Value{{"a", 1}}), urls);
     EXPECT_EQ(event["messageType"], "event");
     EXPECT_EQ(tw::json::dump(event["data"]["name"]["data"]), R"({"a":1})");
     const auto timestamp = event["data"]["name"]["timestamp"].get<std::string>();

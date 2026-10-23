@@ -34,8 +34,11 @@ bool wants_event_stream(const Headers& headers) {
 /// One client's stream.
 class SseStream : public std::enable_shared_from_this<SseStream> {
   public:
-    SseStream(std::weak_ptr<SseStreams> owner, Subscription subscription, bool named)
-        : owner_(std::move(owner)), subscription_(std::move(subscription)), named_(named) {}
+    SseStream(std::weak_ptr<SseStreams> owner, Subscription subscription, bool named, Urls urls)
+        : owner_(std::move(owner)),
+          subscription_(std::move(subscription)),
+          named_(named),
+          urls_(std::move(urls)) {}
 
     void start(std::shared_ptr<StreamSink> sink) {
         sink->set_resume([weak = weak_from_this()] {
@@ -71,6 +74,7 @@ class SseStream : public std::enable_shared_from_this<SseStream> {
             if (!message) {
                 break;
             }
+            resolve_blobs(message->payload, urls_);
             std::string event = "data: " + json::dump(message->payload) + "\n";
             if (named_) {
                 event += "event: " + message->affordance + "\nid: " + rfc3339(message->time, 9) + "\n";
@@ -113,6 +117,7 @@ class SseStream : public std::enable_shared_from_this<SseStream> {
     std::weak_ptr<SseStreams> owner_;
     Subscription subscription_;
     bool named_;
+    Urls urls_;
     std::mutex mutex_;
     std::shared_ptr<StreamSink> sink_;
     std::chrono::steady_clock::time_point last_sent_;
@@ -130,8 +135,9 @@ SseStreams::~SseStreams() {
     }
 }
 
-Response SseStreams::response(Subscription subscription, bool named) {
-    auto stream = std::make_shared<SseStream>(weak_from_this(), std::move(subscription), named);
+Response SseStreams::response(Subscription subscription, bool named, Urls urls) {
+    auto stream =
+        std::make_shared<SseStream>(weak_from_this(), std::move(subscription), named, std::move(urls));
     Response response;
     response.status = 200;
     response.headers.set("content-type", "text/event-stream");

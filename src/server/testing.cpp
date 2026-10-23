@@ -300,6 +300,47 @@ std::optional<TestSseMessage> TestEventStream::receive(std::chrono::nanoseconds 
     }
 }
 
+// ---- TestStream ---------------------------------------------------------------------------
+
+TestStream::TestStream(TestStream&&) noexcept = default;
+TestStream& TestStream::operator=(TestStream&&) noexcept = default;
+
+TestStream::~TestStream() {
+    if (chunks_) {
+        chunks_->abandon();
+    }
+}
+
+std::optional<std::string> TestStream::header(std::string_view name) const {
+    return first_header(headers, name);
+}
+
+std::optional<std::string> TestStream::next_chunk() {
+    return receive(receive_timeout, true);
+}
+
+std::optional<std::string> TestStream::next_chunk_within(std::chrono::nanoseconds timeout) {
+    return receive(timeout, false);
+}
+
+std::optional<std::string> TestStream::receive(std::chrono::nanoseconds timeout, bool strict) {
+    if (!chunks_) {
+        // Not a stream: its body, then the end.
+        return std::exchange(body_, std::nullopt);
+    }
+    auto chunk = chunks_->next(timeout);
+    if (!chunk) {
+        if (strict) {
+            throw std::runtime_error("no chunk of the stream within the timeout");
+        }
+        return std::nullopt;
+    }
+    if (chunk->empty()) {
+        return std::nullopt;  // the end of the stream
+    }
+    return chunk;
+}
+
 // ---- TestClient ---------------------------------------------------------------------------
 
 TestClient TestClient::start(const ThingServer& server) {
@@ -402,6 +443,20 @@ TestEventStream TestClient::events(std::string_view path) const {
     } else {
         // Not a stream: its body, then the end.
         stream.buffer_ = std::move(response.body);
+    }
+    return stream;
+}
+
+TestStream TestClient::stream(std::string_view path) const {
+    http::Response response = send(make("GET", path));
+    TestStream stream;
+    stream.status = response.status;
+    stream.headers = std::move(response.headers);
+    if (response.stream) {
+        stream.chunks_ = std::make_shared<detail::ChunkQueue>();
+        response.stream(stream.chunks_);
+    } else if (!response.body.empty()) {
+        stream.body_ = std::move(response.body);
     }
     return stream;
 }

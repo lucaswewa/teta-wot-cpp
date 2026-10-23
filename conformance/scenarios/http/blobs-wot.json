@@ -1,0 +1,31 @@
+{
+  "config": {
+    "things": {
+      "blob_probe": "twins.blob_probe:BlobProbe"
+    },
+    "wire_profile": "wot",
+    "api_prefix": "/api",
+    "server_id": "conformance"
+  },
+  "steps": [
+    {"name": "td", "method": "GET", "path": "/api/blob_probe/"},
+    {"name": "capture", "method": "POST", "path": "/api/blob_probe/capture"},
+    {"name": "capture_status", "method": "GET", "path": "/api/action_invocations/{last}", "poll": true, "until": ["completed"]},
+    {"name": "capture_output", "method": "GET", "path": "/api/action_invocations/{last}/output"},
+    {"name": "capture_download", "method": "GET", "path": "/api/blob/{blob:0}"},
+    {"name": "capture_unprefixed", "method": "GET", "path": "/blob/{blob:0}"},
+    {"name": "two_texts", "method": "POST", "path": "/api/blob_probe/two_texts"},
+    {"name": "two_texts_status", "method": "GET", "path": "/api/action_invocations/{last}", "poll": true, "until": ["completed"]},
+    {"name": "two_texts_output", "method": "GET", "path": "/api/action_invocations/{last}/output"},
+    {"name": "second_download", "method": "GET", "path": "/api/blob/{blob:2}"},
+    {"name": "passthrough", "method": "POST", "path": "/api/blob_probe/passthrough",
+     "json": {"blob": {"href": "http://testserver/api/blob/{blob:1}", "media_type": "text/plain"}}},
+    {"name": "passthrough_status", "method": "GET", "path": "/api/action_invocations/{last}", "poll": true, "until": ["completed"]},
+    {"name": "passthrough_unknown", "method": "POST", "path": "/api/blob_probe/passthrough",
+     "json": {"blob": {"href": "blob/00000000-0000-0000-0000-000000000000", "media_type": "text/plain"}}},
+    {"name": "passthrough_jpeg", "method": "POST", "path": "/api/blob_probe/passthrough",
+     "json": {"blob": {"href": "blob/{blob:0}", "media_type": "text/plain"}}},
+    {"name": "download_unknown", "method": "GET", "path": "/api/blob/00000000-0000-0000-0000-000000000000"},
+    {"name": "download_not_a_uuid", "method": "GET", "path": "/api/blob/nope"}
+  ]
+}

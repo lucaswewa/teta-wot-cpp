@@ -2,6 +2,7 @@ find_package(GTest CONFIG REQUIRED)
 include(GoogleTest)
 
 add_executable(teta-wot-tests
+    core/blob_test.cpp
     core/broker_test.cpp
     core/cancel_test.cpp
     core/device_test.cpp
@@ -11,6 +12,7 @@ add_executable(teta-wot-tests
     core/runtime_test.cpp
     core/settings_test.cpp
     core/slots_test.cpp
+    core/stream_test.cpp
     core/thing_spec_test.cpp
     http/binding_test.cpp
     http/cors_test.cpp
@@ -18,6 +20,7 @@ add_executable(teta-wot-tests
     http/fixtures_test.cpp
     http/http_test.cpp
     http/options_test.cpp
+    http/output_test.cpp
     http/websocket_test.cpp
     json/json_test.cpp
     json/parse_test.cpp
@@ -53,7 +56,8 @@ if(Python3_Interpreter_FOUND)
     add_test(NAME conformance.http
         COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/conformance/run.py check
             --server $<TARGET_FILE:twin-server>
-            counter validation default locked prefixed wot settings settings-load ws sse sse-wot events)
+            counter validation default locked prefixed wot settings settings-load ws sse sse-wot events
+            blobs blobs-wot streams)
     set_tests_properties(conformance.http PROPERTIES LABELS conformance TIMEOUT 600)
     # The command line: exit codes, output, the fallback server.
     add_test(NAME conformance.cli

@@ -4,8 +4,8 @@
 // `tds-wot.json`) byte for byte, after the fixtures' normalisation. This was
 // the Phase 1 gate with hand-written descriptions; since Phase 3 it checks
 // the definitions themselves: names, docstrings, types, parameters,
-// defaults, constraints. `blob_probe` and `ndarray_probe` follow with Blobs
-// (Phase 7) and arrays (Phase 10).
+// defaults, constraints. `blob_probe` joined in Phase 7; `ndarray_probe`
+// follows with arrays (Phase 10).
 
 #include <gtest/gtest.h>
 
@@ -98,7 +98,7 @@ void compare_with_fixture(const char* fixture, bool wot_profile) {
             << thing << " in " << fixture;
         ++compared;
     }
-    EXPECT_EQ(compared, 7);
+    EXPECT_EQ(compared, 8);
 }
 
 TEST(TwinTds, EqualTheReferenceInTheTetathingProfile) {

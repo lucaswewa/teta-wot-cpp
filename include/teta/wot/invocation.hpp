@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "teta/wot/blob.hpp"
 #include "teta/wot/broker.hpp"
 #include "teta/wot/cancel.hpp"
 #include "teta/wot/json.hpp"
@@ -86,6 +87,8 @@ class Invocation {
     InvocationStatus status() const;
     /// The output, once completed.
     std::optional<json::Value> output() const;
+    /// The output's data, if the output is one Blob.
+    std::shared_ptr<blob::BlobData> output_blob() const;
     /// What went wrong, for `error` and `cancelled` invocations.
     std::optional<ProblemDetails> error() const;
     /// The log so far.
@@ -104,8 +107,15 @@ class Invocation {
     // For the runtime.
     void announce();
     void set_running();
+    /// Finishes; `blobs` is the data of the Blobs in the output, kept with
+    /// it.
     void finish(InvocationStatus status, std::optional<json::Value> output,
-                std::optional<ProblemDetails> error);
+                std::optional<ProblemDetails> error, std::vector<std::shared_ptr<blob::BlobData>> blobs = {});
+    /// Keeps the data of the Blobs in the input for as long as the
+    /// invocation.
+    void hold_input_blobs(std::vector<std::shared_ptr<blob::BlobData>> blobs) {
+        input_blobs_ = std::move(blobs);
+    }
     bool expired(std::chrono::steady_clock::time_point now) const;
 
   private:
@@ -128,6 +138,8 @@ class Invocation {
     std::optional<std::chrono::system_clock::time_point> started_;
     std::optional<std::chrono::system_clock::time_point> completed_;
     std::optional<json::Value> output_;
+    std::vector<std::shared_ptr<blob::BlobData>> input_blobs_;
+    std::vector<std::shared_ptr<blob::BlobData>> output_blobs_;
     std::optional<ProblemDetails> error_;
     std::optional<std::chrono::steady_clock::time_point> expires_;
     std::vector<std::function<void()>> finished_callbacks_;

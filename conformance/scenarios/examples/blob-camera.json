@@ -1,0 +1,22 @@
+{
+  "serve": ["--serve"],
+  "port": 5000,
+  "steps": [
+    {"name": "td", "method": "GET", "path": "/camera/"},
+    {"name": "captures_before", "method": "GET", "path": "/camera/captures"},
+    {"name": "capture", "method": "POST", "path": "/camera/capture", "wait": true},
+    {"name": "capture_output", "method": "GET", "path": "/action_invocations/{last}/output", "ignore_body": true},
+    {"name": "capture_download", "method": "GET", "path": "/blob/{blob:0}", "ignore_body": true},
+    {"name": "capture_to_file", "method": "POST", "path": "/camera/capture_to_file", "wait": true},
+    {"name": "capture_to_file_download", "method": "GET", "path": "/blob/{blob:1}", "ignore_body": true},
+    {"name": "describe", "method": "POST", "path": "/camera/describe",
+     "json": {"image": {"href": "http://testserver/blob/{blob:1}", "media_type": "image/jpeg"}}},
+    {"name": "describe_status", "method": "GET", "path": "/action_invocations/{last}", "poll": true, "ignore_body": true},
+    {"name": "describe_unknown", "method": "POST", "path": "/camera/describe",
+     "json": {"image": {"href": "http://testserver/blob/00000000-0000-0000-0000-000000000000", "media_type": "image/jpeg"}}},
+    {"name": "describe_not_a_jpeg", "method": "POST", "path": "/camera/describe",
+     "json": {"image": {"href": "http://testserver/blob/{blob:0}", "media_type": "image/png"}}},
+    {"name": "captures_after", "method": "GET", "path": "/camera/captures"},
+    {"name": "write_captures", "method": "PUT", "path": "/camera/captures", "json": 0}
+  ]
+}

@@ -74,6 +74,7 @@ Routes Routes::build(const Runtime& runtime, const std::string& prefix) {
     routes.add(invocations + "/{id}", "GET", {Kind::get_invocation, {}, {}});
     routes.add(invocations + "/{id}/output", "GET", {Kind::invocation_output, {}, {}});
     routes.add(invocations + "/{id}", "DELETE", {Kind::cancel_invocation, {}, {}});
+    routes.add(prefix + "/blob/{id}", "GET", {Kind::download_blob, {}, {}});
     routes.add(prefix + "/thing_descriptions/", "GET", {Kind::thing_descriptions, {}, {}});
     routes.add(prefix + "/things/", "GET", {Kind::thing_paths, {}, {}});
 
@@ -101,6 +102,10 @@ Routes Routes::build(const Runtime& runtime, const std::string& prefix) {
         }
         for (const auto& event : thing->events()) {
             routes.add(base + event.name, "GET", {Kind::subscribe_event, name, event.name});
+        }
+        for (const auto& [stream, _] : thing->streams()) {
+            routes.add(base + stream, "GET", {Kind::stream, name, stream});
+            routes.add(base + stream + "/viewer", "GET", {Kind::stream_viewer, name, stream});
         }
         // The top-level resources, where the TD has their forms.
         if (!thing->properties().empty()) {

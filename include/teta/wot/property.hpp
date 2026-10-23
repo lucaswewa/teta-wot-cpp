@@ -93,6 +93,9 @@ T from_client(const SchemaValidator& validator, const json::Value& value) {
     json::Value coerced = validator.validate(value, loc);
     try {
         return Codec<T>::decode(coerced);
+    } catch (const ValueDecodeError& error) {
+        // A Blob that isn't there: at the Blob, as the client sent it.
+        throw ValidationError::value_error_at(loc, error.path(), error.message(), value);
     } catch (const DecodeError& error) {
         throw ValidationError::decode_error(loc, error.what(), std::move(coerced));
     }

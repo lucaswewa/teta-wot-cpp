@@ -312,6 +312,8 @@ WebSocket dialect (`addPropertyObservation`, `addActionObservation`, `addEventSu
 
 ### Phase 7: Blobs and MJPEG (M)
 
+**Done** (2026-10-23): see the [Phase 7 note](notes/phase-07-blobs.md). The fixtures are `fixtures/http/blobs.json`, `blobs-wot.json` and `streams.json`.
+
 Blob outputs and inputs, the Blob store and downloads, MJPEG streams and the viewer page.
 
 **Gate:** the Blob and stream scenarios (downloads, Blob inputs and their errors, frames, viewer page, a stopped stream) equal to the reference's; `blob-camera`, `mjpeg-stream` examples.
@@ -349,7 +351,7 @@ Examples are part of each phase's deliverable (§5.0), not an afterthought: each
 - **One CMake helper,** `teta_wot_add_example(<name> SOURCES … [WINDOWS_ONLY] [NEEDS python|node])`, builds it against the installed-style targets (`teta::wot`) and registers its demonstration as a CTest test (label `example`), so CI runs every example on both OSes.
 - **Wire parity, too.** Each example's Things are the same as the Rust example's, under the same names and options. Phase 4 onwards, the differential runner (§8.2) serves each example with `--serve` from both implementations (the Rust ones built from `teta-wot` v0.1.0's `examples/`) and compares their TDs, OpenAPI documents and a scripted session. A C++ example therefore can't drift from its Rust original.
 - **Scripts and clients** that `teta-wot`'s examples use (`walkthrough.sh`/`.ps1`, the Python clients, the node-wot consumer, the browser pages) are copied unchanged, since they only see the wire: a script that works against the Rust example must work against the C++ one.
-- **Only the examples need extra dependencies:** `stb_image_write` (vendored, single header) encodes the simulated JPEG frames where the Rust examples use `jpeg-encoder`.
+- **Only the examples need extra code:** a small baseline JPEG encoder (`examples/common/jpeg.hpp`) encodes the simulated JPEG frames where the Rust examples use `jpeg-encoder` (Phase 7 note).
 - **`examples/README.md`** catalogues them by phase and by concept, with the same "to learn / start with" table as `teta-wot`'s guide.
 
 ### 6.2 Catalogue
