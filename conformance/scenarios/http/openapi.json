@@ -9,7 +9,8 @@
       "settings_probe": "twins.settings_probe:SettingsProbe",
       "ws_probe": "twins.ws_probe:ThingWithProperties",
       "blob_probe": "twins.blob_probe:BlobProbe",
-      "event_probe": "twins.event_probe:EventProbe"
+      "event_probe": "twins.event_probe:EventProbe",
+      "ndarray_probe": "twins.ndarray_probe:NDArrayProbe"
     },
     "server_id": "conformance"
   },

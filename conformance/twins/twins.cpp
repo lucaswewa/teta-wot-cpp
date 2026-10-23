@@ -7,8 +7,9 @@
 
 namespace twins {
 
-const std::vector<std::string> names = {"mything",    "broken",         "counter",  "types",
-                                        "http_probe", "settings_probe", "ws_probe", "blob_probe"};
+const std::vector<std::string> names = {"mything",  "broken",     "counter",
+                                        "types",    "http_probe", "settings_probe",
+                                        "ws_probe", "blob_probe", "ndarray_probe"};
 
 void add(tw::RuntimeBuilder& builder, std::string_view name) {
     const std::string n(name);
@@ -28,6 +29,8 @@ void add(tw::RuntimeBuilder& builder, std::string_view name) {
         builder.thing<ThingWithProperties>(n);
     } else if (name == "blob_probe") {
         builder.thing<BlobProbe>(n);
+    } else if (name == "ndarray_probe") {
+        builder.thing<NDArrayProbe>(n);
     } else {
         throw std::invalid_argument("no twin named `" + n + "`");
     }
@@ -48,6 +51,7 @@ tw::ThingRegistry registry() {
         .add<SettingsProbe>({"twins.settings_probe:SettingsProbe", "twins:SettingsProbe"})
         .add<ThingWithProperties>({"twins.ws_probe:ThingWithProperties", "twins:ThingWithProperties"})
         .add<BlobProbe>({"twins.blob_probe:BlobProbe", "twins:BlobProbe"})
+        .add<NDArrayProbe>({"twins.ndarray_probe:NDArrayProbe", "twins:NDArrayProbe"})
         .add<EventProbe>({"twins.event_probe:EventProbe", "twins:EventProbe"});
     return registry;
 }
@@ -346,6 +350,48 @@ void ThingWithProperties::define(tw::ThingSpec<ThingWithProperties>& t) {
         .doc("Raise an exception to test for error status.");
     t.action("cancel_myself", &ThingWithProperties::cancel_myself)
         .doc("Increment the data property, then pretend to be cancelled.");
+}
+
+// ---- NDArrayProbe -------------------------------------------------------------------------
+
+tw::NdArray<> NDArrayProbe::matrix() const {
+    std::lock_guard lock(mutex_);
+    return matrix_;
+}
+
+void NDArrayProbe::set_matrix(tw::NdArray<> value) {
+    std::lock_guard lock(mutex_);
+    matrix_ = std::move(value);
+}
+
+tw::NdArray<> NDArrayProbe::twice(tw::NdArray<> arr) {
+    return arr.map([](double element) { return element * 2.0; });
+}
+
+tw::NdArray<std::int64_t> NDArrayProbe::ramp(std::int64_t n) {
+    std::vector<std::int64_t> elements;
+    for (std::int64_t i = 0; i < n; ++i) {
+        elements.push_back(i);
+    }
+    const auto count = elements.size();
+    return tw::NdArray<std::int64_t>::from_shape({count}, std::move(elements));
+}
+
+double NDArrayProbe::total(tw::NdArray<> arr) {
+    return arr.sum();
+}
+
+void NDArrayProbe::define(tw::ThingSpec<NDArrayProbe>& t) {
+    // The TD has the Python docstring as it is, with its indentation.
+    t.description(
+        "A Thing with array-valued affordances.\n\n    It is used to check how arrays are described and "
+        "serialised.\n    ");
+    t.property("matrix", &NDArrayProbe::matrix)
+        .setter(&NDArrayProbe::set_matrix)
+        .doc("A matrix of numbers, 2 by 3 to start with.");
+    t.action<"arr">("double", &NDArrayProbe::twice).doc("Double every element of an array.");
+    t.action<"n">("ramp", &NDArrayProbe::ramp).doc("Return the integers from 0 to n - 1.");
+    t.action<"arr">("total", &NDArrayProbe::total).doc("Add up every element of an array.");
 }
 
 // ---- BlobProbe ----------------------------------------------------------------------------

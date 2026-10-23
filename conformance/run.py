@@ -38,8 +38,8 @@ folder (escaped for a JSON string, for `-j`) and `{port}` a free port. `occupy` 
 `"fallback": true`, against the fallback server), and then it is stopped
 with Ctrl-C. The exit code and the output are recorded, without log lines
 (their format isn't contract), with the port, the temporary folder and the
-program's name masked, and with `Registered: …` lists masked (the C++ twins
-lack the array probe until Phase 10).
+program's name masked, and with `Registered: …` lists masked (they list a
+registry, which isn't the command line's contract).
 
 Every request is sent over a real socket with `Host: testserver`, so the URLs
 the server builds don't depend on the port. Redirects aren't followed.

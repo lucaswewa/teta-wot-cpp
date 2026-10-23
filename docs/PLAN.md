@@ -337,6 +337,8 @@ The `wot` wire profile (204s, problem details, `ActionStatus`, synchronous actio
 
 ### Phase 10: Arrays, services, hardening, release (M)
 
+**In progress**, in parts: see the [Phase 10 note](notes/phase-10-release.md). Part 1, arrays, is done.
+
 `NdArray`; the Windows service (install/uninstall, stop during a long action) and the systemd unit; fuzz targets (validation, WS parser, request bodies) in CI; the shutdown-under-load test; the soak tool; the simulated microscope and `microscope-service`; the full guide; vcpkg overlay port; v0.1.0.
 
 **Gate:** the array scenarios (including ragged arrays) equal to the reference's; `service_test.ps1` on Windows and a systemd test on Linux; 24 h soak with no leak (ASan/LSan on Linux, CRT debug heap on Windows); every example in §6 ported, run by CI on both OSes, and equal on the wire to its Rust original.

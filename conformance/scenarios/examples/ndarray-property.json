@@ -1,0 +1,172 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 5000,
+  "steps": [
+    {
+      "name": "openapi",
+      "method": "GET",
+      "path": "/openapi.json"
+    },
+    {
+      "name": "td",
+      "method": "GET",
+      "path": "/camera/"
+    },
+    {
+      "name": "dark_frame",
+      "method": "GET",
+      "path": "/camera/dark_frame"
+    },
+    {
+      "name": "correct",
+      "method": "POST",
+      "path": "/camera/correct",
+      "json": {
+        "image": [
+          [
+            11,
+            12,
+            11
+          ],
+          [
+            12,
+            13,
+            52
+          ]
+        ]
+      },
+      "wait": true
+    },
+    {
+      "name": "correct_wrong_shape",
+      "method": "POST",
+      "path": "/camera/correct",
+      "json": {
+        "image": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ]
+      }
+    },
+    {
+      "name": "correct_cube",
+      "method": "POST",
+      "path": "/camera/correct",
+      "json": {
+        "image": [
+          [
+            [
+              1
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "name": "histogram",
+      "method": "POST",
+      "path": "/camera/histogram",
+      "json": {
+        "image": [
+          [
+            [
+              0,
+              1
+            ],
+            [
+              2,
+              3
+            ]
+          ],
+          [
+            [
+              4,
+              5
+            ],
+            [
+              6,
+              99
+            ]
+          ]
+        ],
+        "bins": 4
+      },
+      "wait": true
+    },
+    {
+      "name": "histogram_flat",
+      "method": "POST",
+      "path": "/camera/histogram",
+      "json": {
+        "image": [
+          5,
+          5,
+          5
+        ],
+        "bins": 0
+      },
+      "wait": true
+    },
+    {
+      "name": "histogram_negative_bins",
+      "method": "POST",
+      "path": "/camera/histogram",
+      "json": {
+        "image": [
+          1
+        ],
+        "bins": -1
+      }
+    },
+    {
+      "name": "write_ragged",
+      "method": "PUT",
+      "path": "/camera/dark_frame",
+      "json": [
+        [
+          1.0,
+          2.0
+        ],
+        [
+          3.0
+        ]
+      ]
+    },
+    {
+      "name": "write",
+      "method": "PUT",
+      "path": "/camera/dark_frame",
+      "json": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "write_empty",
+      "method": "PUT",
+      "path": "/camera/dark_frame",
+      "json": []
+    },
+    {
+      "name": "dark_frame_after",
+      "method": "GET",
+      "path": "/camera/dark_frame"
+    }
+  ]
+}
