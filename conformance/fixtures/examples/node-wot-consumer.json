@@ -1,0 +1,1770 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 8000,
+  "steps": [
+    {
+      "step": {
+        "name": "openapi",
+        "method": "GET",
+        "path": "/openapi.json"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "openapi": "3.1.0",
+          "info": {
+            "title": "teta-wot",
+            "version": "0.1.0"
+          },
+          "paths": {
+            "/action_invocations": {
+              "get": {
+                "summary": "List All Invocations",
+                "description": "Every invocation the server is keeping, of every action.",
+                "operationId": "list_all_invocations_action_invocations_get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/InvocationSummary"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/action_invocations/{id}": {
+              "get": {
+                "summary": "Action Invocation",
+                "description": "One invocation: its status, input, output, log and error.",
+                "operationId": "action_invocation_action_invocations__id__get",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Invocation"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "description": "Invocation ID not found"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "delete": {
+                "summary": "Delete Invocation",
+                "description": "Cancel an invocation (`cancelaction`). The action stops at its next cancellation check.",
+                "operationId": "delete_invocation_action_invocations__id__delete",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Cancel request sent",
+                    "content": {
+                      "application/json": {
+                        "schema": {}
+                      }
+                    }
+                  },
+                  "503": {
+                    "description": "Invocation may not be cancelled"
+                  },
+                  "404": {
+                    "description": "Invocation ID not found"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/action_invocations/{id}/output": {
+              "get": {
+                "summary": "Action Invocation Output",
+                "description": "The output of a completed invocation. When the output is a Blob, this is its data.",
+                "operationId": "action_invocation_output_action_invocations__id__output_get",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Action invocation output",
+                    "content": {
+                      "application/json": {
+                        "schema": {}
+                      },
+                      "*/*": {}
+                    }
+                  },
+                  "503": {
+                    "description": "No result is available for this invocation"
+                  },
+                  "404": {
+                    "description": "Invocation ID not found"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/blob/{blob_id}": {
+              "get": {
+                "summary": "Download Blob",
+                "description": "A Blob's data, while an invocation or the Thing still holds it.",
+                "operationId": "download_blob_blob__blob_id__get",
+                "parameters": [
+                  {
+                    "name": "blob_id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "*/*": {}
+                    }
+                  },
+                  "404": {
+                    "description": "Blob not found"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/thing_descriptions/": {
+              "get": {
+                "summary": "Thing Descriptions",
+                "description": "The Thing Description of every Thing, by name.",
+                "operationId": "thing_descriptions_thing_descriptions__get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/ThingDescription"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/things/": {
+              "get": {
+                "summary": "Thing Paths",
+                "description": "The URL of every Thing's Thing Description, by name.",
+                "operationId": "thing_paths_things__get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/.well-known/wot": {
+              "get": {
+                "summary": "Thing Description Directory",
+                "description": "The TD of this server's Thing Description Directory (W3C WoT Discovery).",
+                "operationId": "well_known_wot__well_known_wot_get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/td+json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/ThingDescription"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/directory/things": {
+              "get": {
+                "summary": "Thing Descriptions",
+                "description": "Every Thing's TD, sorted by `id`. With `limit`, a page, with `next` and `canonical` links.",
+                "operationId": "directory_things_directory_things_get",
+                "parameters": [
+                  {
+                    "name": "offset",
+                    "in": "query",
+                    "required": false,
+                    "description": "How many TDs to skip",
+                    "schema": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  {
+                    "name": "limit",
+                    "in": "query",
+                    "required": false,
+                    "description": "How many TDs in a page (at least 1)",
+                    "schema": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  {
+                    "name": "format",
+                    "in": "query",
+                    "required": false,
+                    "schema": {
+                      "type": "string",
+                      "enum": [
+                        "array",
+                        "collection"
+                      ],
+                      "default": "array"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/ld+json": {
+                        "schema": {
+                          "oneOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/ThingDescription"
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "description": "A ThingCollection"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "400": {
+                    "content": {
+                      "application/problem+json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Problem"
+                        }
+                      }
+                    },
+                    "description": "Invalid query arguments"
+                  }
+                }
+              }
+            },
+            "/directory/things/{id}": {
+              "get": {
+                "summary": "Thing Description",
+                "description": "One TD, by its `id`.",
+                "operationId": "directory_thing_directory_things__id__get",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "iri-reference"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/td+json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/ThingDescription"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "content": {
+                      "application/problem+json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Problem"
+                        }
+                      }
+                    },
+                    "description": "No TD has this ID"
+                  }
+                }
+              }
+            },
+            "/lamp/double": {
+              "get": {
+                "summary": "All invocations of double.",
+                "description": "List all the invocations of double that the server is keeping, with their times and links.",
+                "operationId": "list_invocations_lamp_double_get",
+                "responses": {
+                  "200": {
+                    "description": "A list of every invocation of double.",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/InvocationSummary"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "post": {
+                "summary": "Double a number.",
+                "description": "## Double a number.\n\nDouble a number.\n\n## Important note\n\nThis `POST` request starts an action: the server may carry on after answering. The answer is always a 201 with the invocation, whose `href` can be polled to follow it, and whose `output` link gives the result when it has completed.",
+                "operationId": "start_action_lamp_double_post",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/lamp_double_input"
+                      }
+                    }
+                  },
+                  "required": true
+                },
+                "responses": {
+                  "201": {
+                    "description": "Action has been invoked (and may still be running).",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/lamp_double_invocation"
+                        }
+                      }
+                    }
+                  },
+                  "200": {
+                    "description": "Action completed.",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/lamp_double_output"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/lamp/fade": {
+              "get": {
+                "summary": "All invocations of fade.",
+                "description": "List all the invocations of fade that the server is keeping, with their times and links.",
+                "operationId": "list_invocations_lamp_fade_get",
+                "responses": {
+                  "200": {
+                    "description": "A list of every invocation of fade.",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/InvocationSummary"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "post": {
+                "summary": "Fade to a level, slowly.",
+                "description": "## Fade to a level, slowly.\n\nFade to a level, slowly.\n\n## Important note\n\nThis `POST` request starts an action: the server may carry on after answering. The answer is always a 201 with the invocation, whose `href` can be polled to follow it, and whose `output` link gives the result when it has completed.",
+                "operationId": "start_action_lamp_fade_post",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/lamp_fade_input"
+                      }
+                    }
+                  },
+                  "required": true
+                },
+                "responses": {
+                  "201": {
+                    "description": "Action has been invoked (and may still be running).",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/lamp_fade_invocation"
+                        }
+                      }
+                    }
+                  },
+                  "200": {
+                    "description": "Action completed.",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/lamp_fade_output"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/lamp/level": {
+              "get": {
+                "summary": "The brightness, in percent.",
+                "description": "## The brightness, in percent.\n\nThe brightness, in percent.",
+                "operationId": "get_property_lamp_level_get",
+                "responses": {
+                  "200": {
+                    "description": "Value of level",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/lamp_level_value"
+                        }
+                      },
+                      "text/event-stream": {
+                        "schema": {
+                          "type": "string",
+                          "description": "Server-sent events: each new value as JSON in a `data:` line. Ask for them with `Accept: text/event-stream`."
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "put": {
+                "summary": "Set The brightness, in percent.",
+                "description": "## The brightness, in percent.\n\nThe brightness, in percent.",
+                "operationId": "set_property_lamp_level_put",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/lamp_level_value"
+                      }
+                    }
+                  },
+                  "required": true
+                },
+                "responses": {
+                  "201": {
+                    "description": "Property set successfully",
+                    "content": {
+                      "application/json": {
+                        "schema": {}
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/lamp/level/reset": {
+              "post": {
+                "summary": "Reset The brightness, in percent..",
+                "description": "## Reset The brightness, in percent.\n\nResets the property to its default value, which the Thing Description gives.",
+                "operationId": "reset_lamp_level_reset_post",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {}
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/lamp/properties": {
+              "get": {
+                "summary": "Read All Properties",
+                "description": "Every property of `lamp` (`readallproperties`), or their changes (`observeallproperties`).",
+                "operationId": "read_all_properties_lamp_properties_get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "description": "Each property's value, by name."
+                        }
+                      },
+                      "text/event-stream": {
+                        "schema": {
+                          "type": "string",
+                          "description": "Server-sent events: each observable property's new values, as events named after it. Ask for them with `Accept: text/event-stream`."
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "put": {
+                "summary": "Write Multiple Properties",
+                "description": "Writes several properties of `lamp` (`writemultipleproperties`): nothing is written unless every value is valid.",
+                "operationId": "write_multiple_properties_lamp_properties_put",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object"
+                      }
+                    }
+                  },
+                  "required": true
+                },
+                "responses": {
+                  "204": {
+                    "description": "Properties written"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/lamp/actions": {
+              "get": {
+                "summary": "Query All Actions",
+                "description": "The invocations of each action of `lamp`, newest first (`queryallactions`).",
+                "operationId": "query_all_actions_lamp_actions_get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/components/schemas/InvocationSummary"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/lamp/": {
+              "get": {
+                "summary": "Thing Description",
+                "description": "The W3C Thing Description of `lamp`: its properties, actions and events, and how to use them.",
+                "operationId": "things_lamp_lamp__get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/ThingDescription"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "InvocationStatus": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "running",
+                  "completed",
+                  "cancelled",
+                  "error"
+                ],
+                "description": "Where an invocation is in its life."
+              },
+              "InvocationSummary": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/InvocationStatus"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string"
+                  },
+                  "href": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "timeStarted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeRequested": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeCompleted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LinkElement"
+                    }
+                  }
+                },
+                "required": [
+                  "status",
+                  "id",
+                  "action",
+                  "href",
+                  "timeStarted",
+                  "timeRequested",
+                  "timeCompleted"
+                ],
+                "description": "An invocation, as lists show it."
+              },
+              "Invocation": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/InvocationStatus"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string"
+                  },
+                  "href": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "timeStarted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeRequested": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeCompleted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LinkElement"
+                    }
+                  },
+                  "input": {},
+                  "output": {
+                    "oneOf": [
+                      {},
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "log": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LogRecordModel"
+                    }
+                  },
+                  "error": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "status",
+                  "id",
+                  "action",
+                  "href",
+                  "timeStarted",
+                  "timeRequested",
+                  "timeCompleted",
+                  "input",
+                  "log"
+                ]
+              },
+              "LinkElement": {
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rel": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "anchor": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "href"
+                ],
+                "additionalProperties": true,
+                "description": "A link: see https://www.w3.org/TR/wot-thing-description11/#link."
+              },
+              "LogRecordModel": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "levelname": {
+                    "type": "string"
+                  },
+                  "levelno": {
+                    "type": "integer"
+                  },
+                  "lineno": "<lineno>",
+                  "filename": "<filename>",
+                  "created": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "exception_type": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "traceback": "<traceback>"
+                },
+                "required": [
+                  "message",
+                  "levelname",
+                  "levelno",
+                  "lineno",
+                  "filename",
+                  "created"
+                ],
+                "description": "A message logged during an invocation."
+              },
+              "ProblemDetails": {
+                "type": "object",
+                "properties": {
+                  "detail": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "title": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "instance": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": true,
+                "description": "What went wrong in an invocation (RFC 9457 problem details)."
+              },
+              "HTTPValidationError": {
+                "type": "object",
+                "properties": {
+                  "detail": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ValidationError"
+                    }
+                  }
+                }
+              },
+              "ValidationError": {
+                "type": "object",
+                "properties": {
+                  "loc": {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "integer"
+                        }
+                      ]
+                    }
+                  },
+                  "msg": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "input": {},
+                  "ctx": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "loc",
+                  "msg",
+                  "type"
+                ]
+              },
+              "ThingDescription": {
+                "type": "object",
+                "description": "A W3C Web of Things Thing Description (TD 1.1).",
+                "externalDocs": {
+                  "url": "https://www.w3.org/TR/wot-thing-description11/"
+                }
+              },
+              "Problem": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "format": "uri-reference"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "integer"
+                  },
+                  "detail": {
+                    "type": "string"
+                  },
+                  "instance": {
+                    "type": "string"
+                  },
+                  "invalid-params": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "in": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "additionalProperties": true,
+                "description": "Problem details (RFC 9457). The framework's types are documented at https://github.com/lucaswewa/wot/blob/main/docs/problems.md."
+              },
+              "lamp_double_input": {
+                "type": "object",
+                "properties": {
+                  "n": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "n"
+                ],
+                "additionalProperties": false
+              },
+              "lamp_double_output": {
+                "type": "integer"
+              },
+              "lamp_double_invocation": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/InvocationStatus"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string"
+                  },
+                  "href": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "timeStarted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeRequested": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeCompleted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LinkElement"
+                    }
+                  },
+                  "input": {
+                    "$ref": "#/components/schemas/lamp_double_input"
+                  },
+                  "output": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/lamp_double_output"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "log": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LogRecordModel"
+                    }
+                  },
+                  "error": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "status",
+                  "id",
+                  "action",
+                  "href",
+                  "timeStarted",
+                  "timeRequested",
+                  "timeCompleted",
+                  "input",
+                  "log"
+                ]
+              },
+              "lamp_fade_input": {
+                "type": "object",
+                "properties": {
+                  "level": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "level"
+                ],
+                "additionalProperties": false
+              },
+              "lamp_fade_output": {
+                "type": "integer"
+              },
+              "lamp_fade_invocation": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/InvocationStatus"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string"
+                  },
+                  "href": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "timeStarted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeRequested": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeCompleted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LinkElement"
+                    }
+                  },
+                  "input": {
+                    "$ref": "#/components/schemas/lamp_fade_input"
+                  },
+                  "output": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/lamp_fade_output"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "log": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LogRecordModel"
+                    }
+                  },
+                  "error": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "status",
+                  "id",
+                  "action",
+                  "href",
+                  "timeStarted",
+                  "timeRequested",
+                  "timeCompleted",
+                  "input",
+                  "log"
+                ]
+              },
+              "lamp_level_value": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              }
+            }
+          }
+        },
+        "text": "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"teta-wot\",\"version\":\"0.1.0\"},\"paths\":{\"/action_invocations\":{\"get\":{\"summary\":\"List All Invocations\",\"description\":\"Every invocation the server is keeping, of every action.\",\"operationId\":\"list_all_invocations_action_invocations_get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/InvocationSummary\"}}}}}}}},\"/action_invocations/{id}\":{\"get\":{\"summary\":\"Action Invocation\",\"description\":\"One invocation: its status, input, output, log and error.\",\"operationId\":\"action_invocation_action_invocations__id__get\",\"parameters\":[{\"name\":\"id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/Invocation\"}}}},\"404\":{\"description\":\"Invocation ID not found\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}},\"delete\":{\"summary\":\"Delete Invocation\",\"description\":\"Cancel an invocation (`cancelaction`). The action stops at its next cancellation check.\",\"operationId\":\"delete_invocation_action_invocations__id__delete\",\"parameters\":[{\"name\":\"id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\"}}],\"responses\":{\"200\":{\"description\":\"Cancel request sent\",\"content\":{\"application/json\":{\"schema\":{}}}},\"503\":{\"description\":\"Invocation may not be cancelled\"},\"404\":{\"description\":\"Invocation ID not found\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/action_invocations/{id}/output\":{\"get\":{\"summary\":\"Action Invocation Output\",\"description\":\"The output of a completed invocation. When the output is a Blob, this is its data.\",\"operationId\":\"action_invocation_output_action_invocations__id__output_get\",\"parameters\":[{\"name\":\"id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\"}}],\"responses\":{\"200\":{\"description\":\"Action invocation output\",\"content\":{\"application/json\":{\"schema\":{}},\"*/*\":{}}},\"503\":{\"description\":\"No result is available for this invocation\"},\"404\":{\"description\":\"Invocation ID not found\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/blob/{blob_id}\":{\"get\":{\"summary\":\"Download Blob\",\"description\":\"A Blob's data, while an invocation or the Thing still holds it.\",\"operationId\":\"download_blob_blob__blob_id__get\",\"parameters\":[{\"name\":\"blob_id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"*/*\":{}}},\"404\":{\"description\":\"Blob not found\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/thing_descriptions/\":{\"get\":{\"summary\":\"Thing Descriptions\",\"description\":\"The Thing Description of every Thing, by name.\",\"operationId\":\"thing_descriptions_thing_descriptions__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"additionalProperties\":{\"$ref\":\"#/components/schemas/ThingDescription\"}}}}}}}},\"/things/\":{\"get\":{\"summary\":\"Thing Paths\",\"description\":\"The URL of every Thing's Thing Description, by name.\",\"operationId\":\"thing_paths_things__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"additionalProperties\":{\"type\":\"string\"}}}}}}}},\"/.well-known/wot\":{\"get\":{\"summary\":\"Thing Description Directory\",\"description\":\"The TD of this server's Thing Description Directory (W3C WoT Discovery).\",\"operationId\":\"well_known_wot__well_known_wot_get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/td+json\":{\"schema\":{\"$ref\":\"#/components/schemas/ThingDescription\"}}}}}}},\"/directory/things\":{\"get\":{\"summary\":\"Thing Descriptions\",\"description\":\"Every Thing's TD, sorted by `id`. With `limit`, a page, with `next` and `canonical` links.\",\"operationId\":\"directory_things_directory_things_get\",\"parameters\":[{\"name\":\"offset\",\"in\":\"query\",\"required\":false,\"description\":\"How many TDs to skip\",\"schema\":{\"type\":\"integer\",\"minimum\":0}},{\"name\":\"limit\",\"in\":\"query\",\"required\":false,\"description\":\"How many TDs in a page (at least 1)\",\"schema\":{\"type\":\"integer\",\"minimum\":0}},{\"name\":\"format\",\"in\":\"query\",\"required\":false,\"schema\":{\"type\":\"string\",\"enum\":[\"array\",\"collection\"],\"default\":\"array\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/ld+json\":{\"schema\":{\"oneOf\":[{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/ThingDescription\"}},{\"type\":\"object\",\"description\":\"A ThingCollection\"}]}}}},\"400\":{\"content\":{\"application/problem+json\":{\"schema\":{\"$ref\":\"#/components/schemas/Problem\"}}},\"description\":\"Invalid query arguments\"}}}},\"/directory/things/{id}\":{\"get\":{\"summary\":\"Thing Description\",\"description\":\"One TD, by its `id`.\",\"operationId\":\"directory_thing_directory_things__id__get\",\"parameters\":[{\"name\":\"id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"iri-reference\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/td+json\":{\"schema\":{\"$ref\":\"#/components/schemas/ThingDescription\"}}}},\"404\":{\"content\":{\"application/problem+json\":{\"schema\":{\"$ref\":\"#/components/schemas/Problem\"}}},\"description\":\"No TD has this ID\"}}}},\"/lamp/double\":{\"get\":{\"summary\":\"All invocations of double.\",\"description\":\"List all the invocations of double that the server is keeping, with their times and links.\",\"operationId\":\"list_invocations_lamp_double_get\",\"responses\":{\"200\":{\"description\":\"A list of every invocation of double.\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/InvocationSummary\"}}}}}}},\"post\":{\"summary\":\"Double a number.\",\"description\":\"## Double a number.\\n\\nDouble a number.\\n\\n## Important note\\n\\nThis `POST` request starts an action: the server may carry on after answering. The answer is always a 201 with the invocation, whose `href` can be polled to follow it, and whose `output` link gives the result when it has completed.\",\"operationId\":\"start_action_lamp_double_post\",\"requestBody\":{\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/lamp_double_input\"}}},\"required\":true},\"responses\":{\"201\":{\"description\":\"Action has been invoked (and may still be running).\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/lamp_double_invocation\"}}}},\"200\":{\"description\":\"Action completed.\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/lamp_double_output\"}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/lamp/fade\":{\"get\":{\"summary\":\"All invocations of fade.\",\"description\":\"List all the invocations of fade that the server is keeping, with their times and links.\",\"operationId\":\"list_invocations_lamp_fade_get\",\"responses\":{\"200\":{\"description\":\"A list of every invocation of fade.\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/InvocationSummary\"}}}}}}},\"post\":{\"summary\":\"Fade to a level, slowly.\",\"description\":\"## Fade to a level, slowly.\\n\\nFade to a level, slowly.\\n\\n## Important note\\n\\nThis `POST` request starts an action: the server may carry on after answering. The answer is always a 201 with the invocation, whose `href` can be polled to follow it, and whose `output` link gives the result when it has completed.\",\"operationId\":\"start_action_lamp_fade_post\",\"requestBody\":{\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/lamp_fade_input\"}}},\"required\":true},\"responses\":{\"201\":{\"description\":\"Action has been invoked (and may still be running).\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/lamp_fade_invocation\"}}}},\"200\":{\"description\":\"Action completed.\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/lamp_fade_output\"}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/lamp/level\":{\"get\":{\"summary\":\"The brightness, in percent.\",\"description\":\"## The brightness, in percent.\\n\\nThe brightness, in percent.\",\"operationId\":\"get_property_lamp_level_get\",\"responses\":{\"200\":{\"description\":\"Value of level\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/lamp_level_value\"}},\"text/event-stream\":{\"schema\":{\"type\":\"string\",\"description\":\"Server-sent events: each new value as JSON in a `data:` line. Ask for them with `Accept: text/event-stream`.\"}}}}}},\"put\":{\"summary\":\"Set The brightness, in percent.\",\"description\":\"## The brightness, in percent.\\n\\nThe brightness, in percent.\",\"operationId\":\"set_property_lamp_level_put\",\"requestBody\":{\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/lamp_level_value\"}}},\"required\":true},\"responses\":{\"201\":{\"description\":\"Property set successfully\",\"content\":{\"application/json\":{\"schema\":{}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/lamp/level/reset\":{\"post\":{\"summary\":\"Reset The brightness, in percent..\",\"description\":\"## Reset The brightness, in percent.\\n\\nResets the property to its default value, which the Thing Description gives.\",\"operationId\":\"reset_lamp_level_reset_post\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{}}}}}}},\"/lamp/properties\":{\"get\":{\"summary\":\"Read All Properties\",\"description\":\"Every property of `lamp` (`readallproperties`), or their changes (`observeallproperties`).\",\"operationId\":\"read_all_properties_lamp_properties_get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"description\":\"Each property's value, by name.\"}},\"text/event-stream\":{\"schema\":{\"type\":\"string\",\"description\":\"Server-sent events: each observable property's new values, as events named after it. Ask for them with `Accept: text/event-stream`.\"}}}}}},\"put\":{\"summary\":\"Write Multiple Properties\",\"description\":\"Writes several properties of `lamp` (`writemultipleproperties`): nothing is written unless every value is valid.\",\"operationId\":\"write_multiple_properties_lamp_properties_put\",\"requestBody\":{\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\"}}},\"required\":true},\"responses\":{\"204\":{\"description\":\"Properties written\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/lamp/actions\":{\"get\":{\"summary\":\"Query All Actions\",\"description\":\"The invocations of each action of `lamp`, newest first (`queryallactions`).\",\"operationId\":\"query_all_actions_lamp_actions_get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"additionalProperties\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/InvocationSummary\"}}}}}}}}},\"/lamp/\":{\"get\":{\"summary\":\"Thing Description\",\"description\":\"The W3C Thing Description of `lamp`: its properties, actions and events, and how to use them.\",\"operationId\":\"things_lamp_lamp__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/ThingDescription\"}}}}}}}},\"components\":{\"schemas\":{\"InvocationStatus\":{\"type\":\"string\",\"enum\":[\"pending\",\"running\",\"completed\",\"cancelled\",\"error\"],\"description\":\"Where an invocation is in its life.\"},\"InvocationSummary\":{\"type\":\"object\",\"properties\":{\"status\":{\"$ref\":\"#/components/schemas/InvocationStatus\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"action\":{\"type\":\"string\"},\"href\":{\"type\":\"string\",\"format\":\"uri\"},\"timeStarted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeRequested\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeCompleted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"links\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LinkElement\"}}},\"required\":[\"status\",\"id\",\"action\",\"href\",\"timeStarted\",\"timeRequested\",\"timeCompleted\"],\"description\":\"An invocation, as lists show it.\"},\"Invocation\":{\"type\":\"object\",\"properties\":{\"status\":{\"$ref\":\"#/components/schemas/InvocationStatus\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"action\":{\"type\":\"string\"},\"href\":{\"type\":\"string\",\"format\":\"uri\"},\"timeStarted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeRequested\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeCompleted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"links\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LinkElement\"}},\"input\":{},\"output\":{\"oneOf\":[{},{\"type\":\"null\"}]},\"log\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LogRecordModel\"}},\"error\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/ProblemDetails\"},{\"type\":\"null\"}]}},\"required\":[\"status\",\"id\",\"action\",\"href\",\"timeStarted\",\"timeRequested\",\"timeCompleted\",\"input\",\"log\"]},\"LinkElement\":{\"type\":\"object\",\"properties\":{\"href\":{\"type\":\"string\"},\"type\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"rel\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"anchor\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"required\":[\"href\"],\"additionalProperties\":true,\"description\":\"A link: see https://www.w3.org/TR/wot-thing-description11/#link.\"},\"LogRecordModel\":{\"type\":\"object\",\"properties\":{\"message\":{\"type\":\"string\"},\"levelname\":{\"type\":\"string\"},\"levelno\":{\"type\":\"integer\"},\"lineno\":{\"type\":\"integer\"},\"filename\":{\"type\":\"string\"},\"created\":{\"type\":\"string\",\"format\":\"date-time\"},\"exception_type\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"traceback\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"required\":[\"message\",\"levelname\",\"levelno\",\"lineno\",\"filename\",\"created\"],\"description\":\"A message logged during an invocation.\"},\"ProblemDetails\":{\"type\":\"object\",\"properties\":{\"detail\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"type\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"status\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"null\"}]},\"title\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"instance\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"additionalProperties\":true,\"description\":\"What went wrong in an invocation (RFC 9457 problem details).\"},\"HTTPValidationError\":{\"type\":\"object\",\"properties\":{\"detail\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/ValidationError\"}}}},\"ValidationError\":{\"type\":\"object\",\"properties\":{\"loc\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"integer\"}]}},\"msg\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"},\"input\":{},\"ctx\":{\"type\":\"object\"}},\"required\":[\"loc\",\"msg\",\"type\"]},\"ThingDescription\":{\"type\":\"object\",\"description\":\"A W3C Web of Things Thing Description (TD 1.1).\",\"externalDocs\":{\"url\":\"https://www.w3.org/TR/wot-thing-description11/\"}},\"Problem\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\",\"format\":\"uri-reference\"},\"title\":{\"type\":\"string\"},\"status\":{\"type\":\"integer\"},\"detail\":{\"type\":\"string\"},\"instance\":{\"type\":\"string\"},\"invalid-params\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"in\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"reason\":{\"type\":\"string\"},\"code\":{\"type\":\"string\"}}}}},\"additionalProperties\":true,\"description\":\"Problem details (RFC 9457). The framework's types are documented at https://github.com/lucaswewa/wot/blob/main/docs/problems.md.\"},\"lamp_double_input\":{\"type\":\"object\",\"properties\":{\"n\":{\"type\":\"integer\"}},\"required\":[\"n\"],\"additionalProperties\":false},\"lamp_double_output\":{\"type\":\"integer\"},\"lamp_double_invocation\":{\"type\":\"object\",\"properties\":{\"status\":{\"$ref\":\"#/components/schemas/InvocationStatus\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"action\":{\"type\":\"string\"},\"href\":{\"type\":\"string\",\"format\":\"uri\"},\"timeStarted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeRequested\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeCompleted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"links\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LinkElement\"}},\"input\":{\"$ref\":\"#/components/schemas/lamp_double_input\"},\"output\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/lamp_double_output\"},{\"type\":\"null\"}]},\"log\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LogRecordModel\"}},\"error\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/ProblemDetails\"},{\"type\":\"null\"}]}},\"required\":[\"status\",\"id\",\"action\",\"href\",\"timeStarted\",\"timeRequested\",\"timeCompleted\",\"input\",\"log\"]},\"lamp_fade_input\":{\"type\":\"object\",\"properties\":{\"level\":{\"type\":\"integer\"}},\"required\":[\"level\"],\"additionalProperties\":false},\"lamp_fade_output\":{\"type\":\"integer\"},\"lamp_fade_invocation\":{\"type\":\"object\",\"properties\":{\"status\":{\"$ref\":\"#/components/schemas/InvocationStatus\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"action\":{\"type\":\"string\"},\"href\":{\"type\":\"string\",\"format\":\"uri\"},\"timeStarted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeRequested\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeCompleted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"links\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LinkElement\"}},\"input\":{\"$ref\":\"#/components/schemas/lamp_fade_input\"},\"output\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/lamp_fade_output\"},{\"type\":\"null\"}]},\"log\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LogRecordModel\"}},\"error\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/ProblemDetails\"},{\"type\":\"null\"}]}},\"required\":[\"status\",\"id\",\"action\",\"href\",\"timeStarted\",\"timeRequested\",\"timeCompleted\",\"input\",\"log\"]},\"lamp_level_value\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":100}}}}"
+      }
+    },
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/lamp/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "Lamp",
+          "properties": {
+            "level": {
+              "description": "The brightness, in percent.",
+              "title": "The brightness, in percent.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": 50,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "forms": [
+                {
+                  "href": "/lamp/level",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/lamp/level",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/lamp/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "double": {
+              "description": "Double a number.",
+              "title": "Double a number.",
+              "forms": [
+                {
+                  "href": "/lamp/double",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "double_input",
+                "type": "object",
+                "properties": {
+                  "n": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "n"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "double_output",
+                "type": "integer"
+              },
+              "synchronous": false
+            },
+            "fade": {
+              "description": "Fade to a level, slowly.",
+              "title": "Fade to a level, slowly.",
+              "forms": [
+                {
+                  "href": "/lamp/fade",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "fade_input",
+                "type": "object",
+                "properties": {
+                  "level": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "level"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "fade_output",
+                "type": "integer"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A dimmable lamp.",
+          "forms": [
+            {
+              "href": "/lamp/properties",
+              "op": [
+                "readallproperties",
+                "writemultipleproperties"
+              ]
+            },
+            {
+              "href": "/lamp/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/lamp/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"Lamp\",\"properties\":{\"level\":{\"description\":\"The brightness, in percent.\",\"title\":\"The brightness, in percent.\",\"writeOnly\":false,\"readOnly\":false,\"default\":50,\"type\":\"integer\",\"minimum\":0,\"maximum\":100,\"forms\":[{\"href\":\"/lamp/level\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/lamp/level\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/lamp/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"double\":{\"description\":\"Double a number.\",\"title\":\"Double a number.\",\"forms\":[{\"href\":\"/lamp/double\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"double_input\",\"type\":\"object\",\"properties\":{\"n\":{\"type\":\"integer\"}},\"required\":[\"n\"],\"additionalProperties\":false},\"output\":{\"title\":\"double_output\",\"type\":\"integer\"},\"synchronous\":false},\"fade\":{\"description\":\"Fade to a level, slowly.\",\"title\":\"Fade to a level, slowly.\",\"forms\":[{\"href\":\"/lamp/fade\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"fade_input\",\"type\":\"object\",\"properties\":{\"level\":{\"type\":\"integer\"}},\"required\":[\"level\"],\"additionalProperties\":false},\"output\":{\"title\":\"fade_output\",\"type\":\"integer\"},\"synchronous\":false}},\"description\":\"A dimmable lamp.\",\"forms\":[{\"href\":\"/lamp/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/lamp/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/lamp/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "observe",
+        "events": "/lamp/level",
+        "stream": "s"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "text/event-stream",
+          "vary": "Origin",
+          "cache-control": "no-cache"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "write",
+        "method": "PUT",
+        "path": "/lamp/level",
+        "json": 30
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "observed",
+        "stream": "s",
+        "receive": 1
+      },
+      "events": [
+        {
+          "event": null,
+          "id": null,
+          "data": 30,
+          "text": "30"
+        }
+      ]
+    },
+    {
+      "step": {
+        "name": "double",
+        "method": "POST",
+        "path": "/lamp/double",
+        "json": {
+          "n": 21
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:1>",
+          "action": "/lamp/double",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "n": 21
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:1>",
+          "action": "/lamp/double",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "n": 21
+          },
+          "output": 42,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:1>\",\"action\":\"/lamp/double\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"n\":21},\"output\":42,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "fade",
+        "method": "POST",
+        "path": "/lamp/fade",
+        "json": {
+          "level": 70
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:2>",
+          "action": "/lamp/fade",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "level": 70
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:2>",
+          "action": "/lamp/fade",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "level": 70
+          },
+          "output": 70,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/lamp/fade\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"level\":70},\"output\":70,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "level",
+        "method": "GET",
+        "path": "/lamp/level"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 70,
+        "text": "70"
+      }
+    }
+  ]
+}

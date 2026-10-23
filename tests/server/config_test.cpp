@@ -291,14 +291,26 @@ TEST(FromConfig, AnUnknownClassIsAConfigurationError) {
     }
 }
 
-TEST(FromConfig, SecurityIsRefusedUntilTheBindingSupportsIt) {
+TEST(FromConfig, SecurityReadsItsSecretFromTheEnvironment) {
 #ifdef _WIN32
     _putenv_s("TETA_WOT_TEST_TOKEN", "secret");
+    _putenv_s("TETA_WOT_TEST_UNSET", "");
 #else
     setenv("TETA_WOT_TEST_TOKEN", "secret", 1);
+    unsetenv("TETA_WOT_TEST_UNSET");
 #endif
     const auto config = tw::ServerConfig::from_value(
         Value{{"things", Value::object()},
               {"security", {{"scheme", "bearer"}, {"token_env", "TETA_WOT_TEST_TOKEN"}}}});
-    EXPECT_THROW((void)tw::ThingServer::from_config(config, tw::ThingRegistry{}), tw::ConfigError);
+    const auto server = tw::ThingServer::from_config(config, tw::ThingRegistry{}).build();
+    EXPECT_EQ(server.binding()->options().security, tw::http::Security::bearer("secret"));
+    const auto unset = tw::ServerConfig::from_value(Value{
+        {"things", Value::object()},
+        {"security", {{"scheme", "basic"}, {"username", "lab"}, {"password_env", "TETA_WOT_TEST_UNSET"}}}});
+    try {
+        (void)tw::ThingServer::from_config(unset, tw::ThingRegistry{});
+        ADD_FAILURE() << "an unset variable is an error";
+    } catch (const tw::ConfigError& error) {
+        EXPECT_EQ(error.errors().front().first, "security.password_env");
+    }
 }

@@ -79,6 +79,34 @@ std::string default_server_id();
 /// ASCII counts as a letter).
 bool valid_api_prefix(std::string_view prefix);
 
+/// Credentials that every interaction with a Thing requires, described in
+/// the TDs' `securityDefinitions`. Thing Descriptions, the directory, the
+/// OpenAPI document and the docs stay public, so that clients can learn what
+/// to send.
+struct Security {
+    enum class Scheme {
+        /// HTTP Basic authentication (RFC 7617), as the WoT Profile allows.
+        basic,
+        /// A bearer token (RFC 6750), compared as an opaque string.
+        bearer,
+    };
+
+    /// HTTP Basic authentication with one user name and password.
+    static Security basic(std::string username, std::string password) {
+        return {Scheme::basic, std::move(username), std::move(password)};
+    }
+    /// A bearer token.
+    static Security bearer(std::string token) { return {Scheme::bearer, {}, std::move(token)}; }
+
+    Scheme scheme = Scheme::basic;
+    /// The user name (Basic).
+    std::string username;
+    /// The password (Basic) or the token (bearer).
+    std::string secret;
+
+    bool operator==(const Security&) const = default;
+};
+
 /// Options of the HTTP binding.
 struct HttpOptions {
     /// A prefix for every route, such as `/api/v1`, or empty.
@@ -89,6 +117,8 @@ struct HttpOptions {
     std::string api_title = "teta-wot";
     std::string api_version = "0.1.0";
     WireProfile profile = WireProfile::tetathing;
+    /// The credentials every interaction requires, if any.
+    std::optional<Security> security;
 };
 
 /// The binding can't be set up.
@@ -135,8 +165,10 @@ class HttpBinding {
     void handle(Request request, Respond respond) const;
 
     /// Whether `request` opens a Thing's WebSocket: a `GET {prefix}/{thing}/ws`
-    /// with `Upgrade: websocket`, for one of the runtime's Things. Other
-    /// requests to that path are `handle`'s (a 404, as teta-wot answers).
+    /// with `Upgrade: websocket`, for one of the runtime's Things, with the
+    /// credentials the server requires. Other requests to that path are
+    /// `handle`'s (a 401 without the credentials, else a 404, as teta-wot
+    /// answers).
     bool is_websocket(const Request& request) const;
     /// Serves a WebSocket that the transport has accepted for `request`:
     /// sends through `peer`, and returns the session to give what the client

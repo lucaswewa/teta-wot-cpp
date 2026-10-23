@@ -181,6 +181,10 @@ std::string uuid_v5(const std::array<unsigned char, 16>& ns, std::string_view na
     return uuid_text(uuid_v5_bytes(ns, name));
 }
 
+std::string url_uuid_v5(std::string_view name) {
+    return uuid_v5(kUrlNamespace, name);
+}
+
 std::string thing_id(std::string_view server_id, std::string_view thing) {
     const auto ns = uuid_v5_bytes(kUrlNamespace, "https://github.com/lucaswewa/wot#td-id");
     std::string name(server_id);

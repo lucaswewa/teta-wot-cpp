@@ -10,7 +10,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "TETA_WOT_WARNINGS_AS_ERRORS": "ON",
-        "TETA_WOT_BUILD_SPIKES": "ON"
+        "TETA_WOT_BUILD_SPIKES": "ON",
+        "TETA_WOT_MDNS": "ON"
       }
     },
     {

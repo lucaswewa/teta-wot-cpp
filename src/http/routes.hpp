@@ -24,6 +24,10 @@ enum class Kind {
     redoc,
     /// A compiled-in docs asset: `index` in `docs_assets()`.
     docs_asset,
+    /// Discovery: `/.well-known/wot` and the directory.
+    well_known,
+    directory_things,
+    directory_thing,
     thing_description,
     read_property,
     write_property,
@@ -57,9 +61,12 @@ struct Endpoint {
     std::string affordance;
     std::size_t index = 0;
 
-    /// Whether the route describes rather than interacts (and so will need no
-    /// credentials, from Phase 9): TDs and the docs.
+    /// Whether the route describes rather than interacts, and so needs no
+    /// credentials: TDs, discovery, and the docs.
     bool is_public() const;
+    /// Whether the route is discovery's, whose errors are always problem
+    /// details.
+    bool is_discovery() const;
 };
 
 struct Route {

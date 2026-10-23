@@ -10,3 +10,4 @@
 - [Observing Things](observing.md)
 - [Blobs and streams](blobs.md)
 - [The API document and docs](openapi.md)
+- [Discovery and security](discovery.md)

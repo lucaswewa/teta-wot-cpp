@@ -16,6 +16,7 @@ add_executable(teta-wot-tests
     core/thing_spec_test.cpp
     http/binding_test.cpp
     http/cors_test.cpp
+    http/discovery_test.cpp
     http/fallback_test.cpp
     http/fixtures_test.cpp
     http/http_test.cpp
@@ -55,7 +56,8 @@ add_subdirectory(compile_fail)
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
     set(http_scenarios counter validation default locked prefixed wot settings settings-load ws sse sse-wot events
-        blobs blobs-wot streams openapi openapi-wot openapi-prefixed)
+        blobs blobs-wot streams openapi openapi-wot openapi-prefixed discovery discovery-wot security-basic
+        security-bearer)
     if(NOT TETA_WOT_DOCS_OFFLINE)
         # The reference serves the docs pages without their assets; with the
         # option, the pages load them from the server (the docs-offline
@@ -95,6 +97,14 @@ if(Python3_Interpreter_FOUND)
             $<$<BOOL:${TETA_WOT_BUILD_EXAMPLES}>:--examples=${PROJECT_BINARY_DIR}/examples/{name}/example-{name}${CMAKE_EXECUTABLE_SUFFIX}>)
     set_tests_properties(conformance.openapi PROPERTIES LABELS conformance TIMEOUT 600 RESOURCE_LOCK port-5000
         SKIP_RETURN_CODE 77)
+    # The twin server's DNS-SD advertisement, found by Python's zeroconf
+    # (skipped without it).
+    if(TETA_WOT_MDNS)
+        add_test(NAME conformance.mdns
+            COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/conformance/browse_mdns.py
+                --server $<TARGET_FILE:twin-server>)
+        set_tests_properties(conformance.mdns PROPERTIES LABELS conformance TIMEOUT 120 SKIP_RETURN_CODE 77)
+    endif()
 else()
     message(STATUS "Python 3 not found: the conformance.http test is skipped")
 endif()

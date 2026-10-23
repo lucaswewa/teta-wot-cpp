@@ -17,10 +17,17 @@ bool Endpoint::is_public() const {
         case Kind::oauth2_redirect:
         case Kind::redoc:
         case Kind::docs_asset:
+        case Kind::well_known:
+        case Kind::directory_things:
+        case Kind::directory_thing:
             return true;
         default:
             return false;
     }
+}
+
+bool Endpoint::is_discovery() const {
+    return kind == Kind::well_known || kind == Kind::directory_things || kind == Kind::directory_thing;
 }
 
 bool Route::matches(std::string_view path, std::optional<std::string>* param) const {
@@ -105,6 +112,11 @@ Routes Routes::build(const Runtime& runtime, const std::string& prefix) {
     routes.add(prefix + "/blob/{id}", "GET", {Kind::download_blob, {}, {}});
     routes.add(prefix + "/thing_descriptions/", "GET", {Kind::thing_descriptions, {}, {}});
     routes.add(prefix + "/things/", "GET", {Kind::thing_paths, {}, {}});
+    // Discovery: the well-known URL is at the root, as RFC 8615 wants; the
+    // directory is under the prefix.
+    routes.add_get_and_head("/.well-known/wot", {Kind::well_known, {}, {}});
+    routes.add_get_and_head(prefix + "/directory/things", {Kind::directory_things, {}, {}});
+    routes.add_get_and_head(prefix + "/directory/things/{id}", {Kind::directory_thing, {}, {}});
 
     for (const auto& thing : runtime.things()) {
         const std::string& name = thing->name();

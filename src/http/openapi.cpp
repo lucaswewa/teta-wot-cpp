@@ -804,10 +804,28 @@ json::Value openapi(const Runtime& runtime, const HttpOptions& options) {
     for (auto& [name, schema] : document.schemas.items()) {
         schemas[name] = std::move(schema);
     }
+    Value components = obj({{"schemas", std::move(schemas)}});
+    if (options.security) {
+        const char* name = options.security->scheme == Security::Scheme::basic ? "basic" : "bearer";
+        components["securitySchemes"] = obj({{name, obj({{"type", "http"}, {"scheme", name}})}});
+        // The operations that need no credentials: descriptions.
+        constexpr std::string_view public_operations[] = {"thing_descriptions", "thing_paths", "things_",
+                                                          "well_known_wot", "directory_"};
+        for (auto& [path, item] : document.paths.items()) {
+            for (auto& [method, operation] : item.items()) {
+                const auto id = operation["operationId"].get<std::string>();
+                if (std::ranges::none_of(public_operations,
+                                         [&](std::string_view p) { return id.starts_with(p); })) {
+                    operation["security"] = Value::array({obj({{name, Value::array()}})});
+                    operation["responses"]["401"] = obj({{"description", "Not authenticated"}});
+                }
+            }
+        }
+    }
     return obj({{"openapi", "3.1.0"},
                 {"info", obj({{"title", options.api_title}, {"version", options.api_version}})},
                 {"paths", std::move(document.paths)},
-                {"components", obj({{"schemas", std::move(schemas)}})}});
+                {"components", std::move(components)}});
 }
 
 }  // namespace teta::wot::http

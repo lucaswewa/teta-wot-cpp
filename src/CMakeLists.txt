@@ -76,6 +76,7 @@ target_link_libraries(teta_wot_core
 # teta::wot-http: the transport-neutral HTTP binding (Phase 4, ADR-0004).
 add_library(teta_wot_http
     http/binding.cpp
+    http/discovery.cpp
     http/docs.cpp
     http/fallback.cpp
     http/openapi.cpp
@@ -83,6 +84,7 @@ add_library(teta_wot_http
     http/path_uuid.cpp
     http/render.cpp
     http/routes.cpp
+    http/security.cpp
     http/sse.cpp
     http/websocket.cpp)
 add_library(teta::wot-http ALIAS teta_wot_http)
@@ -121,3 +123,10 @@ set_target_properties(teta_wot_server PROPERTIES EXPORT_NAME wot-server)
 target_link_libraries(teta_wot_server
     PUBLIC teta_wot_http
     PRIVATE teta_wot_drogon $<$<PLATFORM_ID:Windows>:shell32 ws2_32> $<BUILD_INTERFACE:teta_wot_warnings>)
+# DNS-SD (teta-wot's `mdns` feature), on mjansson/mdns, vendored.
+if(TETA_WOT_MDNS)
+    target_sources(teta_wot_server PRIVATE server/mdns.cpp)
+    target_include_directories(teta_wot_server PRIVATE ${PROJECT_SOURCE_DIR}/third_party/mdns)
+    target_compile_definitions(teta_wot_server PRIVATE TETA_WOT_MDNS)
+    target_link_libraries(teta_wot_server PRIVATE $<$<PLATFORM_ID:Windows>:iphlpapi>)
+endif()

@@ -8,9 +8,14 @@
 
 namespace teta::wot::http::detail {
 
+Response problem_response(int status, const json::Value& body) {
+    Response response = json_response(status, body);
+    response.headers.set("content-type", "application/problem+json");
+    return response;
+}
+
 namespace {
 
-constexpr std::string_view problem_json = "application/problem+json";
 constexpr std::string_view all_methods = "DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, QUERY";
 constexpr std::string_view preflight_vary =
     "Origin, Access-Control-Request-Method, Access-Control-Request-Headers, "
@@ -50,13 +55,6 @@ json::Value optional_time(const std::optional<std::chrono::system_clock::time_po
         return naive_local(*time);
     }
     return nullptr;
-}
-
-// A problem response: `application/problem+json`.
-Response problem_response(int status, const json::Value& body) {
-    Response response = json_response(status, body);
-    response.headers.set("content-type", std::string(problem_json));
-    return response;
 }
 
 // 400, with one `invalid-params` entry per issue.

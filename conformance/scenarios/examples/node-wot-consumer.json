@@ -1,0 +1,57 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 8000,
+  "steps": [
+    {
+      "name": "openapi",
+      "method": "GET",
+      "path": "/openapi.json"
+    },
+    {
+      "name": "td",
+      "method": "GET",
+      "path": "/lamp/"
+    },
+    {
+      "name": "observe",
+      "events": "/lamp/level",
+      "stream": "s"
+    },
+    {
+      "name": "write",
+      "method": "PUT",
+      "path": "/lamp/level",
+      "json": 30
+    },
+    {
+      "name": "observed",
+      "stream": "s",
+      "receive": 1
+    },
+    {
+      "name": "double",
+      "method": "POST",
+      "path": "/lamp/double",
+      "json": {
+        "n": 21
+      },
+      "wait": true
+    },
+    {
+      "name": "fade",
+      "method": "POST",
+      "path": "/lamp/fade",
+      "json": {
+        "level": 70
+      },
+      "wait": true
+    },
+    {
+      "name": "level",
+      "method": "GET",
+      "path": "/lamp/level"
+    }
+  ]
+}

@@ -46,6 +46,15 @@ namespace teta::wot {
 /// The default time to wait for requests and invocations on shutdown.
 inline constexpr std::chrono::seconds default_shutdown_grace{5};
 
+/// The DNS-SD service type of WoT Things and directories.
+inline constexpr std::string_view wot_service_type = "_wot._tcp.local.";
+/// The DNS-SD service type of a Thing Description Directory: `_wot._tcp`
+/// with the `_directory` subtype.
+inline constexpr std::string_view directory_service_type = "_directory._sub._wot._tcp.local.";
+/// Whether servers can advertise themselves (the CMake option
+/// TETA_WOT_MDNS).
+bool mdns_supported();
+
 /// Serving failed (the server couldn't listen, or Drogon failed).
 class ServeError : public std::runtime_error {
   public:
@@ -157,13 +166,21 @@ class ThingServerBuilder {
         http_.profile = profile;
         return *this;
     }
+    /// Requires credentials for every interaction (TDs, discovery, the OpenAPI
+    /// document and the docs stay public), and describes them in the TDs.
+    ThingServerBuilder& security(http::Security security) {
+        http_.security = std::move(security);
+        return *this;
+    }
     /// How long shutdown waits for requests and invocations (5 s by default).
     ThingServerBuilder& shutdown_grace(std::chrono::nanoseconds grace) {
         grace_ = grace;
         return *this;
     }
-    /// Asks for the server to be advertised with DNS-SD over mDNS. teta-wot-cpp
-    /// doesn't advertise yet: a warning is logged when the server starts.
+    /// Advertises the server with DNS-SD over mDNS, as a Thing Description
+    /// Directory (`directory_service_type`) named after the server ID, once it
+    /// listens. Needs the CMake option TETA_WOT_MDNS; without it, a warning is
+    /// logged when the server starts.
     ThingServerBuilder& mdns(bool enabled) {
         mdns_ = enabled;
         return *this;

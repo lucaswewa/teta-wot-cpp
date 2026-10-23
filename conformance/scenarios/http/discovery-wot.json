@@ -1,0 +1,219 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing",
+      "event_probe": "twins.event_probe:EventProbe"
+    },
+    "wire_profile": "wot",
+    "api_prefix": "/api",
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "name": "well_known",
+      "method": "GET",
+      "path": "/.well-known/wot"
+    },
+    {
+      "name": "well_known_head",
+      "method": "HEAD",
+      "path": "/.well-known/wot"
+    },
+    {
+      "name": "well_known_post",
+      "method": "POST",
+      "path": "/.well-known/wot"
+    },
+    {
+      "name": "well_known_slash",
+      "method": "GET",
+      "path": "/.well-known/wot/"
+    },
+    {
+      "name": "things",
+      "method": "GET",
+      "path": "/api/directory/things"
+    },
+    {
+      "name": "things_head",
+      "method": "HEAD",
+      "path": "/api/directory/things"
+    },
+    {
+      "name": "things_put",
+      "method": "PUT",
+      "path": "/api/directory/things",
+      "json": []
+    },
+    {
+      "name": "things_slash",
+      "method": "GET",
+      "path": "/api/directory/things/"
+    },
+    {
+      "name": "collection",
+      "method": "GET",
+      "path": "/api/directory/things?format=collection"
+    },
+    {
+      "name": "array",
+      "method": "GET",
+      "path": "/api/directory/things?format=array"
+    },
+    {
+      "name": "first_page",
+      "method": "GET",
+      "path": "/api/directory/things?limit=2"
+    },
+    {
+      "name": "second_page",
+      "method": "GET",
+      "path": "/api/directory/things?offset=2&limit=2"
+    },
+    {
+      "name": "past_the_end",
+      "method": "GET",
+      "path": "/api/directory/things?offset=9&limit=2"
+    },
+    {
+      "name": "offset_only",
+      "method": "GET",
+      "path": "/api/directory/things?offset=1"
+    },
+    {
+      "name": "collection_page",
+      "method": "GET",
+      "path": "/api/directory/things?limit=1&format=collection"
+    },
+    {
+      "name": "collection_last",
+      "method": "GET",
+      "path": "/api/directory/things?offset=3&limit=1&format=collection"
+    },
+    {
+      "name": "repeated_argument",
+      "method": "GET",
+      "path": "/api/directory/things?offset=1&offset=3"
+    },
+    {
+      "name": "unknown_argument",
+      "method": "GET",
+      "path": "/api/directory/things?sort=id"
+    },
+    {
+      "name": "encoded_plus",
+      "method": "GET",
+      "path": "/api/directory/things?offset=%2B1"
+    },
+    {
+      "name": "form_plus",
+      "method": "GET",
+      "path": "/api/directory/things?limit=+1"
+    },
+    {
+      "name": "empty_pairs",
+      "method": "GET",
+      "path": "/api/directory/things?&&limit=1&"
+    },
+    {
+      "name": "limit_zero",
+      "method": "GET",
+      "path": "/api/directory/things?limit=0"
+    },
+    {
+      "name": "limit_word",
+      "method": "GET",
+      "path": "/api/directory/things?limit=x"
+    },
+    {
+      "name": "limit_empty",
+      "method": "GET",
+      "path": "/api/directory/things?limit="
+    },
+    {
+      "name": "offset_negative",
+      "method": "GET",
+      "path": "/api/directory/things?offset=-1"
+    },
+    {
+      "name": "offset_huge",
+      "method": "GET",
+      "path": "/api/directory/things?offset=99999999999999999999999"
+    },
+    {
+      "name": "format_xml",
+      "method": "GET",
+      "path": "/api/directory/things?format=xml"
+    },
+    {
+      "name": "thing",
+      "method": "GET",
+      "path": "/api/directory/things/urn:uuid:f46f31e7-a858-5fd5-91b0-829d229ed6cd"
+    },
+    {
+      "name": "thing_encoded",
+      "method": "GET",
+      "path": "/api/directory/things/urn%3Auuid%3Af46f31e7-a858-5fd5-91b0-829d229ed6cd"
+    },
+    {
+      "name": "thing_lower_hex",
+      "method": "GET",
+      "path": "/api/directory/things/urn%3auuid%3af46f31e7-a858-5fd5-91b0-829d229ed6cd"
+    },
+    {
+      "name": "thing_head",
+      "method": "HEAD",
+      "path": "/api/directory/things/urn:uuid:f46f31e7-a858-5fd5-91b0-829d229ed6cd"
+    },
+    {
+      "name": "thing_delete",
+      "method": "DELETE",
+      "path": "/api/directory/things/urn:uuid:f46f31e7-a858-5fd5-91b0-829d229ed6cd"
+    },
+    {
+      "name": "thing_unknown",
+      "method": "GET",
+      "path": "/api/directory/things/urn:example:nope"
+    },
+    {
+      "name": "thing_bad_escape",
+      "method": "GET",
+      "path": "/api/directory/things/urn%3Gx%"
+    },
+    {
+      "name": "thing_signed_escape",
+      "method": "GET",
+      "path": "/api/directory/things/%+3Ax"
+    },
+    {
+      "name": "thing_invalid_utf8",
+      "method": "GET",
+      "path": "/api/directory/things/%FF%C3"
+    },
+    {
+      "name": "thing_unicode",
+      "method": "GET",
+      "path": "/api/directory/things/%C3%A9t%C3%A9"
+    },
+    {
+      "name": "directory",
+      "method": "GET",
+      "path": "/api/directory"
+    },
+    {
+      "name": "directory_slash",
+      "method": "GET",
+      "path": "/api/directory/"
+    },
+    {
+      "name": "other_post",
+      "method": "POST",
+      "path": "/api/counter/counter"
+    },
+    {
+      "name": "other_missing",
+      "method": "GET",
+      "path": "/api/nope"
+    }
+  ]
+}
