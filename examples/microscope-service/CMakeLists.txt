@@ -1,0 +1,5 @@
+teta_wot_add_example(microscope-service SOURCES main.cpp)
+target_link_libraries(example-microscope-service PRIVATE simulated-microscope-lib)
+if(WIN32)
+    target_link_libraries(example-microscope-service PRIVATE ws2_32)
+endif()

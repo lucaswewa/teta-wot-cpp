@@ -12,3 +12,4 @@
 - [Arrays](arrays.md)
 - [The API document and docs](openapi.md)
 - [Discovery and security](discovery.md)
+- [Running as a service](services.md)

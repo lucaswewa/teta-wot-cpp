@@ -459,14 +459,9 @@ int serve_from_args(const std::vector<std::string>& args, const ThingRegistry& r
     return serve_until(args, registry, customise, shutdown_signal());
 }
 
-int serve_from_cli(int argc, char** argv, const ThingRegistry& registry, const Customise& customise) {
+std::vector<std::string> arguments(int argc, char** argv) {
     std::vector<std::string> args;
 #ifdef _WIN32
-    // Lines end with `\n`, as teta-wot's do, not the C runtime's `\r\n`.
-    std::fflush(stdout);
-    std::fflush(stderr);
-    (void)_setmode(_fileno(stdout), _O_BINARY);
-    (void)_setmode(_fileno(stderr), _O_BINARY);
     // The wide command line, as UTF-8: `argv` is in the ANSI code page.
     (void)argc;
     (void)argv;
@@ -483,7 +478,18 @@ int serve_from_cli(int argc, char** argv, const ThingRegistry& registry, const C
 #else
     args.assign(argv, argv + argc);
 #endif
-    return serve_from_args(args, registry, customise);
+    return args;
+}
+
+int serve_from_cli(int argc, char** argv, const ThingRegistry& registry, const Customise& customise) {
+#ifdef _WIN32
+    // Lines end with `\n`, as teta-wot's do, not the C runtime's `\r\n`.
+    std::fflush(stdout);
+    std::fflush(stderr);
+    (void)_setmode(_fileno(stdout), _O_BINARY);
+    (void)_setmode(_fileno(stderr), _O_BINARY);
+#endif
+    return serve_from_args(arguments(argc, argv), registry, customise);
 }
 
 }  // namespace teta::wot::cli

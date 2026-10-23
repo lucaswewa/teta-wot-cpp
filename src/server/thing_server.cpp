@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <atomic>
 #include <condition_variable>
+#include <filesystem>
 #include <format>
 #include <mutex>
 #include <system_error>
@@ -13,6 +14,9 @@
 #include "mdns.hpp"
 #endif
 #include "teta/wot/log.hpp"
+#include "teta/wot/settings.hpp"
+#include "teta/wot/systemd.hpp"
+#include "teta/wot/uuid.hpp"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -213,10 +217,20 @@ bool run_drogon(const detail::ListenAddress& address, std::stop_token stop,
         drogon::app().getLoop()->queueInLoop([] { drogon::app().quit(); });
     });
 
+    // Drogon makes 256 directories for uploads when it starts, under
+    // `./uploads` by default: in the working directory, which for a Windows
+    // service is System32. The binding reads bodies itself, so they go to a
+    // temporary folder, removed afterwards.
+    std::error_code error;
+    auto uploads = std::filesystem::temp_directory_path(error);
+    uploads /= "teta-wot-drogon-" + Uuid::v4().to_string();
+    app.setUploadPath(detail::path_text(uploads));
+
     app.run();
 
     stopper.request_stop();
     stopper.join();
+    std::filesystem::remove_all(uploads, error);
     return stopped;
 }
 
@@ -418,12 +432,15 @@ void ThingServer::serve(const std::string& host, std::uint16_t port, std::stop_t
             log::info("serving {} Things on http://{}", runtime_->things().size(),
                       address_text(address.ip, bound));
             advertise(bound);
+            // A `Type=notify` systemd unit has started.
+            systemd::notify_ready();
             if (listening) {
                 listening(bound);
             }
         },
         [&] {
             log::info("shutting down");
+            systemd::notify("STOPPING=1");
 #ifdef TETA_WOT_MDNS
             if (advertisement) {
                 advertisement->stop();
@@ -471,7 +488,16 @@ void serve_fallback(const http::FallbackPage& page, const std::string& host, std
             }),
         drogon::app());
     drogon_adapter::answer_all(handler, drogon::app());
-    const bool stopped = run_drogon(address, stop, listening, {});
+    const bool stopped = run_drogon(
+        address, stop,
+        [&](std::uint16_t bound) {
+            // Under systemd, the fallback page is the service, started.
+            systemd::notify_ready();
+            if (listening) {
+                listening(bound);
+            }
+        },
+        [] { systemd::notify("STOPPING=1"); });
     mark_finished();
     if (!stopped) {
         throw ServeError("Drogon stopped");
