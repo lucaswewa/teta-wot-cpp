@@ -1,0 +1,38 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 8000,
+  "steps": [
+    {
+      "name": "openapi",
+      "method": "GET",
+      "path": "/openapi.json"
+    },
+    {
+      "name": "well_known",
+      "method": "GET",
+      "path": "/.well-known/wot"
+    },
+    {
+      "name": "directory",
+      "method": "GET",
+      "path": "/directory/things"
+    },
+    {
+      "name": "lamp",
+      "method": "GET",
+      "path": "/lamp/"
+    },
+    {
+      "name": "thermometer",
+      "method": "GET",
+      "path": "/thermometer/"
+    },
+    {
+      "name": "page",
+      "method": "GET",
+      "path": "/directory/things?limit=1&format=collection"
+    }
+  ]
+}

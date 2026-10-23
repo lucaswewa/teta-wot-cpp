@@ -9,6 +9,9 @@
 #include <thread>
 
 #include "teta/wot/drogon.hpp"
+#ifdef TETA_WOT_MDNS
+#include "mdns.hpp"
+#endif
 #include "teta/wot/log.hpp"
 
 #ifdef _WIN32
@@ -308,12 +311,10 @@ ThingServerBuilder ThingServer::from_config(const ServerConfig& config, const Th
         builder.wire_profile(*config.wire_profile);
     }
     if (config.security) {
-        // The secret must be there, as teta-wot checks; but until the binding
-        // supports security, serving without it would serve unprotected.
-        (void)config.security->secret();
-        throw ConfigError({{"security",
-                            "teta-wot-cpp doesn't support security yet: interactions can't require "
-                            "credentials"}});
+        const auto& security = *config.security;
+        builder.security(security.scheme == SecurityConfig::Scheme::basic
+                             ? http::Security::basic(security.username, security.secret())
+                             : http::Security::bearer(security.secret()));
     }
     builder.mdns(config.mdns);
     std::vector<std::pair<std::string, std::string>> errors;
@@ -351,6 +352,14 @@ void ThingServer::serve(const std::string& host, std::uint16_t port) {
     serve(host, port, shutdown_signal());
 }
 
+bool mdns_supported() {
+#ifdef TETA_WOT_MDNS
+    return true;
+#else
+    return false;
+#endif
+}
+
 void ThingServer::serve(const std::string& host, std::uint16_t port, std::stop_token stop,
                         std::function<void(std::uint16_t port)> listening) {
     detail::ListenAddress address;
@@ -371,10 +380,28 @@ void ThingServer::serve(const std::string& host, std::uint16_t port, std::stop_t
         runtime_->stop();
         throw;
     }
-    if (advertise_) {
-        log::warn("`{}` can't be advertised with mDNS: this build of teta-wot-cpp doesn't support it",
+#ifdef TETA_WOT_MDNS
+    std::unique_ptr<detail::MdnsAdvertisement> advertisement;
+#endif
+    // Advertises the server with DNS-SD, if asked to, once it listens.
+    // Failing to advertise is logged; the server serves anyway.
+    const auto advertise = [&](std::uint16_t bound) {
+        if (!advertise_) {
+            return;
+        }
+#ifdef TETA_WOT_MDNS
+        try {
+            advertisement = detail::MdnsAdvertisement::start(*advertise_, bound);
+            log::info("advertising `{}` as {} on port {}", *advertise_, directory_service_type, bound);
+        } catch (const std::exception& error) {
+            log::warn("the server can't be advertised with mDNS: {}", error.what());
+        }
+#else
+        (void)bound;
+        log::warn("`{}` can't be advertised with mDNS: the server was built without TETA_WOT_MDNS",
                   *advertise_);
-    }
+#endif
+    };
 
     const auto handler = drogon_adapter::mount(binding_, drogon::app());
     // The application is the server's alone: the binding answers every
@@ -390,12 +417,18 @@ void ThingServer::serve(const std::string& host, std::uint16_t port, std::stop_t
         [&](std::uint16_t bound) {
             log::info("serving {} Things on http://{}", runtime_->things().size(),
                       address_text(address.ip, bound));
+            advertise(bound);
             if (listening) {
                 listening(bound);
             }
         },
         [&] {
             log::info("shutting down");
+#ifdef TETA_WOT_MDNS
+            if (advertisement) {
+                advertisement->stop();
+            }
+#endif
             // Ends observation streams, which would otherwise keep their
             // connections open for the whole grace period.
             runtime_->broker()->close();

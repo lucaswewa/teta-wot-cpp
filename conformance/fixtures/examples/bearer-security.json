@@ -1,0 +1,1901 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 8000,
+  "steps": [
+    {
+      "step": {
+        "name": "openapi",
+        "method": "GET",
+        "path": "/openapi.json"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "openapi": "3.1.0",
+          "info": {
+            "title": "teta-wot",
+            "version": "0.1.0"
+          },
+          "paths": {
+            "/action_invocations": {
+              "get": {
+                "summary": "List All Invocations",
+                "description": "Every invocation the server is keeping, of every action.",
+                "operationId": "list_all_invocations_action_invocations_get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/InvocationSummary"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              }
+            },
+            "/action_invocations/{id}": {
+              "get": {
+                "summary": "Action Invocation",
+                "description": "One invocation: its status, input, output, log and error.",
+                "operationId": "action_invocation_action_invocations__id__get",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Invocation"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "description": "Invocation ID not found"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              },
+              "delete": {
+                "summary": "Delete Invocation",
+                "description": "Cancel an invocation (`cancelaction`). The action stops at its next cancellation check.",
+                "operationId": "delete_invocation_action_invocations__id__delete",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Cancel request sent",
+                    "content": {
+                      "application/json": {
+                        "schema": {}
+                      }
+                    }
+                  },
+                  "503": {
+                    "description": "Invocation may not be cancelled"
+                  },
+                  "404": {
+                    "description": "Invocation ID not found"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              }
+            },
+            "/action_invocations/{id}/output": {
+              "get": {
+                "summary": "Action Invocation Output",
+                "description": "The output of a completed invocation. When the output is a Blob, this is its data.",
+                "operationId": "action_invocation_output_action_invocations__id__output_get",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Action invocation output",
+                    "content": {
+                      "application/json": {
+                        "schema": {}
+                      },
+                      "*/*": {}
+                    }
+                  },
+                  "503": {
+                    "description": "No result is available for this invocation"
+                  },
+                  "404": {
+                    "description": "Invocation ID not found"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              }
+            },
+            "/blob/{blob_id}": {
+              "get": {
+                "summary": "Download Blob",
+                "description": "A Blob's data, while an invocation or the Thing still holds it.",
+                "operationId": "download_blob_blob__blob_id__get",
+                "parameters": [
+                  {
+                    "name": "blob_id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "*/*": {}
+                    }
+                  },
+                  "404": {
+                    "description": "Blob not found"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              }
+            },
+            "/thing_descriptions/": {
+              "get": {
+                "summary": "Thing Descriptions",
+                "description": "The Thing Description of every Thing, by name.",
+                "operationId": "thing_descriptions_thing_descriptions__get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/ThingDescription"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/things/": {
+              "get": {
+                "summary": "Thing Paths",
+                "description": "The URL of every Thing's Thing Description, by name.",
+                "operationId": "thing_paths_things__get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/.well-known/wot": {
+              "get": {
+                "summary": "Thing Description Directory",
+                "description": "The TD of this server's Thing Description Directory (W3C WoT Discovery).",
+                "operationId": "well_known_wot__well_known_wot_get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/td+json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/ThingDescription"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/directory/things": {
+              "get": {
+                "summary": "Thing Descriptions",
+                "description": "Every Thing's TD, sorted by `id`. With `limit`, a page, with `next` and `canonical` links.",
+                "operationId": "directory_things_directory_things_get",
+                "parameters": [
+                  {
+                    "name": "offset",
+                    "in": "query",
+                    "required": false,
+                    "description": "How many TDs to skip",
+                    "schema": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  {
+                    "name": "limit",
+                    "in": "query",
+                    "required": false,
+                    "description": "How many TDs in a page (at least 1)",
+                    "schema": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  {
+                    "name": "format",
+                    "in": "query",
+                    "required": false,
+                    "schema": {
+                      "type": "string",
+                      "enum": [
+                        "array",
+                        "collection"
+                      ],
+                      "default": "array"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/ld+json": {
+                        "schema": {
+                          "oneOf": [
+                            {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/ThingDescription"
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "description": "A ThingCollection"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "400": {
+                    "content": {
+                      "application/problem+json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Problem"
+                        }
+                      }
+                    },
+                    "description": "Invalid query arguments"
+                  }
+                }
+              }
+            },
+            "/directory/things/{id}": {
+              "get": {
+                "summary": "Thing Description",
+                "description": "One TD, by its `id`.",
+                "operationId": "directory_thing_directory_things__id__get",
+                "parameters": [
+                  {
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "schema": {
+                      "type": "string",
+                      "format": "iri-reference"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/td+json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/ThingDescription"
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "content": {
+                      "application/problem+json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Problem"
+                        }
+                      }
+                    },
+                    "description": "No TD has this ID"
+                  }
+                }
+              }
+            },
+            "/safe/lock": {
+              "get": {
+                "summary": "All invocations of lock.",
+                "description": "List all the invocations of lock that the server is keeping, with their times and links.",
+                "operationId": "list_invocations_safe_lock_get",
+                "responses": {
+                  "200": {
+                    "description": "A list of every invocation of lock.",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/InvocationSummary"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              },
+              "post": {
+                "summary": "Close and lock the door.",
+                "description": "## Close and lock the door.\n\nClose and lock the door.\n\n## Important note\n\nThis `POST` request starts an action: the server may carry on after answering. The answer is always a 201 with the invocation, whose `href` can be polled to follow it, and whose `output` link gives the result when it has completed.",
+                "operationId": "start_action_safe_lock_post",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/safe_lock_input"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "201": {
+                    "description": "Action has been invoked (and may still be running).",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/safe_lock_invocation"
+                        }
+                      }
+                    }
+                  },
+                  "200": {
+                    "description": "Action completed.",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/safe_lock_output"
+                        }
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              }
+            },
+            "/safe/open": {
+              "get": {
+                "summary": "Whether the door is open.",
+                "description": "## Whether the door is open.\n\nWhether the door is open.",
+                "operationId": "get_property_safe_open_get",
+                "responses": {
+                  "200": {
+                    "description": "Value of open",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/safe_open_value"
+                        }
+                      },
+                      "text/event-stream": {
+                        "schema": {
+                          "type": "string",
+                          "description": "Server-sent events: each new value as JSON in a `data:` line. Ask for them with `Accept: text/event-stream`."
+                        }
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              },
+              "put": {
+                "summary": "Set Whether the door is open.",
+                "description": "## Whether the door is open.\n\nWhether the door is open.",
+                "operationId": "set_property_safe_open_put",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/safe_open_value"
+                      }
+                    }
+                  },
+                  "required": true
+                },
+                "responses": {
+                  "201": {
+                    "description": "Property set successfully",
+                    "content": {
+                      "application/json": {
+                        "schema": {}
+                      }
+                    }
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              }
+            },
+            "/safe/open/reset": {
+              "post": {
+                "summary": "Reset Whether the door is open..",
+                "description": "## Reset Whether the door is open.\n\nResets the property to its default value, which the Thing Description gives.",
+                "operationId": "reset_safe_open_reset_post",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {}
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              }
+            },
+            "/safe/properties": {
+              "get": {
+                "summary": "Read All Properties",
+                "description": "Every property of `safe` (`readallproperties`), or their changes (`observeallproperties`).",
+                "operationId": "read_all_properties_safe_properties_get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "description": "Each property's value, by name."
+                        }
+                      },
+                      "text/event-stream": {
+                        "schema": {
+                          "type": "string",
+                          "description": "Server-sent events: each observable property's new values, as events named after it. Ask for them with `Accept: text/event-stream`."
+                        }
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              },
+              "put": {
+                "summary": "Write Multiple Properties",
+                "description": "Writes several properties of `safe` (`writemultipleproperties`): nothing is written unless every value is valid.",
+                "operationId": "write_multiple_properties_safe_properties_put",
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object"
+                      }
+                    }
+                  },
+                  "required": true
+                },
+                "responses": {
+                  "204": {
+                    "description": "Properties written"
+                  },
+                  "422": {
+                    "description": "Validation Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              }
+            },
+            "/safe/actions": {
+              "get": {
+                "summary": "Query All Actions",
+                "description": "The invocations of each action of `safe`, newest first (`queryallactions`).",
+                "operationId": "query_all_actions_safe_actions_get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/components/schemas/InvocationSummary"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "401": {
+                    "description": "Not authenticated"
+                  }
+                },
+                "security": [
+                  {
+                    "bearer": []
+                  }
+                ]
+              }
+            },
+            "/safe/": {
+              "get": {
+                "summary": "Thing Description",
+                "description": "The W3C Thing Description of `safe`: its properties, actions and events, and how to use them.",
+                "operationId": "things_safe_safe__get",
+                "responses": {
+                  "200": {
+                    "description": "Successful Response",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/ThingDescription"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "InvocationStatus": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "running",
+                  "completed",
+                  "cancelled",
+                  "error"
+                ],
+                "description": "Where an invocation is in its life."
+              },
+              "InvocationSummary": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/InvocationStatus"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string"
+                  },
+                  "href": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "timeStarted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeRequested": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeCompleted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LinkElement"
+                    }
+                  }
+                },
+                "required": [
+                  "status",
+                  "id",
+                  "action",
+                  "href",
+                  "timeStarted",
+                  "timeRequested",
+                  "timeCompleted"
+                ],
+                "description": "An invocation, as lists show it."
+              },
+              "Invocation": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/InvocationStatus"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string"
+                  },
+                  "href": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "timeStarted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeRequested": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeCompleted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LinkElement"
+                    }
+                  },
+                  "input": {},
+                  "output": {
+                    "oneOf": [
+                      {},
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "log": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LogRecordModel"
+                    }
+                  },
+                  "error": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "status",
+                  "id",
+                  "action",
+                  "href",
+                  "timeStarted",
+                  "timeRequested",
+                  "timeCompleted",
+                  "input",
+                  "log"
+                ]
+              },
+              "LinkElement": {
+                "type": "object",
+                "properties": {
+                  "href": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "rel": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "anchor": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "href"
+                ],
+                "additionalProperties": true,
+                "description": "A link: see https://www.w3.org/TR/wot-thing-description11/#link."
+              },
+              "LogRecordModel": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "levelname": {
+                    "type": "string"
+                  },
+                  "levelno": {
+                    "type": "integer"
+                  },
+                  "lineno": "<lineno>",
+                  "filename": "<filename>",
+                  "created": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "exception_type": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "traceback": "<traceback>"
+                },
+                "required": [
+                  "message",
+                  "levelname",
+                  "levelno",
+                  "lineno",
+                  "filename",
+                  "created"
+                ],
+                "description": "A message logged during an invocation."
+              },
+              "ProblemDetails": {
+                "type": "object",
+                "properties": {
+                  "detail": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "type": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "title": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "instance": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": true,
+                "description": "What went wrong in an invocation (RFC 9457 problem details)."
+              },
+              "HTTPValidationError": {
+                "type": "object",
+                "properties": {
+                  "detail": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ValidationError"
+                    }
+                  }
+                }
+              },
+              "ValidationError": {
+                "type": "object",
+                "properties": {
+                  "loc": {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "integer"
+                        }
+                      ]
+                    }
+                  },
+                  "msg": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "input": {},
+                  "ctx": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "loc",
+                  "msg",
+                  "type"
+                ]
+              },
+              "ThingDescription": {
+                "type": "object",
+                "description": "A W3C Web of Things Thing Description (TD 1.1).",
+                "externalDocs": {
+                  "url": "https://www.w3.org/TR/wot-thing-description11/"
+                }
+              },
+              "Problem": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "format": "uri-reference"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "integer"
+                  },
+                  "detail": {
+                    "type": "string"
+                  },
+                  "instance": {
+                    "type": "string"
+                  },
+                  "invalid-params": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "in": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "additionalProperties": true,
+                "description": "Problem details (RFC 9457). The framework's types are documented at https://github.com/lucaswewa/wot/blob/main/docs/problems.md."
+              },
+              "safe_lock_input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "safe_lock_output": {
+                "type": "null"
+              },
+              "safe_lock_invocation": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "$ref": "#/components/schemas/InvocationStatus"
+                  },
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "action": {
+                    "type": "string"
+                  },
+                  "href": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "timeStarted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeRequested": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "timeCompleted": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "links": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LinkElement"
+                    }
+                  },
+                  "input": {
+                    "$ref": "#/components/schemas/safe_lock_input"
+                  },
+                  "output": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/safe_lock_output"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "log": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LogRecordModel"
+                    }
+                  },
+                  "error": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/ProblemDetails"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "status",
+                  "id",
+                  "action",
+                  "href",
+                  "timeStarted",
+                  "timeRequested",
+                  "timeCompleted",
+                  "input",
+                  "log"
+                ]
+              },
+              "safe_open_value": {
+                "type": "boolean"
+              }
+            },
+            "securitySchemes": {
+              "bearer": {
+                "type": "http",
+                "scheme": "bearer"
+              }
+            }
+          }
+        },
+        "text": "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"teta-wot\",\"version\":\"0.1.0\"},\"paths\":{\"/action_invocations\":{\"get\":{\"summary\":\"List All Invocations\",\"description\":\"Every invocation the server is keeping, of every action.\",\"operationId\":\"list_all_invocations_action_invocations_get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/InvocationSummary\"}}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]}},\"/action_invocations/{id}\":{\"get\":{\"summary\":\"Action Invocation\",\"description\":\"One invocation: its status, input, output, log and error.\",\"operationId\":\"action_invocation_action_invocations__id__get\",\"parameters\":[{\"name\":\"id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/Invocation\"}}}},\"404\":{\"description\":\"Invocation ID not found\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]},\"delete\":{\"summary\":\"Delete Invocation\",\"description\":\"Cancel an invocation (`cancelaction`). The action stops at its next cancellation check.\",\"operationId\":\"delete_invocation_action_invocations__id__delete\",\"parameters\":[{\"name\":\"id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\"}}],\"responses\":{\"200\":{\"description\":\"Cancel request sent\",\"content\":{\"application/json\":{\"schema\":{}}}},\"503\":{\"description\":\"Invocation may not be cancelled\"},\"404\":{\"description\":\"Invocation ID not found\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]}},\"/action_invocations/{id}/output\":{\"get\":{\"summary\":\"Action Invocation Output\",\"description\":\"The output of a completed invocation. When the output is a Blob, this is its data.\",\"operationId\":\"action_invocation_output_action_invocations__id__output_get\",\"parameters\":[{\"name\":\"id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\"}}],\"responses\":{\"200\":{\"description\":\"Action invocation output\",\"content\":{\"application/json\":{\"schema\":{}},\"*/*\":{}}},\"503\":{\"description\":\"No result is available for this invocation\"},\"404\":{\"description\":\"Invocation ID not found\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]}},\"/blob/{blob_id}\":{\"get\":{\"summary\":\"Download Blob\",\"description\":\"A Blob's data, while an invocation or the Thing still holds it.\",\"operationId\":\"download_blob_blob__blob_id__get\",\"parameters\":[{\"name\":\"blob_id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"uuid\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"*/*\":{}}},\"404\":{\"description\":\"Blob not found\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]}},\"/thing_descriptions/\":{\"get\":{\"summary\":\"Thing Descriptions\",\"description\":\"The Thing Description of every Thing, by name.\",\"operationId\":\"thing_descriptions_thing_descriptions__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"additionalProperties\":{\"$ref\":\"#/components/schemas/ThingDescription\"}}}}}}}},\"/things/\":{\"get\":{\"summary\":\"Thing Paths\",\"description\":\"The URL of every Thing's Thing Description, by name.\",\"operationId\":\"thing_paths_things__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"additionalProperties\":{\"type\":\"string\"}}}}}}}},\"/.well-known/wot\":{\"get\":{\"summary\":\"Thing Description Directory\",\"description\":\"The TD of this server's Thing Description Directory (W3C WoT Discovery).\",\"operationId\":\"well_known_wot__well_known_wot_get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/td+json\":{\"schema\":{\"$ref\":\"#/components/schemas/ThingDescription\"}}}}}}},\"/directory/things\":{\"get\":{\"summary\":\"Thing Descriptions\",\"description\":\"Every Thing's TD, sorted by `id`. With `limit`, a page, with `next` and `canonical` links.\",\"operationId\":\"directory_things_directory_things_get\",\"parameters\":[{\"name\":\"offset\",\"in\":\"query\",\"required\":false,\"description\":\"How many TDs to skip\",\"schema\":{\"type\":\"integer\",\"minimum\":0}},{\"name\":\"limit\",\"in\":\"query\",\"required\":false,\"description\":\"How many TDs in a page (at least 1)\",\"schema\":{\"type\":\"integer\",\"minimum\":0}},{\"name\":\"format\",\"in\":\"query\",\"required\":false,\"schema\":{\"type\":\"string\",\"enum\":[\"array\",\"collection\"],\"default\":\"array\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/ld+json\":{\"schema\":{\"oneOf\":[{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/ThingDescription\"}},{\"type\":\"object\",\"description\":\"A ThingCollection\"}]}}}},\"400\":{\"content\":{\"application/problem+json\":{\"schema\":{\"$ref\":\"#/components/schemas/Problem\"}}},\"description\":\"Invalid query arguments\"}}}},\"/directory/things/{id}\":{\"get\":{\"summary\":\"Thing Description\",\"description\":\"One TD, by its `id`.\",\"operationId\":\"directory_thing_directory_things__id__get\",\"parameters\":[{\"name\":\"id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\",\"format\":\"iri-reference\"}}],\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/td+json\":{\"schema\":{\"$ref\":\"#/components/schemas/ThingDescription\"}}}},\"404\":{\"content\":{\"application/problem+json\":{\"schema\":{\"$ref\":\"#/components/schemas/Problem\"}}},\"description\":\"No TD has this ID\"}}}},\"/safe/lock\":{\"get\":{\"summary\":\"All invocations of lock.\",\"description\":\"List all the invocations of lock that the server is keeping, with their times and links.\",\"operationId\":\"list_invocations_safe_lock_get\",\"responses\":{\"200\":{\"description\":\"A list of every invocation of lock.\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/InvocationSummary\"}}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]},\"post\":{\"summary\":\"Close and lock the door.\",\"description\":\"## Close and lock the door.\\n\\nClose and lock the door.\\n\\n## Important note\\n\\nThis `POST` request starts an action: the server may carry on after answering. The answer is always a 201 with the invocation, whose `href` can be polled to follow it, and whose `output` link gives the result when it has completed.\",\"operationId\":\"start_action_safe_lock_post\",\"requestBody\":{\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/safe_lock_input\"}}}},\"responses\":{\"201\":{\"description\":\"Action has been invoked (and may still be running).\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/safe_lock_invocation\"}}}},\"200\":{\"description\":\"Action completed.\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/safe_lock_output\"}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]}},\"/safe/open\":{\"get\":{\"summary\":\"Whether the door is open.\",\"description\":\"## Whether the door is open.\\n\\nWhether the door is open.\",\"operationId\":\"get_property_safe_open_get\",\"responses\":{\"200\":{\"description\":\"Value of open\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/safe_open_value\"}},\"text/event-stream\":{\"schema\":{\"type\":\"string\",\"description\":\"Server-sent events: each new value as JSON in a `data:` line. Ask for them with `Accept: text/event-stream`.\"}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]},\"put\":{\"summary\":\"Set Whether the door is open.\",\"description\":\"## Whether the door is open.\\n\\nWhether the door is open.\",\"operationId\":\"set_property_safe_open_put\",\"requestBody\":{\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/safe_open_value\"}}},\"required\":true},\"responses\":{\"201\":{\"description\":\"Property set successfully\",\"content\":{\"application/json\":{\"schema\":{}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]}},\"/safe/open/reset\":{\"post\":{\"summary\":\"Reset Whether the door is open..\",\"description\":\"## Reset Whether the door is open.\\n\\nResets the property to its default value, which the Thing Description gives.\",\"operationId\":\"reset_safe_open_reset_post\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]}},\"/safe/properties\":{\"get\":{\"summary\":\"Read All Properties\",\"description\":\"Every property of `safe` (`readallproperties`), or their changes (`observeallproperties`).\",\"operationId\":\"read_all_properties_safe_properties_get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"description\":\"Each property's value, by name.\"}},\"text/event-stream\":{\"schema\":{\"type\":\"string\",\"description\":\"Server-sent events: each observable property's new values, as events named after it. Ask for them with `Accept: text/event-stream`.\"}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]},\"put\":{\"summary\":\"Write Multiple Properties\",\"description\":\"Writes several properties of `safe` (`writemultipleproperties`): nothing is written unless every value is valid.\",\"operationId\":\"write_multiple_properties_safe_properties_put\",\"requestBody\":{\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\"}}},\"required\":true},\"responses\":{\"204\":{\"description\":\"Properties written\"},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]}},\"/safe/actions\":{\"get\":{\"summary\":\"Query All Actions\",\"description\":\"The invocations of each action of `safe`, newest first (`queryallactions`).\",\"operationId\":\"query_all_actions_safe_actions_get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"additionalProperties\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/InvocationSummary\"}}}}}},\"401\":{\"description\":\"Not authenticated\"}},\"security\":[{\"bearer\":[]}]}},\"/safe/\":{\"get\":{\"summary\":\"Thing Description\",\"description\":\"The W3C Thing Description of `safe`: its properties, actions and events, and how to use them.\",\"operationId\":\"things_safe_safe__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/ThingDescription\"}}}}}}}},\"components\":{\"schemas\":{\"InvocationStatus\":{\"type\":\"string\",\"enum\":[\"pending\",\"running\",\"completed\",\"cancelled\",\"error\"],\"description\":\"Where an invocation is in its life.\"},\"InvocationSummary\":{\"type\":\"object\",\"properties\":{\"status\":{\"$ref\":\"#/components/schemas/InvocationStatus\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"action\":{\"type\":\"string\"},\"href\":{\"type\":\"string\",\"format\":\"uri\"},\"timeStarted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeRequested\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeCompleted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"links\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LinkElement\"}}},\"required\":[\"status\",\"id\",\"action\",\"href\",\"timeStarted\",\"timeRequested\",\"timeCompleted\"],\"description\":\"An invocation, as lists show it.\"},\"Invocation\":{\"type\":\"object\",\"properties\":{\"status\":{\"$ref\":\"#/components/schemas/InvocationStatus\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"action\":{\"type\":\"string\"},\"href\":{\"type\":\"string\",\"format\":\"uri\"},\"timeStarted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeRequested\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeCompleted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"links\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LinkElement\"}},\"input\":{},\"output\":{\"oneOf\":[{},{\"type\":\"null\"}]},\"log\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LogRecordModel\"}},\"error\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/ProblemDetails\"},{\"type\":\"null\"}]}},\"required\":[\"status\",\"id\",\"action\",\"href\",\"timeStarted\",\"timeRequested\",\"timeCompleted\",\"input\",\"log\"]},\"LinkElement\":{\"type\":\"object\",\"properties\":{\"href\":{\"type\":\"string\"},\"type\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"rel\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"anchor\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"required\":[\"href\"],\"additionalProperties\":true,\"description\":\"A link: see https://www.w3.org/TR/wot-thing-description11/#link.\"},\"LogRecordModel\":{\"type\":\"object\",\"properties\":{\"message\":{\"type\":\"string\"},\"levelname\":{\"type\":\"string\"},\"levelno\":{\"type\":\"integer\"},\"lineno\":{\"type\":\"integer\"},\"filename\":{\"type\":\"string\"},\"created\":{\"type\":\"string\",\"format\":\"date-time\"},\"exception_type\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"traceback\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"required\":[\"message\",\"levelname\",\"levelno\",\"lineno\",\"filename\",\"created\"],\"description\":\"A message logged during an invocation.\"},\"ProblemDetails\":{\"type\":\"object\",\"properties\":{\"detail\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"type\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"status\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"null\"}]},\"title\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]},\"instance\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"null\"}]}},\"additionalProperties\":true,\"description\":\"What went wrong in an invocation (RFC 9457 problem details).\"},\"HTTPValidationError\":{\"type\":\"object\",\"properties\":{\"detail\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/ValidationError\"}}}},\"ValidationError\":{\"type\":\"object\",\"properties\":{\"loc\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"string\"},{\"type\":\"integer\"}]}},\"msg\":{\"type\":\"string\"},\"type\":{\"type\":\"string\"},\"input\":{},\"ctx\":{\"type\":\"object\"}},\"required\":[\"loc\",\"msg\",\"type\"]},\"ThingDescription\":{\"type\":\"object\",\"description\":\"A W3C Web of Things Thing Description (TD 1.1).\",\"externalDocs\":{\"url\":\"https://www.w3.org/TR/wot-thing-description11/\"}},\"Problem\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\",\"format\":\"uri-reference\"},\"title\":{\"type\":\"string\"},\"status\":{\"type\":\"integer\"},\"detail\":{\"type\":\"string\"},\"instance\":{\"type\":\"string\"},\"invalid-params\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"in\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"reason\":{\"type\":\"string\"},\"code\":{\"type\":\"string\"}}}}},\"additionalProperties\":true,\"description\":\"Problem details (RFC 9457). The framework's types are documented at https://github.com/lucaswewa/wot/blob/main/docs/problems.md.\"},\"safe_lock_input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"safe_lock_output\":{\"type\":\"null\"},\"safe_lock_invocation\":{\"type\":\"object\",\"properties\":{\"status\":{\"$ref\":\"#/components/schemas/InvocationStatus\"},\"id\":{\"type\":\"string\",\"format\":\"uuid\"},\"action\":{\"type\":\"string\"},\"href\":{\"type\":\"string\",\"format\":\"uri\"},\"timeStarted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeRequested\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"timeCompleted\":{\"oneOf\":[{\"type\":\"string\",\"format\":\"date-time\"},{\"type\":\"null\"}]},\"links\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LinkElement\"}},\"input\":{\"$ref\":\"#/components/schemas/safe_lock_input\"},\"output\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/safe_lock_output\"},{\"type\":\"null\"}]},\"log\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/LogRecordModel\"}},\"error\":{\"oneOf\":[{\"$ref\":\"#/components/schemas/ProblemDetails\"},{\"type\":\"null\"}]}},\"required\":[\"status\",\"id\",\"action\",\"href\",\"timeStarted\",\"timeRequested\",\"timeCompleted\",\"input\",\"log\"]},\"safe_open_value\":{\"type\":\"boolean\"}},\"securitySchemes\":{\"bearer\":{\"type\":\"http\",\"scheme\":\"bearer\"}}}}"
+      }
+    },
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/safe/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "Safe",
+          "properties": {
+            "open": {
+              "description": "Whether the door is open.",
+              "title": "Whether the door is open.",
+              "writeOnly": false,
+              "readOnly": false,
+              "default": false,
+              "type": "boolean",
+              "forms": [
+                {
+                  "href": "/safe/open",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                },
+                {
+                  "href": "/safe/open",
+                  "op": [
+                    "observeproperty",
+                    "unobserveproperty"
+                  ],
+                  "subprotocol": "sse"
+                },
+                {
+                  "href": "ws://testserver/safe/ws",
+                  "op": [
+                    "observeproperty"
+                  ]
+                }
+              ],
+              "observable": true
+            }
+          },
+          "actions": {
+            "lock": {
+              "description": "Close and lock the door.",
+              "title": "Close and lock the door.",
+              "forms": [
+                {
+                  "href": "/safe/lock",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                "title": "lock_input",
+                "oneOf": [
+                  {
+                    "description": "A model representing an object that must have no keys.",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "output": {
+                "title": "lock_output",
+                "type": "null"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A safe with a combination.",
+          "forms": [
+            {
+              "href": "/safe/properties",
+              "op": [
+                "readallproperties",
+                "writemultipleproperties"
+              ]
+            },
+            {
+              "href": "/safe/properties",
+              "op": [
+                "observeallproperties",
+                "unobserveallproperties"
+              ],
+              "subprotocol": "sse"
+            },
+            {
+              "href": "/safe/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "bearer_sc": {
+              "description": "A bearer token (RFC 6750)",
+              "scheme": "bearer",
+              "in": "header",
+              "name": "Authorization",
+              "format": "opaque"
+            }
+          },
+          "security": "bearer_sc",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"Safe\",\"properties\":{\"open\":{\"description\":\"Whether the door is open.\",\"title\":\"Whether the door is open.\",\"writeOnly\":false,\"readOnly\":false,\"default\":false,\"type\":\"boolean\",\"forms\":[{\"href\":\"/safe/open\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/safe/open\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/safe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"lock\":{\"description\":\"Close and lock the door.\",\"title\":\"Close and lock the door.\",\"forms\":[{\"href\":\"/safe/lock\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"lock_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"lock_output\",\"type\":\"null\"},\"synchronous\":false}},\"description\":\"A safe with a combination.\",\"forms\":[{\"href\":\"/safe/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/safe/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/safe/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"bearer_sc\":{\"description\":\"A bearer token (RFC 6750)\",\"scheme\":\"bearer\",\"in\":\"header\",\"name\":\"Authorization\",\"format\":\"opaque\"}},\"security\":\"bearer_sc\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "well_known",
+        "method": "GET",
+        "path": "/.well-known/wot"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/td+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "@context": [
+            "https://www.w3.org/2022/wot/td/v1.1",
+            "https://www.w3.org/2022/wot/discovery"
+          ],
+          "@type": "ThingDirectory",
+          "id": "urn:uuid:<uuid:1>",
+          "title": "Thing Description Directory",
+          "description": "The Things served by teta-wot: a read-only Thing Description Directory.",
+          "base": "http://testserver/directory/",
+          "securityDefinitions": {
+            "nosec_sc": {
+              "scheme": "nosec"
+            }
+          },
+          "security": "nosec_sc",
+          "properties": {
+            "things": {
+              "description": "Retrieve all Thing Descriptions",
+              "readOnly": true,
+              "uriVariables": {
+                "offset": {
+                  "title": "Number of TDs to skip before the page",
+                  "type": "number",
+                  "default": 0
+                },
+                "limit": {
+                  "title": "Number of TDs in a page",
+                  "type": "number"
+                },
+                "format": {
+                  "title": "Payload format",
+                  "type": "string",
+                  "enum": [
+                    "array",
+                    "collection"
+                  ],
+                  "default": "array"
+                }
+              },
+              "forms": [
+                {
+                  "href": "things{?offset,limit,format}",
+                  "op": "readproperty",
+                  "htv:methodName": "GET",
+                  "response": {
+                    "description": "Success response",
+                    "htv:statusCodeValue": 200,
+                    "contentType": "application/ld+json",
+                    "htv:headers": [
+                      {
+                        "htv:fieldName": "Link"
+                      }
+                    ]
+                  },
+                  "additionalResponses": [
+                    {
+                      "description": "Invalid query arguments",
+                      "contentType": "application/problem+json",
+                      "htv:statusCodeValue": 400
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "actions": {
+            "retrieveThing": {
+              "description": "Retrieve a Thing Description",
+              "uriVariables": {
+                "id": {
+                  "@type": "ThingID",
+                  "title": "Thing Description ID",
+                  "type": "string",
+                  "format": "iri-reference"
+                }
+              },
+              "output": {
+                "description": "The schema is implied by the content type",
+                "type": "object"
+              },
+              "safe": true,
+              "idempotent": true,
+              "synchronous": true,
+              "forms": [
+                {
+                  "href": "things/{id}",
+                  "op": "invokeaction",
+                  "htv:methodName": "GET",
+                  "response": {
+                    "description": "Success response",
+                    "htv:statusCodeValue": 200,
+                    "contentType": "application/td+json"
+                  },
+                  "additionalResponses": [
+                    {
+                      "description": "TD with the given id not found",
+                      "contentType": "application/problem+json",
+                      "htv:statusCodeValue": 404
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "text": "{\"@context\":[\"https://www.w3.org/2022/wot/td/v1.1\",\"https://www.w3.org/2022/wot/discovery\"],\"@type\":\"ThingDirectory\",\"id\":\"urn:uuid:<uuid:1>\",\"title\":\"Thing Description Directory\",\"description\":\"The Things served by teta-wot: a read-only Thing Description Directory.\",\"base\":\"http://testserver/directory/\",\"securityDefinitions\":{\"nosec_sc\":{\"scheme\":\"nosec\"}},\"security\":\"nosec_sc\",\"properties\":{\"things\":{\"description\":\"Retrieve all Thing Descriptions\",\"readOnly\":true,\"uriVariables\":{\"offset\":{\"title\":\"Number of TDs to skip before the page\",\"type\":\"number\",\"default\":0},\"limit\":{\"title\":\"Number of TDs in a page\",\"type\":\"number\"},\"format\":{\"title\":\"Payload format\",\"type\":\"string\",\"enum\":[\"array\",\"collection\"],\"default\":\"array\"}},\"forms\":[{\"href\":\"things{?offset,limit,format}\",\"op\":\"readproperty\",\"htv:methodName\":\"GET\",\"response\":{\"description\":\"Success response\",\"htv:statusCodeValue\":200,\"contentType\":\"application/ld+json\",\"htv:headers\":[{\"htv:fieldName\":\"Link\"}]},\"additionalResponses\":[{\"description\":\"Invalid query arguments\",\"contentType\":\"application/problem+json\",\"htv:statusCodeValue\":400}]}]}},\"actions\":{\"retrieveThing\":{\"description\":\"Retrieve a Thing Description\",\"uriVariables\":{\"id\":{\"@type\":\"ThingID\",\"title\":\"Thing Description ID\",\"type\":\"string\",\"format\":\"iri-reference\"}},\"output\":{\"description\":\"The schema is implied by the content type\",\"type\":\"object\"},\"safe\":true,\"idempotent\":true,\"synchronous\":true,\"forms\":[{\"href\":\"things/{id}\",\"op\":\"invokeaction\",\"htv:methodName\":\"GET\",\"response\":{\"description\":\"Success response\",\"htv:statusCodeValue\":200,\"contentType\":\"application/td+json\"},\"additionalResponses\":[{\"description\":\"TD with the given id not found\",\"contentType\":\"application/problem+json\",\"htv:statusCodeValue\":404}]}]}}}"
+      }
+    },
+    {
+      "step": {
+        "name": "directory",
+        "method": "GET",
+        "path": "/directory/things"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/ld+json",
+          "vary": "Origin"
+        },
+        "body": [
+          {
+            "id": "urn:uuid:<uuid:0>",
+            "title": "Safe",
+            "properties": {
+              "open": {
+                "description": "Whether the door is open.",
+                "title": "Whether the door is open.",
+                "writeOnly": false,
+                "readOnly": false,
+                "default": false,
+                "type": "boolean",
+                "forms": [
+                  {
+                    "href": "/safe/open",
+                    "op": [
+                      "readproperty",
+                      "writeproperty"
+                    ]
+                  },
+                  {
+                    "href": "/safe/open",
+                    "op": [
+                      "observeproperty",
+                      "unobserveproperty"
+                    ],
+                    "subprotocol": "sse"
+                  },
+                  {
+                    "href": "ws://testserver/safe/ws",
+                    "op": [
+                      "observeproperty"
+                    ]
+                  }
+                ],
+                "observable": true
+              }
+            },
+            "actions": {
+              "lock": {
+                "description": "Close and lock the door.",
+                "title": "Close and lock the door.",
+                "forms": [
+                  {
+                    "href": "/safe/lock",
+                    "op": [
+                      "invokeaction"
+                    ]
+                  },
+                  {
+                    "href": "/action_invocations/{id}",
+                    "op": [
+                      "queryaction",
+                      "cancelaction"
+                    ]
+                  }
+                ],
+                "uriVariables": {
+                  "id": {
+                    "title": "Invocation ID",
+                    "format": "uuid",
+                    "type": "string"
+                  }
+                },
+                "input": {
+                  "description": "Represent the input of an action that never takes parameters.\n\nThis may be either an empty dictionary or ``None``.",
+                  "title": "lock_input",
+                  "oneOf": [
+                    {
+                      "description": "A model representing an object that must have no keys.",
+                      "type": "object",
+                      "properties": {},
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "output": {
+                  "title": "lock_output",
+                  "type": "null"
+                },
+                "synchronous": false
+              }
+            },
+            "description": "A safe with a combination.",
+            "forms": [
+              {
+                "href": "/safe/properties",
+                "op": [
+                  "readallproperties",
+                  "writemultipleproperties"
+                ]
+              },
+              {
+                "href": "/safe/properties",
+                "op": [
+                  "observeallproperties",
+                  "unobserveallproperties"
+                ],
+                "subprotocol": "sse"
+              },
+              {
+                "href": "/safe/actions",
+                "op": [
+                  "queryallactions"
+                ]
+              }
+            ],
+            "base": "http://testserver/",
+            "securityDefinitions": {
+              "bearer_sc": {
+                "description": "A bearer token (RFC 6750)",
+                "scheme": "bearer",
+                "in": "header",
+                "name": "Authorization",
+                "format": "opaque"
+              }
+            },
+            "security": "bearer_sc",
+            "@context": "https://www.w3.org/2022/wot/td/v1.1"
+          }
+        ],
+        "text": "[{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"Safe\",\"properties\":{\"open\":{\"description\":\"Whether the door is open.\",\"title\":\"Whether the door is open.\",\"writeOnly\":false,\"readOnly\":false,\"default\":false,\"type\":\"boolean\",\"forms\":[{\"href\":\"/safe/open\",\"op\":[\"readproperty\",\"writeproperty\"]},{\"href\":\"/safe/open\",\"op\":[\"observeproperty\",\"unobserveproperty\"],\"subprotocol\":\"sse\"},{\"href\":\"ws://testserver/safe/ws\",\"op\":[\"observeproperty\"]}],\"observable\":true}},\"actions\":{\"lock\":{\"description\":\"Close and lock the door.\",\"title\":\"Close and lock the door.\",\"forms\":[{\"href\":\"/safe/lock\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"description\":\"Represent the input of an action that never takes parameters.\\n\\nThis may be either an empty dictionary or ``None``.\",\"title\":\"lock_input\",\"oneOf\":[{\"description\":\"A model representing an object that must have no keys.\",\"type\":\"object\",\"properties\":{},\"additionalProperties\":false},{\"type\":\"null\"}]},\"output\":{\"title\":\"lock_output\",\"type\":\"null\"},\"synchronous\":false}},\"description\":\"A safe with a combination.\",\"forms\":[{\"href\":\"/safe/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/safe/properties\",\"op\":[\"observeallproperties\",\"unobserveallproperties\"],\"subprotocol\":\"sse\"},{\"href\":\"/safe/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"bearer_sc\":{\"description\":\"A bearer token (RFC 6750)\",\"scheme\":\"bearer\",\"in\":\"header\",\"name\":\"Authorization\",\"format\":\"opaque\"}},\"security\":\"bearer_sc\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}]"
+      }
+    },
+    {
+      "step": {
+        "name": "open_anonymous",
+        "method": "GET",
+        "path": "/safe/open"
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin",
+          "www-authenticate": "Bearer realm=\"teta-wot\""
+        },
+        "body": {
+          "detail": "Not authenticated"
+        },
+        "text": "{\"detail\":\"Not authenticated\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "open_wrong_token",
+        "method": "GET",
+        "path": "/safe/open",
+        "headers": {
+          "Authorization": "Bearer not-the-token"
+        }
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin",
+          "www-authenticate": "Bearer realm=\"teta-wot\""
+        },
+        "body": {
+          "detail": "Not authenticated"
+        },
+        "text": "{\"detail\":\"Not authenticated\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_anonymous",
+        "method": "PUT",
+        "path": "/safe/open",
+        "json": true
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin",
+          "www-authenticate": "Bearer realm=\"teta-wot\""
+        },
+        "body": {
+          "detail": "Not authenticated"
+        },
+        "text": "{\"detail\":\"Not authenticated\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "write",
+        "method": "PUT",
+        "path": "/safe/open",
+        "json": true,
+        "headers": {
+          "Authorization": "Bearer token-for-the-tests"
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "open",
+        "method": "GET",
+        "path": "/safe/open",
+        "headers": {
+          "Authorization": "Bearer token-for-the-tests"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": true,
+        "text": "true"
+      }
+    },
+    {
+      "step": {
+        "name": "lock",
+        "method": "POST",
+        "path": "/safe/lock",
+        "headers": {
+          "Authorization": "Bearer token-for-the-tests"
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:2>",
+          "action": "/safe/lock",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:2>",
+          "action": "/safe/lock",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": null,
+          "output": null,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/safe/lock\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":null,\"output\":null,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "open_after",
+        "method": "GET",
+        "path": "/safe/open",
+        "headers": {
+          "Authorization": "Bearer token-for-the-tests"
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": false,
+        "text": "false"
+      }
+    },
+    {
+      "step": {
+        "name": "websocket_anonymous",
+        "websocket": "/safe/ws",
+        "socket": "a"
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin",
+          "www-authenticate": "Bearer realm=\"teta-wot\""
+        },
+        "body": {
+          "detail": "Not authenticated"
+        },
+        "text": "{\"detail\":\"Not authenticated\"}"
+      }
+    }
+  ]
+}

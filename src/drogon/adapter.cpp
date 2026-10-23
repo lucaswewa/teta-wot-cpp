@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <atomic>
 #include <cctype>
 #include <cstdint>
@@ -7,6 +8,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 #include "teta/wot/drogon.hpp"
 
@@ -260,12 +262,24 @@ drogon::HttpResponsePtr to_response(http::Response response, const drogon::HttpR
     }
     out->setCustomStatusCode(response.status, http::reason_phrase(response.status));
     out->setContentTypeCode(drogon::CT_NONE);
+    // Drogon keeps one value per name: a repeated header (two `link`s) is
+    // sent as one, its values joined with `, ` (RFC 9110, section 5.3).
+    std::vector<std::pair<std::string, std::string>> headers;
     for (auto& [name, value] : response.headers) {
         if (http::equals_ignoring_case(name, "content-type")) {
             out->setContentTypeString(value);
-        } else {
-            out->addHeader(name, value);
+            continue;
         }
+        const auto same = std::ranges::find_if(
+            headers, [&](const auto& header) { return http::equals_ignoring_case(header.first, name); });
+        if (same == headers.end()) {
+            headers.emplace_back(name, std::move(value));
+        } else {
+            same->second += ", " + value;
+        }
+    }
+    for (auto& [name, value] : headers) {
+        out->addHeader(name, std::move(value));
     }
     return out;
 }

@@ -30,6 +30,8 @@ std::string thing_id(std::string_view server_id, std::string_view thing);
 
 /// The UUIDv5 of `name` in the namespace `ns` (16 bytes), as text.
 std::string uuid_v5(const std::array<unsigned char, 16>& ns, std::string_view name);
+/// The UUIDv5 of `name` in RFC 4122's URL namespace, as text.
+std::string url_uuid_v5(std::string_view name);
 
 /// The media type of a Blob, if `schema` is a Blob's DataSchema: an object
 /// with an `href`, a `media_type` whose default is the media type, and a

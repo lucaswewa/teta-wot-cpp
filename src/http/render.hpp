@@ -103,6 +103,8 @@ struct HttpError {
 
 /// An error with only an HTTP meaning, as a problem (`about:blank`).
 Response http_problem(int status, const std::string& message);
+/// A problem response: `application/problem+json`.
+Response problem_response(int status, const json::Value& body);
 /// A runtime problem in the `wot` profile: its status and body.
 std::pair<int, json::Value> wot_problem(const ProblemDetails& problem);
 /// One `invalid-params` entry of the `wot` profile's validation problem.

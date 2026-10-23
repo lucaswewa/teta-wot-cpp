@@ -1,0 +1,89 @@
+{
+  "serve": [
+    "--serve"
+  ],
+  "port": 8000,
+  "env": {
+    "WOT_TOKEN": "token-for-the-tests"
+  },
+  "steps": [
+    {
+      "name": "openapi",
+      "method": "GET",
+      "path": "/openapi.json"
+    },
+    {
+      "name": "td",
+      "method": "GET",
+      "path": "/safe/"
+    },
+    {
+      "name": "well_known",
+      "method": "GET",
+      "path": "/.well-known/wot"
+    },
+    {
+      "name": "directory",
+      "method": "GET",
+      "path": "/directory/things"
+    },
+    {
+      "name": "open_anonymous",
+      "method": "GET",
+      "path": "/safe/open"
+    },
+    {
+      "name": "open_wrong_token",
+      "method": "GET",
+      "path": "/safe/open",
+      "headers": {
+        "Authorization": "Bearer not-the-token"
+      }
+    },
+    {
+      "name": "write_anonymous",
+      "method": "PUT",
+      "path": "/safe/open",
+      "json": true
+    },
+    {
+      "name": "write",
+      "method": "PUT",
+      "path": "/safe/open",
+      "json": true,
+      "headers": {
+        "Authorization": "Bearer token-for-the-tests"
+      }
+    },
+    {
+      "name": "open",
+      "method": "GET",
+      "path": "/safe/open",
+      "headers": {
+        "Authorization": "Bearer token-for-the-tests"
+      }
+    },
+    {
+      "name": "lock",
+      "method": "POST",
+      "path": "/safe/lock",
+      "headers": {
+        "Authorization": "Bearer token-for-the-tests"
+      },
+      "wait": true
+    },
+    {
+      "name": "open_after",
+      "method": "GET",
+      "path": "/safe/open",
+      "headers": {
+        "Authorization": "Bearer token-for-the-tests"
+      }
+    },
+    {
+      "name": "websocket_anonymous",
+      "websocket": "/safe/ws",
+      "socket": "a"
+    }
+  ]
+}

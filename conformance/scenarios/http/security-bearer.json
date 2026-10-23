@@ -1,0 +1,200 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing",
+      "http_probe": "twins.http_probe:HttpProbe",
+      "event_probe": "twins.event_probe:EventProbe"
+    },
+    "security": {
+      "scheme": "bearer",
+      "token_env": "TETA_WOT_TEST_TOKEN"
+    },
+    "wire_profile": "wot",
+    "api_prefix": "/api",
+    "server_id": "conformance"
+  },
+  "env": {
+    "TETA_WOT_TEST_TOKEN": "s3cret-t0ken"
+  },
+  "steps": [
+    {
+      "name": "td",
+      "method": "GET",
+      "path": "/api/counter/"
+    },
+    {
+      "name": "things",
+      "method": "GET",
+      "path": "/api/things/"
+    },
+    {
+      "name": "thing_descriptions",
+      "method": "GET",
+      "path": "/api/thing_descriptions/"
+    },
+    {
+      "name": "openapi",
+      "method": "GET",
+      "path": "/openapi.json"
+    },
+    {
+      "name": "docs",
+      "method": "GET",
+      "path": "/docs"
+    },
+    {
+      "name": "well_known",
+      "method": "GET",
+      "path": "/.well-known/wot"
+    },
+    {
+      "name": "directory",
+      "method": "GET",
+      "path": "/api/directory/things"
+    },
+    {
+      "name": "read_anonymous",
+      "method": "GET",
+      "path": "/api/counter/counter"
+    },
+    {
+      "name": "read_wrong_scheme",
+      "method": "GET",
+      "path": "/api/counter/counter",
+      "headers": {
+        "Authorization": "Basic eDpzM2NyZXQtdDBrZW4="
+      }
+    },
+    {
+      "name": "read_garbage",
+      "method": "GET",
+      "path": "/api/counter/counter",
+      "headers": {
+        "Authorization": "nonsense"
+      }
+    },
+    {
+      "name": "read",
+      "method": "GET",
+      "path": "/api/counter/counter",
+      "headers": {
+        "Authorization": "Bearer s3cret-t0ken"
+      }
+    },
+    {
+      "name": "read_lower_case",
+      "method": "GET",
+      "path": "/api/counter/counter",
+      "headers": {
+        "Authorization": "bearer s3cret-t0ken"
+      }
+    },
+    {
+      "name": "read_padded",
+      "method": "GET",
+      "path": "/api/counter/counter",
+      "headers": {
+        "Authorization": "  Bearer   s3cret-t0ken  "
+      }
+    },
+    {
+      "name": "write_anonymous",
+      "method": "PUT",
+      "path": "/api/http_probe/value",
+      "json": 3
+    },
+    {
+      "name": "write",
+      "method": "PUT",
+      "path": "/api/http_probe/value",
+      "json": 3,
+      "headers": {
+        "Authorization": "Bearer s3cret-t0ken"
+      }
+    },
+    {
+      "name": "invoke_anonymous",
+      "method": "POST",
+      "path": "/api/counter/increment_counter"
+    },
+    {
+      "name": "invoke",
+      "method": "POST",
+      "path": "/api/counter/increment_counter",
+      "headers": {
+        "Authorization": "Bearer s3cret-t0ken"
+      },
+      "wait": true
+    },
+    {
+      "name": "invocations_anonymous",
+      "method": "GET",
+      "path": "/api/action_invocations"
+    },
+    {
+      "name": "invocations",
+      "method": "GET",
+      "path": "/api/action_invocations",
+      "headers": {
+        "Authorization": "Bearer s3cret-t0ken"
+      }
+    },
+    {
+      "name": "missing_anonymous",
+      "method": "GET",
+      "path": "/api/nope"
+    },
+    {
+      "name": "wrong_method_anonymous",
+      "method": "DELETE",
+      "path": "/api/counter/counter"
+    },
+    {
+      "name": "redirect_anonymous",
+      "method": "GET",
+      "path": "/api/counter"
+    },
+    {
+      "name": "events_anonymous",
+      "events": "/api/event_probe/happened",
+      "stream": "a"
+    },
+    {
+      "name": "websocket_anonymous",
+      "websocket": "/api/event_probe/ws",
+      "socket": "x"
+    },
+    {
+      "name": "websocket",
+      "websocket": "/api/event_probe/ws",
+      "socket": "y",
+      "headers": {
+        "Authorization": "Bearer s3cret-t0ken"
+      }
+    },
+    {
+      "name": "observe",
+      "socket": "y",
+      "send": {
+        "messageType": "addPropertyObservation",
+        "data": {
+          "level": true
+        }
+      }
+    },
+    {
+      "name": "write_level",
+      "method": "PUT",
+      "path": "/api/event_probe/level",
+      "json": 2,
+      "headers": {
+        "Authorization": "Bearer s3cret-t0ken"
+      }
+    },
+    {
+      "name": "level",
+      "socket": "y",
+      "receive": 1
+    }
+  ]
+}

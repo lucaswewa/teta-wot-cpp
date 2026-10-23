@@ -18,6 +18,7 @@ option(TETA_WOT_BUILD_SPIKES "Build the Phase 0 spikes" OFF)
 option(TETA_WOT_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 option(TETA_WOT_TD_VALIDATION "Build teta::wot-td-validation (needs json-schema-validator)" ${TETA_WOT_BUILD_TESTS})
 option(TETA_WOT_DOCS_OFFLINE "Compile the Swagger UI and ReDoc assets into the server, for networks without internet" OFF)
+option(TETA_WOT_MDNS "Let servers advertise themselves with DNS-SD over mDNS (W3C WoT Discovery)" OFF)
 
 include(GNUInstallDirs)
 

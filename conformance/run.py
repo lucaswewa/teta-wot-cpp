@@ -17,7 +17,8 @@ configuration (and a temporary settings folder), and stopped with Ctrl-C.
 A scenario's `files` (`{"thing/Settings-Class.json": "text"}`) are written
 into the settings folder before the server starts. With `workdir_files`, the
 server runs in a temporary working directory holding those files (which a
-server must not serve as static files).
+server must not serve as static files). `env` adds environment variables
+(the secrets that a configuration's `security` names).
 
 With `--examples`, the scenarios are `conformance/scenarios/examples/*.json`
 and the fixtures `conformance/fixtures/examples/`: each scenario is named
@@ -247,6 +248,16 @@ def new_group():
     return subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
 
 
+def header_map(pairs):
+    """Headers by lower-case name, a repeated one's values joined with `, `
+    (RFC 9110, section 5.3), as a transport may send it either way."""
+    headers = {}
+    for name, value in pairs:
+        name = name.lower()
+        headers[name] = f"{headers[name]}, {value}" if name in headers else value
+    return headers
+
+
 def request(port, method, path, body=None, headers=None):
     conn = http.client.HTTPConnection("127.0.0.1", port, timeout=15)
     try:
@@ -255,7 +266,7 @@ def request(port, method, path, body=None, headers=None):
             body = body.encode("utf-8")
         conn.request(method, path, body=body, headers=all_headers)
         response = conn.getresponse()
-        return response.status, {k.lower(): v for k, v in response.getheaders()}, response.read()
+        return response.status, header_map(response.getheaders()), response.read()
     finally:
         conn.close()
 
@@ -299,8 +310,9 @@ class Server:
             self.port = free_port()
             command = [self.executable, "-c", str(config_path), "--host", "127.0.0.1", "--port", str(self.port)]
         self.log = open(self.log_path, "wb")
+        environment = {**os.environ, **self.scenario.get("env", {})}
         self.process = subprocess.Popen(command, stdout=self.log, stderr=subprocess.STDOUT, creationflags=new_group(),
-                                        cwd=self.workdir)
+                                        cwd=self.workdir, env=environment)
         try:
             wait_listening(self.process, self.port, self.executable, self.output)
         except BaseException:
@@ -385,10 +397,8 @@ class WebSocketClient:
         head, _, self.buffer = self.buffer.partition(b"\r\n\r\n")
         status_line, *header_lines = head.decode("latin-1").split("\r\n")
         self.status = int(status_line.split()[1])
-        self.headers = {}
-        for line in header_lines:
-            name, _, value = line.partition(":")
-            self.headers[name.strip().lower()] = value.strip()
+        self.headers = header_map((name.strip(), value.strip())
+                                  for name, _, value in (line.partition(":") for line in header_lines))
         self.body = b""
         if self.status != 101:
             length = int(self.headers.get("content-length", "0"))
@@ -488,10 +498,8 @@ class MjpegClient:
         head, _, self.raw = self.raw.partition(b"\r\n\r\n")
         status_line, *header_lines = head.decode("latin-1").split("\r\n")
         self.status = int(status_line.split()[1])
-        self.headers = {}
-        for line in header_lines:
-            name, _, value = line.partition(":")
-            self.headers[name.strip().lower()] = value.strip()
+        self.headers = header_map((name.strip(), value.strip())
+                                  for name, _, value in (line.partition(":") for line in header_lines))
         self.chunked = "chunked" in self.headers.get("transfer-encoding", "")
         self.body = b""
         self.ended = False
@@ -554,7 +562,7 @@ class EventStreamClient:
         self.conn.request("GET", path, headers={"Host": HOST, "Accept": "text/event-stream", **headers})
         self.response = self.conn.getresponse()
         self.status = self.response.status
-        self.headers = {k.lower(): v for k, v in self.response.getheaders()}
+        self.headers = header_map(self.response.getheaders())
 
     def receive(self, timeout):
         """The next event as `{event, id, data}`, END at the end of the
@@ -787,7 +795,7 @@ def run_step_list(server, scenario, prefix, normaliser, ids, blobs, steps, resol
         if step.get("wait") and created:
             deadline = time.monotonic() + 15
             while True:
-                final = server.request("GET", f"{prefix}/action_invocations/{created}")
+                final = server.request("GET", f"{prefix}/action_invocations/{created}", None, step.get("headers"))
                 if json.loads(final[2]).get("status") not in ("pending", "running"):
                     break
                 if time.monotonic() > deadline:

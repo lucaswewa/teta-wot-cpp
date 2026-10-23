@@ -7,11 +7,13 @@
 #include <utility>
 #include <variant>
 
+#include "discovery.hpp"
 #include "docs.hpp"
 #include "output.hpp"
 #include "path_uuid.hpp"
 #include "render.hpp"
 #include "routes.hpp"
+#include "security.hpp"
 #include "sse.hpp"
 #include "teta/wot/http/openapi.hpp"
 #include "teta/wot/log.hpp"
@@ -98,6 +100,9 @@ json::Value served_td(const Runtime& runtime, std::string_view thing, const Urls
     td_options.synchronous_actions = wot;
     if (wot) {
         td_options.profiles = {std::string(http_basic_profile), std::string(http_sse_profile)};
+    }
+    if (options.security) {
+        td_options.security = detail::security_scheme(*options.security);
     }
     return td::to_json(handle->thing_description(td_options));
 }
@@ -210,6 +215,27 @@ struct HttpBinding::State {
         }
     }
 
+    // Every Thing's TD, for the directory; a 500 problem if one fails.
+    std::variant<std::vector<json::Value>, Response> all_tds(const Urls& urls) const {
+        std::vector<json::Value> tds;
+        for (const auto& thing : runtime->things()) {
+            try {
+                tds.push_back(served_td(*runtime, thing->name(), urls, options));
+            } catch (const std::exception& failure) {
+                return detail::http_problem(500, failure.what());
+            }
+        }
+        return tds;
+    }
+
+    // The 401 to send, if credentials are required and missing.
+    std::optional<Response> deny(const Headers& headers) const {
+        if (!options.security || detail::authorized(*options.security, headers)) {
+            return std::nullopt;
+        }
+        return detail::unauthorized(*options.security, options.profile);
+    }
+
     // `writemultipleproperties`: every value is checked before any is
     // written, so an invalid request changes nothing.
     Response write_multiple(const std::string& thing, const json::Value& body) const {
@@ -276,6 +302,20 @@ struct HttpBinding::State {
                 return detail::redoc(options.api_title);
             case Kind::docs_asset:
                 return detail::docs_asset(detail::docs_assets()[endpoint.index]);
+            case Kind::well_known:
+                return detail::json_as("application/td+json", detail::directory_td(options, urls));
+            case Kind::directory_things:
+            case Kind::directory_thing: {
+                auto tds = all_tds(urls);
+                if (auto* failed = std::get_if<Response>(&tds)) {
+                    return std::move(*failed);
+                }
+                auto& found = std::get<std::vector<json::Value>>(tds);
+                if (endpoint.kind == Kind::directory_thing) {
+                    return detail::retrieve(found, param.value_or(""));
+                }
+                return detail::listing(std::move(found), request.query, urls);
+            }
             case Kind::thing_description: {
                 auto described = td(endpoint.thing, urls);
                 if (auto* failed = std::get_if<Response>(&described)) {
@@ -633,14 +673,31 @@ struct HttpBinding::State {
 
     static void dispatch(const std::shared_ptr<const State>& state, Request request, Respond respond) {
         Urls urls = Urls::from_request(request, state->options.api_prefix);
+        // A Thing's WebSocket that the transport didn't upgrade: the
+        // credentials are missing (else, as teta-wot, a plain 404 below).
+        if (detail::websocket_thing(*state->runtime, state->options.api_prefix, request)) {
+            if (auto denied = state->deny(request.headers)) {
+                respond(std::move(*denied));
+                return;
+            }
+        }
         auto found = state->routes.find(request.method, request.path);
         switch (found.what) {
             case detail::Found::What::route:
+                if (!found.route->endpoint.is_public()) {
+                    if (auto denied = state->deny(request.headers)) {
+                        respond(std::move(*denied));
+                        return;
+                    }
+                }
                 route(state, *found.route, std::move(found.param), std::move(request), std::move(urls),
                       std::move(respond));
                 return;
             case detail::Found::What::wrong_method: {
-                Response response = state->error(HttpError::with_status(405, "Method Not Allowed"));
+                // Discovery's errors are problems whatever the profile.
+                const auto profile =
+                    found.route->endpoint.is_discovery() ? WireProfile::wot : state->options.profile;
+                Response response = HttpError::with_status(405, "Method Not Allowed").response(profile);
                 response.headers.set("allow", found.route->allow ? found.route->allow : found.route->method);
                 respond(std::move(response));
                 return;
@@ -724,7 +781,8 @@ void HttpBinding::handle(Request request, Respond respond) const {
 }
 
 bool HttpBinding::is_websocket(const Request& request) const {
-    return detail::websocket_thing(*state_->runtime, state_->options.api_prefix, request) != nullptr;
+    return detail::websocket_thing(*state_->runtime, state_->options.api_prefix, request) != nullptr &&
+           !state_->deny(request.headers);
 }
 
 std::shared_ptr<WebSocketSession> HttpBinding::open_websocket(const Request& request,

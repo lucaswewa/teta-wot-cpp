@@ -56,7 +56,7 @@ scripts\serve.ps1 -Things counter,http_probe -GlobalLock
 scripts\serve.ps1 -Scenario default -Port 5001 -Reference
 #>
 param(
-    [ValidateSet('quickstart-counter', 'light', 'counter-server', 'http-walkthrough', 'drogon-integration')]
+    [ValidateSet('quickstart-counter', 'light', 'counter-server', 'http-walkthrough', 'drogon-integration', 'strict-profile', 'discovery')]
     [string]$Example,
     [string]$Scenario,
     [string]$Config,
