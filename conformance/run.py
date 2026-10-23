@@ -24,7 +24,8 @@ With `--examples`, the scenarios are `conformance/scenarios/examples/*.json`
 and the fixtures `conformance/fixtures/examples/`: each scenario is named
 after an example, and instead of a configuration it has `serve`, the
 arguments that make the example serve (`["--serve"]`), and `port`, where it
-listens. A server is then a pattern, `{name}` standing for the example's
+listens; or, for an example with teta-wot's command line, a `config` it
+serves as a server does. A server is then a pattern, `{name}` standing for the example's
 name, such as `target/release/{name}` for teta-wot's examples or
 `build/linux-gcc/examples/{name}/example-{name}` for teta-wot-cpp's. This
 compares each example with its Rust original (plan §6.1).
@@ -71,8 +72,9 @@ Observation steps, instead of a request:
 - `{"name", "mjpeg": "/thing/stream", "stream": "m"}` opens an MJPEG stream
   (recording the answer's status and headers); then steps with `"stream":
   "m"` and `"frames": N` record the next N frames (each part's header and
-  its JPEG data, in hex), `"quiet": S` records whether a frame arrives within
-  S seconds, and `"ended": true` waits for the stream's end.
+  its JPEG data, in hex, or with `ignore_body` only its header), `"quiet":
+  S` records whether a frame arrives within S seconds, and `"ended": true`
+  waits for the stream's end.
 
 The handshake's own headers (`upgrade`, `sec-websocket-accept`, …) are the
 transport's, and aren't recorded.
@@ -600,13 +602,14 @@ def note_blobs(blobs, headers, raw):
                 blobs.append(found)
 
 
-def frame(received):
-    """An MJPEG frame as a step records it."""
+def frame(received, ignore_data=False):
+    """An MJPEG frame as a step records it: with `ignore_data`, its JPEG data
+    as `<ignored>`."""
     if received is None:
         return "<timeout>"
     if received is END:
         return "<end>"
-    return received
+    return {**received, "data": "<ignored>"} if ignore_data else received
 
 
 def record(status, headers, raw, normaliser, race=False):
@@ -729,9 +732,10 @@ def run_step_list(server, scenario, prefix, normaliser, ids, blobs, steps, resol
             if "receive" in step:
                 entry["events"] = [message(stream.receive(10)) for _ in range(step["receive"])]
             elif "frames" in step:
-                entry["frames"] = [frame(stream.receive(10)) for _ in range(step["frames"])]
+                ignore = step.get("ignore_body", False)
+                entry["frames"] = [frame(stream.receive(10), ignore) for _ in range(step["frames"])]
             elif "quiet" in step:
-                entry["frames"] = [frame(stream.receive(step["quiet"]))]
+                entry["frames"] = [frame(stream.receive(step["quiet"]), step.get("ignore_body", False))]
             elif step.get("ended"):
                 got = stream.receive(10)
                 while isinstance(got, dict):

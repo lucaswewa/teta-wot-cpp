@@ -1,5 +1,5 @@
 // A small baseline JPEG encoder for the examples' simulated cameras (the Rust
-// examples use the `jpeg-encoder` crate): RGB pixels in, a JFIF file out,
+// examples use the `jpeg-encoder` crate): RGB or grey pixels in, a JFIF file out,
 // without chroma subsampling, with the example tables of the JPEG
 // specification (ITU-T T.81, Annex K) scaled by quality as libjpeg does.
 
@@ -173,15 +173,13 @@ inline void put_marker(std::string& out, std::uint8_t marker, std::size_t length
     put_u16(out, length);
 }
 
-}  // namespace detail
-
-/// Encodes `rgb` (three bytes per pixel, row by row) as a baseline JPEG.
-inline std::string encode(const std::vector<std::uint8_t>& rgb, int width, int height, int quality) {
-    using namespace detail;
-    if (width <= 0 || height <= 0 || width > 65535 || height > 65535 ||
-        rgb.size() != static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * 3) {
-        throw std::invalid_argument("the pixels don't match the size of the image");
-    }
+// Encodes an image of `components` components: 1 (greyscale) or 3 (YCbCr).
+// `sample(x, y, out)` writes the pixel's components, level-shifted (-128
+// to 127).
+template <typename Sample>
+std::string encode_components(std::size_t components, int width, int height, int quality, Sample sample) {
+    // Luminance's tables, then chrominance's for colour.
+    const std::size_t tables = components == 1 ? 1 : 2;
     const std::array<std::array<std::uint8_t, 64>, 2> quantisation = {
         scaled(luminance_quantisation, quality), scaled(chrominance_quantisation, quality)};
     const std::array<const HuffmanSpec*, 4> specs = {&dc_luminance(), &ac_luminance(), &dc_chrominance(),
@@ -191,37 +189,47 @@ inline std::string encode(const std::vector<std::uint8_t>& rgb, int width, int h
     // APP0: JFIF 1.01, no units, a 1:1 pixel aspect, no thumbnail.
     put_marker(out, 0xe0, 16);
     out.append("JFIF\0\x01\x01\0\0\x01\0\x01\0\0", 14);
-    // DQT: both tables, in zig-zag order.
-    put_marker(out, 0xdb, 2 + 2 * 65);
-    for (std::uint8_t t = 0; t < 2; ++t) {
+    // DQT: the tables, in zig-zag order.
+    put_marker(out, 0xdb, 2 + tables * 65);
+    for (std::uint8_t t = 0; t < tables; ++t) {
         out += static_cast<char>(t);
         for (const auto index : zigzag) {
             out += static_cast<char>(quantisation[t][index]);
         }
     }
-    // SOF0: 8 bits, three components without subsampling.
-    put_marker(out, 0xc0, 17);
+    // SOF0: 8 bits, the components without subsampling.
+    put_marker(out, 0xc0, 8 + 3 * components);
     out += '\x08';
     put_u16(out, static_cast<std::size_t>(height));
     put_u16(out, static_cast<std::size_t>(width));
-    out.append("\x03\x01\x11\x00\x02\x11\x01\x03\x11\x01", 10);
+    out += static_cast<char>(components);
+    for (std::size_t c = 0; c < components; ++c) {
+        out += static_cast<char>(c + 1);
+        out += '\x11';
+        out += static_cast<char>(c == 0 ? 0 : 1);
+    }
     // DHT: DC and AC tables for luminance (0) and chrominance (1).
     std::size_t dht_length = 2;
-    for (const auto* spec : specs) {
-        dht_length += 17 + spec->symbols.size();
+    for (std::size_t i = 0; i < 2 * tables; ++i) {
+        dht_length += 17 + specs[i]->symbols.size();
     }
     put_marker(out, 0xc4, dht_length);
     const std::array<std::uint8_t, 4> classes = {0x00, 0x10, 0x01, 0x11};
-    for (std::size_t i = 0; i < 4; ++i) {
+    for (std::size_t i = 0; i < 2 * tables; ++i) {
         out += static_cast<char>(classes[i]);
         for (const auto count : specs[i]->counts) {
             out += static_cast<char>(count);
         }
         out.append(specs[i]->symbols.begin(), specs[i]->symbols.end());
     }
-    // SOS: all three components, in one scan.
-    put_marker(out, 0xda, 12);
-    out.append("\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00", 10);
+    // SOS: all the components, in one scan.
+    put_marker(out, 0xda, 6 + 2 * components);
+    out += static_cast<char>(components);
+    for (std::size_t c = 0; c < components; ++c) {
+        out += static_cast<char>(c + 1);
+        out += static_cast<char>(c == 0 ? 0x00 : 0x11);
+    }
+    out.append("\x00\x3f\x00", 3);
 
     const std::array<std::array<Code, 256>, 4> codes = {codes_of(*specs[0]), codes_of(*specs[1]),
                                                         codes_of(*specs[2]), codes_of(*specs[3])};
@@ -241,17 +249,15 @@ inline std::string encode(const std::vector<std::uint8_t>& rgb, int width, int h
                 for (int x = 0; x < 8; ++x) {
                     const auto px = static_cast<std::size_t>(std::min(left + x, width - 1));
                     const auto py = static_cast<std::size_t>(std::min(top + y, height - 1));
-                    const auto* pixel = &rgb[(py * static_cast<std::size_t>(width) + px) * 3];
-                    const double r = pixel[0];
-                    const double g = pixel[1];
-                    const double b = pixel[2];
+                    std::array<double, 3> pixel{};
+                    sample(px, py, pixel);
                     const auto i = static_cast<std::size_t>(y * 8 + x);
-                    samples[0][i] = 0.299 * r + 0.587 * g + 0.114 * b - 128;
-                    samples[1][i] = -0.168736 * r - 0.331264 * g + 0.5 * b;
-                    samples[2][i] = 0.5 * r - 0.418688 * g - 0.081312 * b;
+                    for (std::size_t c = 0; c < components; ++c) {
+                        samples[c][i] = pixel[c];
+                    }
                 }
             }
-            for (std::size_t c = 0; c < 3; ++c) {
+            for (std::size_t c = 0; c < components; ++c) {
                 const std::size_t table = c == 0 ? 0 : 1;
                 // A separable forward DCT, then quantisation.
                 std::array<double, 64> rows{};
@@ -311,6 +317,40 @@ inline std::string encode(const std::vector<std::uint8_t>& rgb, int width, int h
     writer.finish();
     out += "\xff\xd9";
     return out;
+}
+
+inline void check_size(std::size_t size, int width, int height, std::size_t components) {
+    if (width <= 0 || height <= 0 || width > 65535 || height > 65535 ||
+        size != static_cast<std::size_t>(width) * static_cast<std::size_t>(height) * components) {
+        throw std::invalid_argument("the pixels don't match the size of the image");
+    }
+}
+
+}  // namespace detail
+
+/// Encodes `rgb` (three bytes per pixel, row by row) as a baseline JPEG.
+inline std::string encode(const std::vector<std::uint8_t>& rgb, int width, int height, int quality) {
+    detail::check_size(rgb.size(), width, height, 3);
+    return detail::encode_components(
+        3, width, height, quality, [&](std::size_t x, std::size_t y, std::array<double, 3>& out) {
+            const auto* pixel = &rgb[(y * static_cast<std::size_t>(width) + x) * 3];
+            const double r = pixel[0];
+            const double g = pixel[1];
+            const double b = pixel[2];
+            out[0] = 0.299 * r + 0.587 * g + 0.114 * b - 128;
+            out[1] = -0.168736 * r - 0.331264 * g + 0.5 * b;
+            out[2] = 0.5 * r - 0.418688 * g - 0.081312 * b;
+        });
+}
+
+/// Encodes `grey` (one byte per pixel, row by row) as a greyscale baseline
+/// JPEG.
+inline std::string encode_grey(const std::vector<std::uint8_t>& grey, int width, int height, int quality) {
+    detail::check_size(grey.size(), width, height, 1);
+    return detail::encode_components(
+        1, width, height, quality, [&](std::size_t x, std::size_t y, std::array<double, 3>& out) {
+            out[0] = static_cast<double>(grey[y * static_cast<std::size_t>(width) + x]) - 128;
+        });
 }
 
 }  // namespace examples::jpeg
