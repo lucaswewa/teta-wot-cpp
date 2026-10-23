@@ -14,6 +14,7 @@ How teta-wot-cpp is held to wire-level parity with [teta-wot v0.1.0](https://git
 | `twin-server-cpp/` | The C++ twin server (`twin-server`): the twins' registry with teta-wot-cpp's command line (`tw::cli::serve_from_cli`), for `run.py`. CTest runs `run.py check` against it (`conformance.http`, `conformance.cli`). |
 | `scenarios/cli/`, `fixtures/cli/` | The command line: arguments, configurations, exit codes, output and the fallback server (`run.py --cli`). |
 | `run.py` | The harness: `capture`, `check` and `diff` (see its docstring). Python 3, standard library only. |
+| `browse_mdns.py` | Finds a server's DNS-SD advertisement with Python's `zeroconf` and checks its TXT record (`conformance.mdns`; skipped without it). |
 | `validate_openapi.py` | Validates every OpenAPI document the C++ servers serve (each scenario configuration, each example) with `openapi-spec-validator` (`conformance.openapi`; skipped without it). |
 
 ## The twins
@@ -57,6 +58,10 @@ They are ported from the `wot` repository's `conformance/twin-server` to teta-wo
 | `openapi` | The OpenAPI document of every twin (but `ndarray_probe`), byte for byte |
 | `openapi-wot` | The same in the `wot` profile |
 | `openapi-prefixed` | The same under an API prefix: the document stays at the root, its paths carry the prefix |
+| `discovery` | `/.well-known/wot` and the directory: listings, collections, pages and their links, every kind of bad argument, retrieval by plain, escaped and odd IDs, `HEAD`, 405s, redirects |
+| `discovery-wot` | The same in the `wot` profile under a prefix, and the profile's own 405 and 404 beside discovery's |
+| `security-basic` | HTTP Basic: the public descriptions, refused reads, writes, invocations, events and WebSocket upgrades, wrong and odd credentials, the right ones, and 404, 405 and redirects before the challenge |
+| `security-bearer` | A bearer token, in the `wot` profile under a prefix |
 | `docs` | The docs routes: `/openapi.json`, `/docs`, `/docs/oauth2-redirect`, `/redoc`, with `HEAD`, 405s, redirects, CORS and a query; no assets without `TETA_WOT_DOCS_OFFLINE`; nothing served from the server's working directory (`workdir_files`) |
 | `settings-load` | A server started with a settings file already there (as teta-wot writes it): loaded, not rewritten by loading, rewritten identically by the next save; no file for a Thing without settings |
 
@@ -75,6 +80,9 @@ Example scenarios (`scenarios/examples/`, run with `--examples`) compare an exam
 | `sse-observe` | The thermometer's TD and stream (its readings depend on the time, so only the answer's headers) |
 | `blob-camera` | The TD, captures from memory and from a file, their downloads' headers, `describe` with a found, an unknown and a mistyped Blob, the capture count (not the JPEGs, which differ: see the Phase 7 note) |
 | `docs-offline` | The docs pages and their compiled-in assets (headers only: teta-wot's Windows build embeds CRLF copies), the lamp; only with `TETA_WOT_DOCS_OFFLINE` |
+| `bearer-security` | The safe: refused without the token or with a wrong one, opened and locked with it, the public descriptions, a refused WebSocket |
+| `node-wot-consumer` | The lamp in the `tetathing` profile, as node-wot uses it: an observed write, the synchronous action, a fade |
+| `discovery` | The well-known TD, the directory and a page of it, both Things' TDs (the advertisement itself: `conformance.mdns`, and the example's demo) |
 | `mjpeg-stream` | The TD, the viewer page, the stream's headers, `fps` and its bounds, a snapshot and its download's headers, `sharpness` (not the JPEGs, nor so their sizes) |
 
 `tds` and `tds-wot` need `ndarray_probe`, which the C++ twin server serves from Phase 10; the other scenarios run against it.
@@ -86,8 +94,9 @@ cd conformance/reference-rs && cargo build --release --locked && cd ../..
 python3 conformance/run.py capture --server conformance/reference-rs/target/release/reference-server
 python3 conformance/run.py check --server <a server>
 python3 conformance/run.py diff --server conformance/reference-rs/target/release/reference-server --server <a server>
-python3 conformance/run.py check --server build/<preset>/conformance/twin-server-cpp/twin-server counter validation default locked prefixed wot settings settings-load ws sse sse-wot events blobs blobs-wot streams openapi openapi-wot openapi-prefixed docs
+python3 conformance/run.py check --server build/<preset>/conformance/twin-server-cpp/twin-server counter validation default locked prefixed wot settings settings-load ws sse sse-wot events blobs blobs-wot streams openapi openapi-wot openapi-prefixed docs discovery discovery-wot security-basic security-bearer
 python3 conformance/validate_openapi.py --server build/<preset>/conformance/twin-server-cpp/twin-server --examples 'build/<preset>/examples/{name}/example-{name}'
+python3 conformance/browse_mdns.py --server build/<preset>/conformance/twin-server-cpp/twin-server
 python3 conformance/run.py capture --cli --server conformance/reference-rs/target/release/reference-server
 python3 conformance/run.py check --cli --server build/<preset>/conformance/twin-server-cpp/twin-server
 python3 conformance/run.py capture --examples --server '<teta-wot>/target/release/{name}'

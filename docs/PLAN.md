@@ -82,7 +82,8 @@ teta-wot-cpp/
   fuzz/                      libFuzzer targets
   tools/soak/                the soak tool
   docs/                      this plan, ADRs, phase notes, the guide (mdBook, as teta-wot's)
-  third_party/               vendored: mdns.h (mjansson/mdns), Swagger UI and ReDoc assets
+  third_party/               vendored: mdns.h (mjansson/mdns)
+  assets/                    Swagger UI and ReDoc, as teta-wot vendors them (Phase 8)
 ```
 
 ### 2.2 Runtime model
@@ -327,6 +328,8 @@ OpenAPI 3.1 generation with `teta-wot`'s `operationId`s, Swagger UI and ReDoc pa
 **Gate:** `/openapi.json` byte-equal to the Rust server's for every twin configuration and both profiles; `openapi-spec-validator` passes; `openapi-export`, `docs-offline` examples.
 
 ### Phase 9: WoT profile, discovery, security (M–L)
+
+**Done** (2026-10-23): see the [Phase 9 note](notes/phase-09-discovery.md). The fixtures are `fixtures/http/discovery.json`, `discovery-wot.json`, `security-basic.json` and `security-bearer.json`, and the examples' `bearer-security`, `node-wot-consumer` and `discovery`.
 
 The `wot` wire profile (204s, problem details, `ActionStatus`, synchronous actions, named SSE), top-level forms, `/.well-known/wot` and the directory, DNS-SD, Basic and bearer security.
 
