@@ -57,6 +57,21 @@ try {
     }
     Write-Output "the log shows a graceful stop"
 }
+catch {
+    # What the service did, for the failure's diagnosis.
+    Write-Output "the service: $((Get-Service $name -ErrorAction SilentlyContinue).Status)"
+    Get-Process -Name ([IO.Path]::GetFileNameWithoutExtension($exe)) -ErrorAction SilentlyContinue | Format-Table Id, StartTime, Responding
+    Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue | Format-Table LocalAddress, State, OwningProcess
+    Get-WinEvent -FilterHashtable @{LogName = "System"; ProviderName = "Service Control Manager"} -MaxEvents 8 `
+        -ErrorAction SilentlyContinue | Format-List TimeCreated, Message
+    if (Test-Path $log) {
+        Write-Output "the service's log:"
+        Get-Content $log -Tail 80
+    } else {
+        Write-Output "no log at $log"
+    }
+    throw
+}
 finally {
     & $exe uninstall
 }
