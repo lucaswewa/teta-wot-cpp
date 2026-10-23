@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <atomic>
 #include <condition_variable>
+#include <filesystem>
 #include <format>
 #include <mutex>
 #include <system_error>
@@ -13,7 +14,9 @@
 #include "mdns.hpp"
 #endif
 #include "teta/wot/log.hpp"
+#include "teta/wot/settings.hpp"
 #include "teta/wot/systemd.hpp"
+#include "teta/wot/uuid.hpp"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -214,10 +217,20 @@ bool run_drogon(const detail::ListenAddress& address, std::stop_token stop,
         drogon::app().getLoop()->queueInLoop([] { drogon::app().quit(); });
     });
 
+    // Drogon makes 256 directories for uploads when it starts, under
+    // `./uploads` by default: in the working directory, which for a Windows
+    // service is System32. The binding reads bodies itself, so they go to a
+    // temporary folder, removed afterwards.
+    std::error_code error;
+    auto uploads = std::filesystem::temp_directory_path(error);
+    uploads /= "teta-wot-drogon-" + Uuid::v4().to_string();
+    app.setUploadPath(detail::path_text(uploads));
+
     app.run();
 
     stopper.request_stop();
     stopper.join();
+    std::filesystem::remove_all(uploads, error);
     return stopped;
 }
 

@@ -134,15 +134,27 @@ std::filesystem::path write_config(const std::filesystem::path& folder) {
 
 /// Sends standard error (where the log goes) and standard output to `file`.
 bool log_to(const std::string& file) {
+    // A stream whose reopening fails is closed, and writing to a closed
+    // stream ends the process: it is sent to the null device instead.
+    const auto reopen = [path = path_of(file)](FILE* stream) {
 #ifdef _WIN32
-    const auto path = path_of(file).wstring();
-    FILE* reopened_stream = nullptr;
-    const bool reopened = _wfreopen_s(&reopened_stream, path.c_str(), L"a", stderr) == 0 &&
-                          _wfreopen_s(&reopened_stream, path.c_str(), L"a", stdout) == 0;
+        // Not `_wfreopen_s`, which opens the file without sharing: the
+        // second stream couldn't open it.
+#pragma warning(suppress : 4996)
+        if (_wfreopen(path.c_str(), L"a", stream)) {
+            return true;
+        }
+#pragma warning(suppress : 4996)
+        (void)_wfreopen(L"NUL", L"w", stream);
 #else
-    const auto path = path_of(file);
-    const bool reopened = std::freopen(path.c_str(), "a", stderr) && std::freopen(path.c_str(), "a", stdout);
+        if (std::freopen(path.c_str(), "a", stream)) {
+            return true;
+        }
+        (void)std::freopen("/dev/null", "w", stream);
 #endif
+        return false;
+    };
+    const bool reopened = reopen(stderr) && reopen(stdout);
     std::setvbuf(stderr, nullptr, _IONBF, 0);
     std::setvbuf(stdout, nullptr, _IONBF, 0);
     return reopened;
