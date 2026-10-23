@@ -12,3 +12,4 @@ One note per phase: what was built, what was measured, and where the work depart
 | 5 | [Composition, settings, configuration, lifecycle](phase-05-composition.md) | Done |
 | 6 | [Observation and events](phase-06-observation.md) | Done |
 | 7 | [Blobs and MJPEG](phase-07-blobs.md) | Done |
+| 8 | [OpenAPI and docs](phase-08-openapi.md) | Done |
