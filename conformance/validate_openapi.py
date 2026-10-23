@@ -3,7 +3,7 @@
     python3 conformance/validate_openapi.py --server PATH [--examples PATTERN]
 
 The twin server is started with every scenario configuration in
-`conformance/scenarios/http/` (but those with Things it doesn't have), and,
+`conformance/scenarios/http/`, and,
 with `--examples`, each example that serves (a pattern with `{name}`, as for
 `run.py --examples`); each `/openapi.json` must be a valid OpenAPI 3.1
 document. Exits 77 when openapi-spec-validator isn't installed
@@ -26,8 +26,6 @@ except ImportError:
     print("openapi-spec-validator isn't installed: skipped")
     sys.exit(77)
 
-# Things the C++ twin server doesn't have yet (Phase 10).
-MISSING = ["twins.ndarray_probe:NDArrayProbe"]
 
 
 def main():
@@ -38,8 +36,6 @@ def main():
     targets = []
     for path in sorted((HERE / "scenarios" / "http").glob("*.json")):
         scenario = json.loads(path.read_text(encoding="utf-8"))
-        if any(name in json.dumps(scenario.get("config", {})) for name in MISSING):
-            continue
         targets.append((path.stem, args.server, scenario))
     if args.examples:
         for path in sorted((HERE / "scenarios" / "examples").glob("*.json")):

@@ -2,8 +2,8 @@
 // of the `wot` repository's), served under the same names, so that the C++
 // server can be compared with the reference (ADR-0011).
 //
-// Phase 3 ported seven of the nine, and Phase 7 `blob_probe`; `ndarray_probe`
-// follows with arrays (Phase 10).
+// Phase 3 ported seven of the nine, Phase 7 `blob_probe` and Phase 10
+// `ndarray_probe`.
 
 #pragma once
 
@@ -207,6 +207,21 @@ class BlobProbe {
     void stop_stream();
     void restart_stream();
     static void define(tw::ThingSpec<BlobProbe>& t);
+};
+
+/// The `NDArrayProbe` probe of arrays.
+class NDArrayProbe {
+  public:
+    tw::NdArray<> matrix() const;
+    void set_matrix(tw::NdArray<> value);
+    tw::NdArray<> twice(tw::NdArray<> arr);
+    tw::NdArray<std::int64_t> ramp(std::int64_t n);
+    double total(tw::NdArray<> arr);
+    static void define(tw::ThingSpec<NDArrayProbe>& t);
+
+  private:
+    mutable std::mutex mutex_;
+    tw::NdArray<> matrix_ = tw::NdArray<>::zeros({2, 3});
 };
 
 /// What happened.

@@ -22,6 +22,7 @@
 #include "teta/wot/json.hpp"
 #include "teta/wot/lock.hpp"
 #include "teta/wot/log.hpp"
+#include "teta/wot/ndarray.hpp"
 #include "teta/wot/pool.hpp"
 #include "teta/wot/problem.hpp"
 #include "teta/wot/property.hpp"

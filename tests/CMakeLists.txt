@@ -7,6 +7,7 @@ add_executable(teta-wot-tests
     core/cancel_test.cpp
     core/device_test.cpp
     core/log_test.cpp
+    core/ndarray_test.cpp
     core/nested_test.cpp
     core/property_test.cpp
     core/runtime_test.cpp
@@ -52,12 +53,11 @@ gtest_discover_tests(teta-wot-tests DISCOVERY_MODE PRE_TEST)
 add_subdirectory(compile_fail)
 
 # The HTTP fixtures over real sockets: run.py against the C++ twin server.
-# `tds` and `tds-wot` need Things of later phases.
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
-    set(http_scenarios counter validation default locked prefixed wot settings settings-load ws sse sse-wot events
-        blobs blobs-wot streams openapi openapi-wot openapi-prefixed discovery discovery-wot security-basic
-        security-bearer)
+    set(http_scenarios counter tds tds-wot validation default locked prefixed wot settings settings-load ws sse
+        sse-wot events blobs blobs-wot streams openapi openapi-wot openapi-prefixed discovery discovery-wot
+        security-basic security-bearer arrays arrays-wot)
     if(NOT TETA_WOT_DOCS_OFFLINE)
         # The reference serves the docs pages without their assets; with the
         # option, the pages load them from the server (the docs-offline

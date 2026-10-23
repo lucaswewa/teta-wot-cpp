@@ -1,0 +1,3089 @@
+{
+  "config": {
+    "things": {
+      "ndarray_probe": "twins.ndarray_probe:NDArrayProbe"
+    },
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "td",
+        "method": "GET",
+        "path": "/ndarray_probe/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "id": "urn:uuid:<uuid:0>",
+          "title": "NDArrayProbe",
+          "properties": {
+            "matrix": {
+              "description": "A matrix of numbers, 2 by 3 to start with.",
+              "title": "A matrix of numbers, 2 by 3 to start with.",
+              "writeOnly": false,
+              "readOnly": false,
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "oneOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "forms": [
+                {
+                  "href": "/ndarray_probe/matrix",
+                  "op": [
+                    "readproperty",
+                    "writeproperty"
+                  ]
+                }
+              ]
+            }
+          },
+          "actions": {
+            "double": {
+              "description": "Double every element of an array.",
+              "title": "Double every element of an array.",
+              "forms": [
+                {
+                  "href": "/ndarray_probe/double",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "double_input",
+                "type": "object",
+                "properties": {
+                  "arr": {
+                    "description": "A RootModel describing a list-of-lists up to 7 deep.\n\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\nserialised to a list. It is used in the annotated `.NDArray` type.",
+                    "title": "NestedListOfNumbersModel",
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "oneOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "oneOf": [
+                                    {
+                                      "type": "integer"
+                                    },
+                                    {
+                                      "type": "number"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "oneOf": [
+                                      {
+                                        "type": "integer"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {}
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "arr"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "description": "A RootModel describing a list-of-lists up to 7 deep.\n\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\nserialised to a list. It is used in the annotated `.NDArray` type.",
+                "title": "double_output",
+                "oneOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "oneOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "synchronous": false
+            },
+            "ramp": {
+              "description": "Return the integers from 0 to n - 1.",
+              "title": "Return the integers from 0 to n - 1.",
+              "forms": [
+                {
+                  "href": "/ndarray_probe/ramp",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "ramp_input",
+                "type": "object",
+                "properties": {
+                  "n": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "n"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "description": "A RootModel describing a list-of-lists up to 7 deep.\n\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\nserialised to a list. It is used in the annotated `.NDArray` type.",
+                "title": "ramp_output",
+                "oneOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "integer"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "integer"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "oneOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "synchronous": false
+            },
+            "total": {
+              "description": "Add up every element of an array.",
+              "title": "Add up every element of an array.",
+              "forms": [
+                {
+                  "href": "/ndarray_probe/total",
+                  "op": [
+                    "invokeaction"
+                  ]
+                },
+                {
+                  "href": "/action_invocations/{id}",
+                  "op": [
+                    "queryaction",
+                    "cancelaction"
+                  ]
+                }
+              ],
+              "uriVariables": {
+                "id": {
+                  "title": "Invocation ID",
+                  "format": "uuid",
+                  "type": "string"
+                }
+              },
+              "input": {
+                "title": "total_input",
+                "type": "object",
+                "properties": {
+                  "arr": {
+                    "description": "A RootModel describing a list-of-lists up to 7 deep.\n\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\nserialised to a list. It is used in the annotated `.NDArray` type.",
+                    "title": "NestedListOfNumbersModel",
+                    "oneOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "oneOf": [
+                            {
+                              "type": "integer"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "oneOf": [
+                              {
+                                "type": "integer"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "oneOf": [
+                                {
+                                  "type": "integer"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "oneOf": [
+                                  {
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "oneOf": [
+                                    {
+                                      "type": "integer"
+                                    },
+                                    {
+                                      "type": "number"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "oneOf": [
+                                      {
+                                        "type": "integer"
+                                      },
+                                      {
+                                        "type": "number"
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "items": {}
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "arr"
+                ],
+                "additionalProperties": false
+              },
+              "output": {
+                "title": "total_output",
+                "type": "number"
+              },
+              "synchronous": false
+            }
+          },
+          "description": "A Thing with array-valued affordances.\n\n    It is used to check how arrays are described and serialised.\n    ",
+          "forms": [
+            {
+              "href": "/ndarray_probe/properties",
+              "op": [
+                "readallproperties",
+                "writemultipleproperties"
+              ]
+            },
+            {
+              "href": "/ndarray_probe/actions",
+              "op": [
+                "queryallactions"
+              ]
+            }
+          ],
+          "base": "http://testserver/",
+          "securityDefinitions": {
+            "no_security": {
+              "description": "No security",
+              "scheme": "nosec"
+            }
+          },
+          "security": "no_security",
+          "@context": "https://www.w3.org/2022/wot/td/v1.1"
+        },
+        "text": "{\"id\":\"urn:uuid:<uuid:0>\",\"title\":\"NDArrayProbe\",\"properties\":{\"matrix\":{\"description\":\"A matrix of numbers, 2 by 3 to start with.\",\"title\":\"A matrix of numbers, 2 by 3 to start with.\",\"writeOnly\":false,\"readOnly\":false,\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{}}}}}}}}],\"forms\":[{\"href\":\"/ndarray_probe/matrix\",\"op\":[\"readproperty\",\"writeproperty\"]}]}},\"actions\":{\"double\":{\"description\":\"Double every element of an array.\",\"title\":\"Double every element of an array.\",\"forms\":[{\"href\":\"/ndarray_probe/double\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"double_input\",\"type\":\"object\",\"properties\":{\"arr\":{\"description\":\"A RootModel describing a list-of-lists up to 7 deep.\\n\\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\\nserialised to a list. It is used in the annotated `.NDArray` type.\",\"title\":\"NestedListOfNumbersModel\",\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{}}}}}}}}]}},\"required\":[\"arr\"],\"additionalProperties\":false},\"output\":{\"description\":\"A RootModel describing a list-of-lists up to 7 deep.\\n\\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\\nserialised to a list. It is used in the annotated `.NDArray` type.\",\"title\":\"double_output\",\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{}}}}}}}}]},\"synchronous\":false},\"ramp\":{\"description\":\"Return the integers from 0 to n - 1.\",\"title\":\"Return the integers from 0 to n - 1.\",\"forms\":[{\"href\":\"/ndarray_probe/ramp\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"ramp_input\",\"type\":\"object\",\"properties\":{\"n\":{\"type\":\"integer\"}},\"required\":[\"n\"],\"additionalProperties\":false},\"output\":{\"description\":\"A RootModel describing a list-of-lists up to 7 deep.\\n\\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\\nserialised to a list. It is used in the annotated `.NDArray` type.\",\"title\":\"ramp_output\",\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{}}}}}}}}]},\"synchronous\":false},\"total\":{\"description\":\"Add up every element of an array.\",\"title\":\"Add up every element of an array.\",\"forms\":[{\"href\":\"/ndarray_probe/total\",\"op\":[\"invokeaction\"]},{\"href\":\"/action_invocations/{id}\",\"op\":[\"queryaction\",\"cancelaction\"]}],\"uriVariables\":{\"id\":{\"title\":\"Invocation ID\",\"format\":\"uuid\",\"type\":\"string\"}},\"input\":{\"title\":\"total_input\",\"type\":\"object\",\"properties\":{\"arr\":{\"description\":\"A RootModel describing a list-of-lists up to 7 deep.\\n\\nThis is used to generate a JSONSchema description of a `numpy.ndarray`\\nserialised to a list. It is used in the annotated `.NDArray` type.\",\"title\":\"NestedListOfNumbersModel\",\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"},{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"oneOf\":[{\"type\":\"integer\"},{\"type\":\"number\"}]}}}}}}},{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{\"type\":\"array\",\"items\":{}}}}}}}}]}},\"required\":[\"arr\"],\"additionalProperties\":false},\"output\":{\"title\":\"total_output\",\"type\":\"number\"},\"synchronous\":false}},\"description\":\"A Thing with array-valued affordances.\\n\\n    It is used to check how arrays are described and serialised.\\n    \",\"forms\":[{\"href\":\"/ndarray_probe/properties\",\"op\":[\"readallproperties\",\"writemultipleproperties\"]},{\"href\":\"/ndarray_probe/actions\",\"op\":[\"queryallactions\"]}],\"base\":\"http://testserver/\",\"securityDefinitions\":{\"no_security\":{\"description\":\"No security\",\"scheme\":\"nosec\"}},\"security\":\"no_security\",\"@context\":\"https://www.w3.org/2022/wot/td/v1.1\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "matrix",
+        "method": "GET",
+        "path": "/ndarray_probe/matrix"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          [
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0
+          ]
+        ],
+        "text": "[[0.0,0.0,0.0],[0.0,0.0,0.0]]"
+      }
+    },
+    {
+      "step": {
+        "name": "write_ints",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ]
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "read_ints",
+        "method": "GET",
+        "path": "/ndarray_probe/matrix"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          [
+            1.0,
+            2.0
+          ],
+          [
+            3.0,
+            4.0
+          ]
+        ],
+        "text": "[[1.0,2.0],[3.0,4.0]]"
+      }
+    },
+    {
+      "step": {
+        "name": "write_cube",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          [
+            [
+              1.5
+            ]
+          ]
+        ]
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "read_cube",
+        "method": "GET",
+        "path": "/ndarray_probe/matrix"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          [
+            [
+              1.5
+            ]
+          ]
+        ],
+        "text": "[[[1.5]]]"
+      }
+    },
+    {
+      "step": {
+        "name": "write_scalar",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": 5
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "read_scalar",
+        "method": "GET",
+        "path": "/ndarray_probe/matrix"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": 5.0,
+        "text": "5.0"
+      }
+    },
+    {
+      "step": {
+        "name": "write_empty",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": []
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "read_empty",
+        "method": "GET",
+        "path": "/ndarray_probe/matrix"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [],
+        "text": "[]"
+      }
+    },
+    {
+      "step": {
+        "name": "write_empty_rows",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          [],
+          []
+        ]
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "read_empty_rows",
+        "method": "GET",
+        "path": "/ndarray_probe/matrix"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          [],
+          []
+        ],
+        "text": "[[],[]]"
+      }
+    },
+    {
+      "step": {
+        "name": "write_deep",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          [
+            [
+              [
+                [
+                  [
+                    [
+                      [
+                        1
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "read_deep",
+        "method": "GET",
+        "path": "/ndarray_probe/matrix"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          [
+            [
+              [
+                [
+                  [
+                    [
+                      [
+                        1.0
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        "text": "[[[[[[[[1.0]]]]]]]]"
+      }
+    },
+    {
+      "step": {
+        "name": "write_ragged",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          [
+            1,
+            2
+          ],
+          [
+            3
+          ]
+        ]
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "value_error",
+              "loc": [
+                "body"
+              ],
+              "msg": "Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.",
+              "input": [
+                [
+                  1,
+                  2
+                ],
+                [
+                  3
+                ]
+              ],
+              "ctx": {
+                "error": {}
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\"],\"msg\":\"Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.\",\"input\":[[1,2],[3]],\"ctx\":{\"error\":{}}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_ragged_deeper",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          [
+            [
+              1,
+              2
+            ],
+            [
+              3
+            ]
+          ],
+          [
+            [
+              4,
+              5
+            ],
+            [
+              6,
+              7
+            ]
+          ]
+        ]
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "value_error",
+              "loc": [
+                "body"
+              ],
+              "msg": "Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 2 dimensions. The detected shape was (2, 2) + inhomogeneous part.",
+              "input": [
+                [
+                  [
+                    1,
+                    2
+                  ],
+                  [
+                    3
+                  ]
+                ],
+                [
+                  [
+                    4,
+                    5
+                  ],
+                  [
+                    6,
+                    7
+                  ]
+                ]
+              ],
+              "ctx": {
+                "error": {}
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\"],\"msg\":\"Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 2 dimensions. The detected shape was (2, 2) + inhomogeneous part.\",\"input\":[[[1,2],[3]],[[4,5],[6,7]]],\"ctx\":{\"error\":{}}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_mixed",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          1,
+          [
+            2
+          ]
+        ]
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "value_error",
+              "loc": [
+                "body"
+              ],
+              "msg": "Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.",
+              "input": [
+                1,
+                [
+                  2
+                ]
+              ],
+              "ctx": {
+                "error": {}
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\"],\"msg\":\"Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.\",\"input\":[1,[2]],\"ctx\":{\"error\":{}}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_mixed_deeper",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            [
+              4
+            ]
+          ]
+        ]
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "value_error",
+              "loc": [
+                "body"
+              ],
+              "msg": "Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 2 dimensions. The detected shape was (2, 2) + inhomogeneous part.",
+              "input": [
+                [
+                  1,
+                  2
+                ],
+                [
+                  3,
+                  [
+                    4
+                  ]
+                ]
+              ],
+              "ctx": {
+                "error": {}
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\"],\"msg\":\"Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 2 dimensions. The detected shape was (2, 2) + inhomogeneous part.\",\"input\":[[1,2],[3,[4]]],\"ctx\":{\"error\":{}}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_strings",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          [
+            "a",
+            "b"
+          ]
+        ]
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "int_type",
+              "loc": [
+                "body",
+                "int"
+              ],
+              "msg": "Input should be a valid integer",
+              "input": [
+                [
+                  "a",
+                  "b"
+                ]
+              ]
+            },
+            {
+              "type": "float_type",
+              "loc": [
+                "body",
+                "float"
+              ],
+              "msg": "Input should be a valid number",
+              "input": [
+                [
+                  "a",
+                  "b"
+                ]
+              ]
+            },
+            {
+              "type": "int_type",
+              "loc": [
+                "body",
+                "list",
+                0,
+                "int"
+              ],
+              "msg": "Input should be a valid integer",
+              "input": [
+                "a",
+                "b"
+              ]
+            },
+            {
+              "type": "float_type",
+              "loc": [
+                "body",
+                "list",
+                0,
+                "float"
+              ],
+              "msg": "Input should be a valid number",
+              "input": [
+                "a",
+                "b"
+              ]
+            },
+            {
+              "type": "int_parsing",
+              "loc": [
+                "body",
+                "list",
+                0,
+                0,
+                "int"
+              ],
+              "msg": "Input should be a valid integer, unable to parse string as an integer",
+              "input": "a"
+            },
+            {
+              "type": "float_parsing",
+              "loc": [
+                "body",
+                "list",
+                0,
+                0,
+                "float"
+              ],
+              "msg": "Input should be a valid number, unable to parse string as a number",
+              "input": "a"
+            },
+            {
+              "type": "int_parsing",
+              "loc": [
+                "body",
+                "list",
+                0,
+                1,
+                "int"
+              ],
+              "msg": "Input should be a valid integer, unable to parse string as an integer",
+              "input": "b"
+            },
+            {
+              "type": "float_parsing",
+              "loc": [
+                "body",
+                "list",
+                0,
+                1,
+                "float"
+              ],
+              "msg": "Input should be a valid number, unable to parse string as a number",
+              "input": "b"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list",
+                0,
+                0
+              ],
+              "msg": "Input should be a valid list",
+              "input": "a"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list",
+                0,
+                1
+              ],
+              "msg": "Input should be a valid list",
+              "input": "b"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list",
+                0,
+                0
+              ],
+              "msg": "Input should be a valid list",
+              "input": "a"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list",
+                0,
+                1
+              ],
+              "msg": "Input should be a valid list",
+              "input": "b"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list",
+                0,
+                0
+              ],
+              "msg": "Input should be a valid list",
+              "input": "a"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list",
+                0,
+                1
+              ],
+              "msg": "Input should be a valid list",
+              "input": "b"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list",
+                0,
+                0
+              ],
+              "msg": "Input should be a valid list",
+              "input": "a"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list",
+                0,
+                1
+              ],
+              "msg": "Input should be a valid list",
+              "input": "b"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list",
+                0,
+                0
+              ],
+              "msg": "Input should be a valid list",
+              "input": "a"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list",
+                0,
+                1
+              ],
+              "msg": "Input should be a valid list",
+              "input": "b"
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"int_type\",\"loc\":[\"body\",\"int\"],\"msg\":\"Input should be a valid integer\",\"input\":[[\"a\",\"b\"]]},{\"type\":\"float_type\",\"loc\":[\"body\",\"float\"],\"msg\":\"Input should be a valid number\",\"input\":[[\"a\",\"b\"]]},{\"type\":\"int_type\",\"loc\":[\"body\",\"list\",0,\"int\"],\"msg\":\"Input should be a valid integer\",\"input\":[\"a\",\"b\"]},{\"type\":\"float_type\",\"loc\":[\"body\",\"list\",0,\"float\"],\"msg\":\"Input should be a valid number\",\"input\":[\"a\",\"b\"]},{\"type\":\"int_parsing\",\"loc\":[\"body\",\"list\",0,0,\"int\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"a\"},{\"type\":\"float_parsing\",\"loc\":[\"body\",\"list\",0,0,\"float\"],\"msg\":\"Input should be a valid number, unable to parse string as a number\",\"input\":\"a\"},{\"type\":\"int_parsing\",\"loc\":[\"body\",\"list\",0,1,\"int\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"b\"},{\"type\":\"float_parsing\",\"loc\":[\"body\",\"list\",0,1,\"float\"],\"msg\":\"Input should be a valid number, unable to parse string as a number\",\"input\":\"b\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\",0,0],\"msg\":\"Input should be a valid list\",\"input\":\"a\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\",0,1],\"msg\":\"Input should be a valid list\",\"input\":\"b\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\",0,0],\"msg\":\"Input should be a valid list\",\"input\":\"a\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\",0,1],\"msg\":\"Input should be a valid list\",\"input\":\"b\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\",0,0],\"msg\":\"Input should be a valid list\",\"input\":\"a\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\",0,1],\"msg\":\"Input should be a valid list\",\"input\":\"b\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\",0,0],\"msg\":\"Input should be a valid list\",\"input\":\"a\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\",0,1],\"msg\":\"Input should be a valid list\",\"input\":\"b\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\",0,0],\"msg\":\"Input should be a valid list\",\"input\":\"a\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\",0,1],\"msg\":\"Input should be a valid list\",\"input\":\"b\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_string",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": "x"
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "int_parsing",
+              "loc": [
+                "body",
+                "int"
+              ],
+              "msg": "Input should be a valid integer, unable to parse string as an integer",
+              "input": "x"
+            },
+            {
+              "type": "float_parsing",
+              "loc": [
+                "body",
+                "float"
+              ],
+              "msg": "Input should be a valid number, unable to parse string as a number",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"int_parsing\",\"loc\":[\"body\",\"int\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"x\"},{\"type\":\"float_parsing\",\"loc\":[\"body\",\"float\"],\"msg\":\"Input should be a valid number, unable to parse string as a number\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":\"x\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_null",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": null
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body"
+              ],
+              "msg": "Field required",
+              "input": null
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\"],\"msg\":\"Field required\",\"input\":null}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_object",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": {
+          "a": 1
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "int_type",
+              "loc": [
+                "body",
+                "int"
+              ],
+              "msg": "Input should be a valid integer",
+              "input": {
+                "a": 1
+              }
+            },
+            {
+              "type": "float_type",
+              "loc": [
+                "body",
+                "float"
+              ],
+              "msg": "Input should be a valid number",
+              "input": {
+                "a": 1
+              }
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": {
+                "a": 1
+              }
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": {
+                "a": 1
+              }
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": {
+                "a": 1
+              }
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": {
+                "a": 1
+              }
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": {
+                "a": 1
+              }
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": {
+                "a": 1
+              }
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "list"
+              ],
+              "msg": "Input should be a valid list",
+              "input": {
+                "a": 1
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"int_type\",\"loc\":[\"body\",\"int\"],\"msg\":\"Input should be a valid integer\",\"input\":{\"a\":1}},{\"type\":\"float_type\",\"loc\":[\"body\",\"float\"],\"msg\":\"Input should be a valid number\",\"input\":{\"a\":1}},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":{\"a\":1}},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":{\"a\":1}},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":{\"a\":1}},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":{\"a\":1}},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":{\"a\":1}},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":{\"a\":1}},{\"type\":\"list_type\",\"loc\":[\"body\",\"list\"],\"msg\":\"Input should be a valid list\",\"input\":{\"a\":1}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_bool",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          [
+            true,
+            2
+          ]
+        ]
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": null,
+        "text": "null"
+      }
+    },
+    {
+      "step": {
+        "name": "unchanged",
+        "method": "GET",
+        "path": "/ndarray_probe/matrix"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "text": "[[1.0,2.0]]"
+      }
+    },
+    {
+      "step": {
+        "name": "write_several",
+        "method": "PUT",
+        "path": "/ndarray_probe/properties",
+        "json": {
+          "matrix": [
+            [
+              9
+            ]
+          ]
+        }
+      },
+      "response": {
+        "status": 204,
+        "headers": {
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "write_several_ragged",
+        "method": "PUT",
+        "path": "/ndarray_probe/properties",
+        "json": {
+          "matrix": [
+            [
+              9
+            ],
+            [
+              1,
+              2
+            ]
+          ]
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "value_error",
+              "loc": [
+                "body",
+                "matrix"
+              ],
+              "msg": "Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.",
+              "input": [
+                [
+                  9
+                ],
+                [
+                  1,
+                  2
+                ]
+              ],
+              "ctx": {
+                "error": {}
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"matrix\"],\"msg\":\"Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.\",\"input\":[[9],[1,2]],\"ctx\":{\"error\":{}}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "all",
+        "method": "GET",
+        "path": "/ndarray_probe/properties"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "matrix": [
+            [
+              9.0
+            ]
+          ]
+        },
+        "text": "{\"matrix\":[[9.0]]}"
+      }
+    },
+    {
+      "step": {
+        "name": "double",
+        "method": "POST",
+        "path": "/ndarray_probe/double",
+        "json": {
+          "arr": [
+            [
+              1,
+              2.5
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:1>",
+          "action": "/ndarray_probe/double",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "arr": [
+              [
+                1.0,
+                2.5
+              ],
+              [
+                3.0,
+                4.0
+              ]
+            ]
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:1>",
+          "action": "/ndarray_probe/double",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:1>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "arr": [
+              [
+                1.0,
+                2.5
+              ],
+              [
+                3.0,
+                4.0
+              ]
+            ]
+          },
+          "output": [
+            [
+              2.0,
+              5.0
+            ],
+            [
+              6.0,
+              8.0
+            ]
+          ],
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:1>\",\"action\":\"/ndarray_probe/double\",\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:1>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"arr\":[[1.0,2.5],[3.0,4.0]]},\"output\":[[2.0,5.0],[6.0,8.0]],\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "double_scalar",
+        "method": "POST",
+        "path": "/ndarray_probe/double",
+        "json": {
+          "arr": 3
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:2>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:2>",
+          "action": "/ndarray_probe/double",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "arr": 3.0
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:2>",
+          "action": "/ndarray_probe/double",
+          "href": "http://testserver/action_invocations/<uuid:2>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:2>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "arr": 3.0
+          },
+          "output": 6.0,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:2>\",\"action\":\"/ndarray_probe/double\",\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:2>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:2>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"arr\":3.0},\"output\":6.0,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "double_empty",
+        "method": "POST",
+        "path": "/ndarray_probe/double",
+        "json": {
+          "arr": []
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:3>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:3>",
+          "action": "/ndarray_probe/double",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "arr": []
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:3>",
+          "action": "/ndarray_probe/double",
+          "href": "http://testserver/action_invocations/<uuid:3>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:3>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "arr": []
+          },
+          "output": [],
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:3>\",\"action\":\"/ndarray_probe/double\",\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:3>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:3>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"arr\":[]},\"output\":[],\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "double_ragged",
+        "method": "POST",
+        "path": "/ndarray_probe/double",
+        "json": {
+          "arr": [
+            [
+              1,
+              2
+            ],
+            [
+              3
+            ]
+          ]
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "value_error",
+              "loc": [
+                "body",
+                "arr"
+              ],
+              "msg": "Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.",
+              "input": [
+                [
+                  1,
+                  2
+                ],
+                [
+                  3
+                ]
+              ],
+              "ctx": {
+                "error": {}
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"arr\"],\"msg\":\"Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.\",\"input\":[[1,2],[3]],\"ctx\":{\"error\":{}}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "double_mixed",
+        "method": "POST",
+        "path": "/ndarray_probe/double",
+        "json": {
+          "arr": [
+            1,
+            [
+              2
+            ]
+          ]
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "value_error",
+              "loc": [
+                "body",
+                "arr"
+              ],
+              "msg": "Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.",
+              "input": [
+                1,
+                [
+                  2
+                ]
+              ],
+              "ctx": {
+                "error": {}
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"arr\"],\"msg\":\"Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.\",\"input\":[1,[2]],\"ctx\":{\"error\":{}}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "double_strings",
+        "method": "POST",
+        "path": "/ndarray_probe/double",
+        "json": {
+          "arr": [
+            "x"
+          ]
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "int_type",
+              "loc": [
+                "body",
+                "arr",
+                "int"
+              ],
+              "msg": "Input should be a valid integer",
+              "input": [
+                "x"
+              ]
+            },
+            {
+              "type": "float_type",
+              "loc": [
+                "body",
+                "arr",
+                "float"
+              ],
+              "msg": "Input should be a valid number",
+              "input": [
+                "x"
+              ]
+            },
+            {
+              "type": "int_parsing",
+              "loc": [
+                "body",
+                "arr",
+                "list",
+                0,
+                "int"
+              ],
+              "msg": "Input should be a valid integer, unable to parse string as an integer",
+              "input": "x"
+            },
+            {
+              "type": "float_parsing",
+              "loc": [
+                "body",
+                "arr",
+                "list",
+                0,
+                "float"
+              ],
+              "msg": "Input should be a valid number, unable to parse string as a number",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "arr",
+                "list",
+                0
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "arr",
+                "list",
+                0
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "arr",
+                "list",
+                0
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "arr",
+                "list",
+                0
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "arr",
+                "list",
+                0
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            },
+            {
+              "type": "list_type",
+              "loc": [
+                "body",
+                "arr",
+                "list",
+                0
+              ],
+              "msg": "Input should be a valid list",
+              "input": "x"
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"int_type\",\"loc\":[\"body\",\"arr\",\"int\"],\"msg\":\"Input should be a valid integer\",\"input\":[\"x\"]},{\"type\":\"float_type\",\"loc\":[\"body\",\"arr\",\"float\"],\"msg\":\"Input should be a valid number\",\"input\":[\"x\"]},{\"type\":\"int_parsing\",\"loc\":[\"body\",\"arr\",\"list\",0,\"int\"],\"msg\":\"Input should be a valid integer, unable to parse string as an integer\",\"input\":\"x\"},{\"type\":\"float_parsing\",\"loc\":[\"body\",\"arr\",\"list\",0,\"float\"],\"msg\":\"Input should be a valid number, unable to parse string as a number\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"arr\",\"list\",0],\"msg\":\"Input should be a valid list\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"arr\",\"list\",0],\"msg\":\"Input should be a valid list\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"arr\",\"list\",0],\"msg\":\"Input should be a valid list\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"arr\",\"list\",0],\"msg\":\"Input should be a valid list\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"arr\",\"list\",0],\"msg\":\"Input should be a valid list\",\"input\":\"x\"},{\"type\":\"list_type\",\"loc\":[\"body\",\"arr\",\"list\",0],\"msg\":\"Input should be a valid list\",\"input\":\"x\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "double_missing",
+        "method": "POST",
+        "path": "/ndarray_probe/double",
+        "json": {}
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "arr"
+              ],
+              "msg": "Field required",
+              "input": {}
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"arr\"],\"msg\":\"Field required\",\"input\":{}}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "ramp",
+        "method": "POST",
+        "path": "/ndarray_probe/ramp",
+        "json": {
+          "n": 5
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:4>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:4>",
+          "action": "/ndarray_probe/ramp",
+          "href": "http://testserver/action_invocations/<uuid:4>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:4>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:4>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "n": 5
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:4>",
+          "action": "/ndarray_probe/ramp",
+          "href": "http://testserver/action_invocations/<uuid:4>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:4>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:4>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "n": 5
+          },
+          "output": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:4>\",\"action\":\"/ndarray_probe/ramp\",\"href\":\"http://testserver/action_invocations/<uuid:4>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:4>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:4>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"n\":5},\"output\":[0,1,2,3,4],\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "ramp_none",
+        "method": "POST",
+        "path": "/ndarray_probe/ramp",
+        "json": {
+          "n": 0
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:5>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:5>",
+          "action": "/ndarray_probe/ramp",
+          "href": "http://testserver/action_invocations/<uuid:5>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:5>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:5>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "n": 0
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:5>",
+          "action": "/ndarray_probe/ramp",
+          "href": "http://testserver/action_invocations/<uuid:5>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:5>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:5>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "n": 0
+          },
+          "output": [],
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:5>\",\"action\":\"/ndarray_probe/ramp\",\"href\":\"http://testserver/action_invocations/<uuid:5>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:5>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:5>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"n\":0},\"output\":[],\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "total",
+        "method": "POST",
+        "path": "/ndarray_probe/total",
+        "json": {
+          "arr": [
+            [
+              1,
+              2
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:6>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:6>",
+          "action": "/ndarray_probe/total",
+          "href": "http://testserver/action_invocations/<uuid:6>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:6>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:6>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "arr": [
+              [
+                1.0,
+                2.0
+              ],
+              [
+                3.0,
+                4.0
+              ]
+            ]
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:6>",
+          "action": "/ndarray_probe/total",
+          "href": "http://testserver/action_invocations/<uuid:6>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:6>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:6>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "arr": [
+              [
+                1.0,
+                2.0
+              ],
+              [
+                3.0,
+                4.0
+              ]
+            ]
+          },
+          "output": 10.0,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:6>\",\"action\":\"/ndarray_probe/total\",\"href\":\"http://testserver/action_invocations/<uuid:6>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:6>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:6>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"arr\":[[1.0,2.0],[3.0,4.0]]},\"output\":10.0,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "total_scalar",
+        "method": "POST",
+        "path": "/ndarray_probe/total",
+        "json": {
+          "arr": 7
+        },
+        "wait": true
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:7>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "id": "<uuid:7>",
+          "action": "/ndarray_probe/total",
+          "href": "http://testserver/action_invocations/<uuid:7>",
+          "timeStarted": "<race>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<race>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:7>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:7>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "arr": 7.0
+          },
+          "output": "<race>",
+          "log": "<race>",
+          "error": "<race>"
+        }
+      },
+      "final": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "id": "<uuid:7>",
+          "action": "/ndarray_probe/total",
+          "href": "http://testserver/action_invocations/<uuid:7>",
+          "timeStarted": "<naive-datetime>",
+          "timeRequested": "<naive-datetime>",
+          "timeCompleted": "<naive-datetime>",
+          "links": [
+            {
+              "href": "http://testserver/action_invocations/<uuid:7>",
+              "type": null,
+              "rel": "self",
+              "anchor": null
+            },
+            {
+              "href": "http://testserver/action_invocations/<uuid:7>/output",
+              "type": null,
+              "rel": "output",
+              "anchor": null
+            }
+          ],
+          "input": {
+            "arr": 7.0
+          },
+          "output": 7.0,
+          "log": [],
+          "error": null
+        },
+        "text": "{\"status\":\"completed\",\"id\":\"<uuid:7>\",\"action\":\"/ndarray_probe/total\",\"href\":\"http://testserver/action_invocations/<uuid:7>\",\"timeStarted\":\"<naive-datetime>\",\"timeRequested\":\"<naive-datetime>\",\"timeCompleted\":\"<naive-datetime>\",\"links\":[{\"href\":\"http://testserver/action_invocations/<uuid:7>\",\"type\":null,\"rel\":\"self\",\"anchor\":null},{\"href\":\"http://testserver/action_invocations/<uuid:7>/output\",\"type\":null,\"rel\":\"output\",\"anchor\":null}],\"input\":{\"arr\":7.0},\"output\":7.0,\"log\":[],\"error\":null}"
+      }
+    },
+    {
+      "step": {
+        "name": "total_ragged",
+        "method": "POST",
+        "path": "/ndarray_probe/total",
+        "json": {
+          "arr": [
+            [
+              [
+                1
+              ],
+              [
+                2
+              ]
+            ],
+            [
+              [
+                3
+              ]
+            ]
+          ]
+        }
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "value_error",
+              "loc": [
+                "body",
+                "arr"
+              ],
+              "msg": "Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.",
+              "input": [
+                [
+                  [
+                    1
+                  ],
+                  [
+                    2
+                  ]
+                ],
+                [
+                  [
+                    3
+                  ]
+                ]
+              ],
+              "ctx": {
+                "error": {}
+              }
+            }
+          ]
+        },
+        "text": "{\"detail\":[{\"type\":\"value_error\",\"loc\":[\"body\",\"arr\"],\"msg\":\"Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.\",\"input\":[[[1],[2]],[[3]]],\"ctx\":{\"error\":{}}}]}"
+      }
+    }
+  ]
+}

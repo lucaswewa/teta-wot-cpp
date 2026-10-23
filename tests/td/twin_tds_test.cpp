@@ -4,8 +4,8 @@
 // `tds-wot.json`) byte for byte, after the fixtures' normalisation. This was
 // the Phase 1 gate with hand-written descriptions; since Phase 3 it checks
 // the definitions themselves: names, docstrings, types, parameters,
-// defaults, constraints. `blob_probe` joined in Phase 7; `ndarray_probe`
-// follows with arrays (Phase 10).
+// defaults, constraints. `blob_probe` joined in Phase 7, and `ndarray_probe`
+// in Phase 10: every twin is compared.
 
 #include <gtest/gtest.h>
 
@@ -89,8 +89,8 @@ void compare_with_fixture(const char* fixture, bool wot_profile) {
         const std::string name = step["step"]["path"].get<std::string>().substr(1);
         const std::string thing = name.substr(0, name.size() - 1);
         if (!runtime().thing(thing)) {
-            continue;  // blob_probe, ndarray_probe: later phases (they are the last steps, so the
-                       // UUID numbering of the others doesn't depend on them)
+            ADD_FAILURE() << "no C++ twin " << thing;
+            continue;
         }
         const auto td = served(thing, wot_profile);
         EXPECT_EQ(normaliser.text(tw::json::dump(td::to_json(td))),
@@ -98,7 +98,7 @@ void compare_with_fixture(const char* fixture, bool wot_profile) {
             << thing << " in " << fixture;
         ++compared;
     }
-    EXPECT_EQ(compared, 8);
+    EXPECT_EQ(compared, 9);
 }
 
 TEST(TwinTds, EqualTheReferenceInTheTetathingProfile) {

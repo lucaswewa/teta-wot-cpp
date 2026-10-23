@@ -1,0 +1,341 @@
+{
+  "config": {
+    "things": {
+      "ndarray_probe": "twins.ndarray_probe:NDArrayProbe"
+    },
+    "wire_profile": "wot",
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "step": {
+        "name": "write",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ]
+      },
+      "response": {
+        "status": 204,
+        "headers": {
+          "vary": "Origin"
+        },
+        "body": null
+      }
+    },
+    {
+      "step": {
+        "name": "read",
+        "method": "GET",
+        "path": "/ndarray_probe/matrix"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": [
+          [
+            1.0,
+            2.0
+          ],
+          [
+            3.0,
+            4.0
+          ]
+        ],
+        "text": "[[1.0,2.0],[3.0,4.0]]"
+      }
+    },
+    {
+      "step": {
+        "name": "write_ragged",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          [
+            1,
+            2
+          ],
+          [
+            3
+          ]
+        ]
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error",
+          "title": "Validation error",
+          "status": 400,
+          "detail": "1 validation error",
+          "invalid-params": [
+            {
+              "in": "body",
+              "name": "",
+              "reason": "Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.",
+              "code": "value_error"
+            }
+          ]
+        },
+        "text": "{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error\",\"title\":\"Validation error\",\"status\":400,\"detail\":\"1 validation error\",\"invalid-params\":[{\"in\":\"body\",\"name\":\"\",\"reason\":\"Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.\",\"code\":\"value_error\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "write_strings",
+        "method": "PUT",
+        "path": "/ndarray_probe/matrix",
+        "json": [
+          [
+            "a"
+          ]
+        ]
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error",
+          "title": "Validation error",
+          "status": 400,
+          "detail": "11 validation errors",
+          "invalid-params": [
+            {
+              "in": "body",
+              "name": "/int",
+              "reason": "Input should be a valid integer",
+              "code": "int_type"
+            },
+            {
+              "in": "body",
+              "name": "/float",
+              "reason": "Input should be a valid number",
+              "code": "float_type"
+            },
+            {
+              "in": "body",
+              "name": "/list/0/int",
+              "reason": "Input should be a valid integer",
+              "code": "int_type"
+            },
+            {
+              "in": "body",
+              "name": "/list/0/float",
+              "reason": "Input should be a valid number",
+              "code": "float_type"
+            },
+            {
+              "in": "body",
+              "name": "/list/0/0/int",
+              "reason": "Input should be a valid integer, unable to parse string as an integer",
+              "code": "int_parsing"
+            },
+            {
+              "in": "body",
+              "name": "/list/0/0/float",
+              "reason": "Input should be a valid number, unable to parse string as a number",
+              "code": "float_parsing"
+            },
+            {
+              "in": "body",
+              "name": "/list/0/0",
+              "reason": "Input should be a valid list",
+              "code": "list_type"
+            },
+            {
+              "in": "body",
+              "name": "/list/0/0",
+              "reason": "Input should be a valid list",
+              "code": "list_type"
+            },
+            {
+              "in": "body",
+              "name": "/list/0/0",
+              "reason": "Input should be a valid list",
+              "code": "list_type"
+            },
+            {
+              "in": "body",
+              "name": "/list/0/0",
+              "reason": "Input should be a valid list",
+              "code": "list_type"
+            },
+            {
+              "in": "body",
+              "name": "/list/0/0",
+              "reason": "Input should be a valid list",
+              "code": "list_type"
+            }
+          ]
+        },
+        "text": "{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error\",\"title\":\"Validation error\",\"status\":400,\"detail\":\"11 validation errors\",\"invalid-params\":[{\"in\":\"body\",\"name\":\"/int\",\"reason\":\"Input should be a valid integer\",\"code\":\"int_type\"},{\"in\":\"body\",\"name\":\"/float\",\"reason\":\"Input should be a valid number\",\"code\":\"float_type\"},{\"in\":\"body\",\"name\":\"/list/0/int\",\"reason\":\"Input should be a valid integer\",\"code\":\"int_type\"},{\"in\":\"body\",\"name\":\"/list/0/float\",\"reason\":\"Input should be a valid number\",\"code\":\"float_type\"},{\"in\":\"body\",\"name\":\"/list/0/0/int\",\"reason\":\"Input should be a valid integer, unable to parse string as an integer\",\"code\":\"int_parsing\"},{\"in\":\"body\",\"name\":\"/list/0/0/float\",\"reason\":\"Input should be a valid number, unable to parse string as a number\",\"code\":\"float_parsing\"},{\"in\":\"body\",\"name\":\"/list/0/0\",\"reason\":\"Input should be a valid list\",\"code\":\"list_type\"},{\"in\":\"body\",\"name\":\"/list/0/0\",\"reason\":\"Input should be a valid list\",\"code\":\"list_type\"},{\"in\":\"body\",\"name\":\"/list/0/0\",\"reason\":\"Input should be a valid list\",\"code\":\"list_type\"},{\"in\":\"body\",\"name\":\"/list/0/0\",\"reason\":\"Input should be a valid list\",\"code\":\"list_type\"},{\"in\":\"body\",\"name\":\"/list/0/0\",\"reason\":\"Input should be a valid list\",\"code\":\"list_type\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "double",
+        "method": "POST",
+        "path": "/ndarray_probe/double",
+        "json": {
+          "arr": [
+            [
+              1,
+              2
+            ]
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:0>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeRequested": "<utc-datetime>"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "double_status",
+        "method": "GET",
+        "path": "/action_invocations/{last}",
+        "poll": true,
+        "until": [
+          "completed"
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "output": [
+            [
+              2.0,
+              4.0
+            ]
+          ],
+          "href": "http://testserver/action_invocations/<uuid:0>",
+          "timeRequested": "<utc-datetime>",
+          "timeEnded": "<utc-datetime>"
+        },
+        "text": "{\"status\":\"completed\",\"output\":[[2.0,4.0]],\"href\":\"http://testserver/action_invocations/<uuid:0>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}"
+      }
+    },
+    {
+      "step": {
+        "name": "double_ragged",
+        "method": "POST",
+        "path": "/ndarray_probe/double",
+        "json": {
+          "arr": [
+            1,
+            [
+              2
+            ]
+          ]
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "content-type": "application/problem+json",
+          "vary": "Origin"
+        },
+        "body": {
+          "type": "https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error",
+          "title": "Validation error",
+          "status": 400,
+          "detail": "1 validation error",
+          "invalid-params": [
+            {
+              "in": "body",
+              "name": "/arr",
+              "reason": "Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.",
+              "code": "value_error"
+            }
+          ]
+        },
+        "text": "{\"type\":\"https://github.com/lucaswewa/wot/blob/main/docs/problems.md#validation-error\",\"title\":\"Validation error\",\"status\":400,\"detail\":\"1 validation error\",\"invalid-params\":[{\"in\":\"body\",\"name\":\"/arr\",\"reason\":\"Value error, setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (2,) + inhomogeneous part.\",\"code\":\"value_error\"}]}"
+      }
+    },
+    {
+      "step": {
+        "name": "ramp",
+        "method": "POST",
+        "path": "/ndarray_probe/ramp",
+        "json": {
+          "n": 3
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "content-type": "application/json",
+          "location": "http://testserver/action_invocations/<uuid:1>",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "<race>",
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeRequested": "<utc-datetime>"
+        }
+      }
+    },
+    {
+      "step": {
+        "name": "ramp_status",
+        "method": "GET",
+        "path": "/action_invocations/{last}",
+        "poll": true,
+        "until": [
+          "completed"
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "vary": "Origin"
+        },
+        "body": {
+          "status": "completed",
+          "output": [
+            0,
+            1,
+            2
+          ],
+          "href": "http://testserver/action_invocations/<uuid:1>",
+          "timeRequested": "<utc-datetime>",
+          "timeEnded": "<utc-datetime>"
+        },
+        "text": "{\"status\":\"completed\",\"output\":[0,1,2],\"href\":\"http://testserver/action_invocations/<uuid:1>\",\"timeRequested\":\"<utc-datetime>\",\"timeEnded\":\"<utc-datetime>\"}"
+      }
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "config": {
+    "things": {
+      "ndarray_probe": "twins.ndarray_probe:NDArrayProbe"
+    },
+    "wire_profile": "wot",
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "name": "write",
+      "method": "PUT",
+      "path": "/ndarray_probe/matrix",
+      "json": [
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ]
+    },
+    {
+      "name": "read",
+      "method": "GET",
+      "path": "/ndarray_probe/matrix"
+    },
+    {
+      "name": "write_ragged",
+      "method": "PUT",
+      "path": "/ndarray_probe/matrix",
+      "json": [
+        [
+          1,
+          2
+        ],
+        [
+          3
+        ]
+      ]
+    },
+    {
+      "name": "write_strings",
+      "method": "PUT",
+      "path": "/ndarray_probe/matrix",
+      "json": [
+        [
+          "a"
+        ]
+      ]
+    },
+    {
+      "name": "double",
+      "method": "POST",
+      "path": "/ndarray_probe/double",
+      "json": {
+        "arr": [
+          [
+            1,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "double_status",
+      "method": "GET",
+      "path": "/action_invocations/{last}",
+      "poll": true,
+      "until": [
+        "completed"
+      ]
+    },
+    {
+      "name": "double_ragged",
+      "method": "POST",
+      "path": "/ndarray_probe/double",
+      "json": {
+        "arr": [
+          1,
+          [
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ramp",
+      "method": "POST",
+      "path": "/ndarray_probe/ramp",
+      "json": {
+        "n": 3
+      }
+    },
+    {
+      "name": "ramp_status",
+      "method": "GET",
+      "path": "/action_invocations/{last}",
+      "poll": true,
+      "until": [
+        "completed"
+      ]
+    }
+  ]
+}

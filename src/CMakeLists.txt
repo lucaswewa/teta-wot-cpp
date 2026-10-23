@@ -59,6 +59,7 @@ add_library(teta_wot_core
     core/invocation.cpp
     core/lock.cpp
     core/log.cpp
+    core/ndarray.cpp
     core/pool.cpp
     core/problem.cpp
     core/property.cpp
