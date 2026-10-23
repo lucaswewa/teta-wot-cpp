@@ -40,5 +40,6 @@ Each example teaches one concept with the public API only. Run without arguments
 | [`node-wot-consumer`](node-wot-consumer/README.md) | 9 | What Eclipse node-wot needs from each profile |
 | [`units-and-semantics`](units-and-semantics/README.md) | 9 | Units, `@type`, `@context` |
 | [`ndarray-property`](ndarray-property/README.md) | 10 | Arrays as nested lists |
+| [`simulated-microscope`](simulated-microscope/README.md) | 10 | The capstone: stage, camera, autofocus with slots, settings, MJPEG, Blobs, events, arrays |
 
 Add an example with `teta_wot_add_example(<name> SOURCES main.cpp)` in `examples/<name>/CMakeLists.txt`, a `README.md` with **Concept**, **Technologies**, how to run it and what to look for, and a line in `examples/CMakeLists.txt` and here.

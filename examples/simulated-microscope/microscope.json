@@ -1,0 +1,8 @@
+{
+    "things": {
+        "stage": "microscope.stage:Stage",
+        "camera": "microscope.camera:Camera",
+        "autofocus": "microscope.autofocus:Autofocus"
+    },
+    "settings_folder": "./settings/microscope"
+}
