@@ -79,7 +79,7 @@ jobs:
         # isn't always the `python` on the PATH.
         run: |
           $cache = Get-Content "build/${{ matrix.preset }}/CMakeCache.txt"
-          $python = ($cache | Select-String '^Python3_EXECUTABLE:\w+=(.+)$').Matches[0].Groups[1].Value
+          $python = ($cache | Select-String '^_?Python3_EXECUTABLE:\w+=(.+)$').Matches[0].Groups[1].Value
           & $python -m pip install --quiet openapi-spec-validator
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       # The unit tests, the examples, and the HTTP fixtures over sockets
