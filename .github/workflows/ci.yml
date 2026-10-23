@@ -89,6 +89,15 @@ jobs:
       # (`conformance.http`, which needs Python 3).
       - name: Test (unit tests, examples and fixtures)
         run: ctest --preset ${{ matrix.preset }}
+      # The microscope as a service: installed, started, stopped during a long
+      # move, and removed (GitHub's runners are administrators, and the Linux
+      # ones run systemd).
+      - name: The microscope as a Windows service
+        if: runner.os == 'Windows'
+        run: powershell -ExecutionPolicy Bypass -File examples/microscope-service/service_test.ps1 -Exe build/${{ matrix.preset }}/examples/microscope-service/example-microscope-service.exe
+      - name: The microscope as a systemd service
+        if: matrix.preset == 'linux-gcc'
+        run: examples/microscope-service/service_test.sh build/${{ matrix.preset }}/examples/microscope-service/example-microscope-service
       # The cmake-consumer example again, against the installed package (not
       # for the sanitizer builds, whose library needs the sanitizer runtime).
       - name: Install, then build cmake-consumer against it

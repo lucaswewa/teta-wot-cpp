@@ -58,9 +58,12 @@ struct CliArgs {
 /// services.
 using Customise = std::function<void(ThingServerBuilder&)>;
 
-/// Parses the process's arguments (read as UTF-8: on Windows, from the
-/// wide command line) and serves until the process is asked to stop
-/// (`shutdown_signal`). Returns the exit code.
+/// The process's arguments, the program's name first, as UTF-8: on Windows,
+/// from the wide command line (`argv` is in the ANSI code page there).
+std::vector<std::string> arguments(int argc, char** argv);
+
+/// Parses the process's arguments (`arguments`) and serves until the
+/// process is asked to stop (`shutdown_signal`). Returns the exit code.
 int serve_from_cli(int argc, char** argv, const ThingRegistry& registry, const Customise& customise = {});
 
 /// `serve_from_cli` with explicit arguments, the first being the program's

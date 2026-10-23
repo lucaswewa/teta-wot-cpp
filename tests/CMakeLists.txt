@@ -30,6 +30,7 @@ add_executable(teta-wot-tests
     server/cli_test.cpp
     server/config_test.cpp
     server/harness_test.cpp
+    server/service_test.cpp
     td/codec_corpus_test.cpp
     td/model_test.cpp
     td/schema_corpus_test.cpp

@@ -13,6 +13,7 @@
 #include "mdns.hpp"
 #endif
 #include "teta/wot/log.hpp"
+#include "teta/wot/systemd.hpp"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -418,12 +419,15 @@ void ThingServer::serve(const std::string& host, std::uint16_t port, std::stop_t
             log::info("serving {} Things on http://{}", runtime_->things().size(),
                       address_text(address.ip, bound));
             advertise(bound);
+            // A `Type=notify` systemd unit has started.
+            systemd::notify_ready();
             if (listening) {
                 listening(bound);
             }
         },
         [&] {
             log::info("shutting down");
+            systemd::notify("STOPPING=1");
 #ifdef TETA_WOT_MDNS
             if (advertisement) {
                 advertisement->stop();
@@ -471,7 +475,16 @@ void serve_fallback(const http::FallbackPage& page, const std::string& host, std
             }),
         drogon::app());
     drogon_adapter::answer_all(handler, drogon::app());
-    const bool stopped = run_drogon(address, stop, listening, {});
+    const bool stopped = run_drogon(
+        address, stop,
+        [&](std::uint16_t bound) {
+            // Under systemd, the fallback page is the service, started.
+            systemd::notify_ready();
+            if (listening) {
+                listening(bound);
+            }
+        },
+        [] { systemd::notify("STOPPING=1"); });
     mark_finished();
     if (!stopped) {
         throw ServeError("Drogon stopped");

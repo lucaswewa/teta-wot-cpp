@@ -117,13 +117,15 @@ target_link_libraries(teta_wot_drogon
 target_compile_definitions(teta_wot_drogon PUBLIC $<$<PLATFORM_ID:Windows>:NOMINMAX WIN32_LEAN_AND_MEAN>)
 
 # teta::wot-server: ThingServer, its shutdown and TestClient (Phase 4); the
-# configuration model, registry, command line and fallback server (Phase 5).
-add_library(teta_wot_server server/cli.cpp server/config.cpp server/registry.cpp server/testing.cpp server/thing_server.cpp)
+# configuration model, registry, command line and fallback server (Phase 5);
+# the Windows service and systemd's notifications (Phase 10).
+add_library(teta_wot_server server/cli.cpp server/config.cpp server/registry.cpp server/service.cpp
+    server/systemd.cpp server/testing.cpp server/thing_server.cpp)
 add_library(teta::wot-server ALIAS teta_wot_server)
 set_target_properties(teta_wot_server PROPERTIES EXPORT_NAME wot-server)
 target_link_libraries(teta_wot_server
     PUBLIC teta_wot_http
-    PRIVATE teta_wot_drogon $<$<PLATFORM_ID:Windows>:shell32 ws2_32> $<BUILD_INTERFACE:teta_wot_warnings>)
+    PRIVATE teta_wot_drogon $<$<PLATFORM_ID:Windows>:advapi32 shell32 ws2_32> $<BUILD_INTERFACE:teta_wot_warnings>)
 # DNS-SD (teta-wot's `mdns` feature), on mjansson/mdns, vendored.
 if(TETA_WOT_MDNS)
     target_sources(teta_wot_server PRIVATE server/mdns.cpp)
