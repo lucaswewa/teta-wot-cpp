@@ -75,7 +75,13 @@ jobs:
       # system-wide installs (PEP 668): a Linux job would need a venv.
       - name: openapi-spec-validator
         if: runner.os == 'Windows'
-        run: python -m pip install --quiet openapi-spec-validator
+        # Into the Python CTest runs (CMake's Python3_EXECUTABLE), which
+        # isn't always the `python` on the PATH.
+        run: |
+          $cache = Get-Content "build/${{ matrix.preset }}/CMakeCache.txt"
+          $python = ($cache | Select-String '^Python3_EXECUTABLE:\w+=(.+)$').Matches[0].Groups[1].Value
+          & $python -m pip install --quiet openapi-spec-validator
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       # The unit tests, the examples, and the HTTP fixtures over sockets
       # (`conformance.http`, which needs Python 3).
       - name: Test (unit tests, examples and fixtures)
