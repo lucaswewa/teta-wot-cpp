@@ -17,6 +17,13 @@ namespace teta::wot::http::detail {
 
 /// What a route does.
 enum class Kind {
+    /// `/openapi.json`, and the docs pages.
+    openapi,
+    swagger_ui,
+    oauth2_redirect,
+    redoc,
+    /// A compiled-in docs asset: `index` in `docs_assets()`.
+    docs_asset,
     thing_description,
     read_property,
     write_property,
@@ -51,7 +58,7 @@ struct Endpoint {
     std::size_t index = 0;
 
     /// Whether the route describes rather than interacts (and so will need no
-    /// credentials, from Phase 9).
+    /// credentials, from Phase 9): TDs and the docs.
     bool is_public() const;
 };
 
@@ -96,6 +103,9 @@ class Routes {
 
     /// Adds a route (for the route table's own tests).
     void add(const std::string& pattern, std::string method, Endpoint endpoint);
+    /// Adds a `GET` and a `HEAD` route, whose 405s allow both (Starlette's
+    /// plain routes).
+    void add_get_and_head(const std::string& path, const Endpoint& endpoint);
 
   private:
     std::vector<Route> routes_;

@@ -2,12 +2,25 @@
 
 #include <algorithm>
 
+#include "docs.hpp"
 #include "teta/wot/http/binding.hpp"
 
 namespace teta::wot::http::detail {
 
 bool Endpoint::is_public() const {
-    return kind == Kind::thing_description || kind == Kind::thing_descriptions || kind == Kind::thing_paths;
+    switch (kind) {
+        case Kind::thing_description:
+        case Kind::thing_descriptions:
+        case Kind::thing_paths:
+        case Kind::openapi:
+        case Kind::swagger_ui:
+        case Kind::oauth2_redirect:
+        case Kind::redoc:
+        case Kind::docs_asset:
+            return true;
+        default:
+            return false;
+    }
 }
 
 bool Route::matches(std::string_view path, std::optional<std::string>* param) const {
@@ -67,8 +80,23 @@ void Routes::add(const std::string& pattern, std::string method, Endpoint endpoi
     routes_.push_back(std::move(route));
 }
 
+void Routes::add_get_and_head(const std::string& path, const Endpoint& endpoint) {
+    for (const char* method : {"GET", "HEAD"}) {
+        add(path, method, endpoint);
+        routes_.back().allow = "GET, HEAD";
+    }
+}
+
 Routes Routes::build(const Runtime& runtime, const std::string& prefix) {
     Routes routes;
+    routes.add_get_and_head("/openapi.json", {Kind::openapi, {}, {}});
+    routes.add_get_and_head("/docs", {Kind::swagger_ui, {}, {}});
+    routes.add_get_and_head("/docs/oauth2-redirect", {Kind::oauth2_redirect, {}, {}});
+    routes.add_get_and_head("/redoc", {Kind::redoc, {}, {}});
+    const auto assets = docs_assets();
+    for (std::size_t i = 0; i < assets.size(); ++i) {
+        routes.add_get_and_head(std::string(assets[i].path), {Kind::docs_asset, {}, {}, i});
+    }
     const std::string invocations = prefix + "/action_invocations";
     routes.add(invocations, "GET", {Kind::list_invocations, {}, {}});
     routes.add(invocations + "/{id}", "GET", {Kind::get_invocation, {}, {}});

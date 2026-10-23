@@ -2,6 +2,7 @@
   "serve": ["--serve"],
   "port": 5000,
   "steps": [
+    {"name": "openapi", "method": "GET", "path": "/openapi.json"},
     {"name": "things", "method": "GET", "path": "/things/"},
     {"name": "td", "method": "GET", "path": "/lamp/"},
     {"name": "read_brightness", "method": "GET", "path": "/lamp/brightness"},

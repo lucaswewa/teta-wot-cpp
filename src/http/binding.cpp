@@ -7,11 +7,13 @@
 #include <utility>
 #include <variant>
 
+#include "docs.hpp"
 #include "output.hpp"
 #include "path_uuid.hpp"
 #include "render.hpp"
 #include "routes.hpp"
 #include "sse.hpp"
+#include "teta/wot/http/openapi.hpp"
 #include "teta/wot/log.hpp"
 #include "teta/wot/td/describe.hpp"
 #include "websocket.hpp"
@@ -114,6 +116,8 @@ struct HttpBinding::State {
     HttpOptions options;
     detail::Routes routes;
     std::shared_ptr<detail::SseStreams> streams = std::make_shared<detail::SseStreams>();
+    /// The OpenAPI document, made once: it doesn't depend on the request.
+    std::string openapi;
 
     bool wot() const { return options.profile == WireProfile::wot; }
     Response error(const HttpError& error) const { return error.response(options.profile); }
@@ -262,6 +266,16 @@ struct HttpBinding::State {
                     const Request& request, const Urls& urls) const {
         auto& invocations = runtime->invocations();
         switch (endpoint.kind) {
+            case Kind::openapi:
+                return Response::bytes(openapi, "application/json");
+            case Kind::swagger_ui:
+                return detail::swagger_ui(options.api_title);
+            case Kind::oauth2_redirect:
+                return detail::oauth2_redirect();
+            case Kind::redoc:
+                return detail::redoc(options.api_title);
+            case Kind::docs_asset:
+                return detail::docs_asset(detail::docs_assets()[endpoint.index]);
             case Kind::thing_description: {
                 auto described = td(endpoint.thing, urls);
                 if (auto* failed = std::get_if<Response>(&described)) {
@@ -685,8 +699,9 @@ HttpBinding::HttpBinding(std::shared_ptr<Runtime> runtime, HttpOptions options) 
             "invalid API prefix `" + options.api_prefix + "`: it must be empty or like `/api/v1`");
     }
     auto routes = detail::Routes::build(*runtime, options.api_prefix);
+    auto document = json::dump(openapi(*runtime, options));
     state_ = std::make_shared<State>(State{std::move(runtime), std::move(options), std::move(routes),
-                                           std::make_shared<detail::SseStreams>()});
+                                           std::make_shared<detail::SseStreams>(), std::move(document)});
 }
 
 HttpBinding::~HttpBinding() = default;

@@ -1,3 +1,5 @@
 # Fixtures and corpora are compared byte for byte: keep LF everywhere.
 conformance/fixtures/** text eol=lf
 tests/**/*.txt text eol=lf
+# The docs assets are served (and compiled in) byte for byte: never convert them.
+assets/** -text

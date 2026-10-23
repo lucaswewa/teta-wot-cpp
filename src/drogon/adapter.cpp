@@ -340,6 +340,19 @@ void answer_upgrades(std::shared_ptr<const http::HttpBinding> binding, drogon::H
     });
 }
 
+void answer_all(std::shared_ptr<Handler> handler, drogon::HttpAppFramework& app,
+                std::function<bool(const drogon::HttpRequest&)> passes) {
+    app.registerPreRoutingAdvice([handler = std::move(handler), passes = std::move(passes)](
+                                     const drogon::HttpRequestPtr& request, drogon::AdviceCallback&& answer,
+                                     drogon::AdviceChainCallback&& pass) {
+        if (passes && passes(*request)) {
+            pass();
+            return;
+        }
+        (*handler)(request, std::move(answer));
+    });
+}
+
 std::shared_ptr<Handler> mount(Service service, drogon::HttpAppFramework& app) {
     auto handler = std::make_shared<Handler>(std::move(service));
     app.setDefaultHandler([handler](const drogon::HttpRequestPtr& request,

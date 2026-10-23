@@ -1,0 +1,28 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing",
+      "blob_probe": "twins.blob_probe:BlobProbe",
+      "event_probe": "twins.event_probe:EventProbe"
+    },
+    "api_prefix": "/api/v1",
+    "server_id": "conformance"
+  },
+  "steps": [
+    {
+      "name": "openapi",
+      "method": "GET",
+      "path": "/openapi.json"
+    },
+    {
+      "name": "openapi_prefixed",
+      "method": "GET",
+      "path": "/api/v1/openapi.json"
+    },
+    {
+      "name": "docs_prefixed",
+      "method": "GET",
+      "path": "/api/v1/docs"
+    }
+  ]
+}

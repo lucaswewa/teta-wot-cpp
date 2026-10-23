@@ -86,10 +86,17 @@ class Logger {
     static void define(tw::ThingSpec<Logger>& t) {
         t.doc("A data logger.");
         t.property("count", &Logger::count).doc("How many readings there are.");
-        t.endpoint("get", "readings.csv", &Logger::readings_csv).doc("The readings as a CSV file.");
+        // Named as teta-wot names an endpoint, after its function: the name
+        // its OpenAPI `operationId` is made from.
+        t.endpoint("get", "readings.csv", &Logger::readings_csv)
+            .name("readings_csv")
+            .doc("The readings as a CSV file.");
         t.endpoint("get", "summary.txt", &Logger::summary)
+            .name("summary")
             .doc("A one-line summary, in Celsius or (with `?unit=F`) Fahrenheit.");
-        t.endpoint("post", "notes", &Logger::add_note).doc("Adds a note, sent as plain text.");
+        t.endpoint("post", "notes", &Logger::add_note)
+            .name("add_note")
+            .doc("Adds a note, sent as plain text.");
     }
 
   private:

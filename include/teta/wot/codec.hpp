@@ -153,10 +153,19 @@ json::Value json_schema_for() {
 }
 
 /// The DataSchema of a type: its JSON Schema, converted (teta-wot's
-/// `DataSchema::for_type`).
+/// `DataSchema::for_type`). As schemars' root schema, its `title` is dropped
+/// when it is only the type's schema name (`Codec<T>::schema_name()`, for
+/// types that have one).
 template <Encodable T>
 td::DataSchema for_type() {
-    return td::from_json_schema(json_schema_for<T>());
+    json::Value schema = json_schema_for<T>();
+    if constexpr (requires { Codec<T>::schema_name(); }) {
+        if (const auto title = schema.find("title");
+            title != schema.end() && *title == Codec<T>::schema_name()) {
+            schema.erase("title");
+        }
+    }
+    return td::from_json_schema(schema);
 }
 
 /// A value as JSON, as serde writes it.

@@ -60,6 +60,7 @@ class Oven {
         t.property("safe_to_open", &Oven::safe_to_open)
             .doc("Whether the oven is cool enough to open. Computed when read, so it\ncan't be observed.");
         t.endpoint("GET", "monitor.html", &Oven::monitor)
+            .name("monitor")
             .doc("A page that observes the oven over its WebSocket.");
     }
 };

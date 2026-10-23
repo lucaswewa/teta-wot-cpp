@@ -73,6 +73,7 @@ class Thermometer {
         t.on_start(&Thermometer::start_reading);
         t.on_stop(&Thermometer::stop_reading);
         t.endpoint("GET", "index.html", &Thermometer::page)
+            .name("page")
             .doc("A page that plots the reading as it arrives.");
     }
 

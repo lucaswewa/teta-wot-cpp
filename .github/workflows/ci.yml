@@ -70,6 +70,12 @@ jobs:
           key: vcpkg-${{ matrix.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
+      # For `conformance.openapi`, which validates every OpenAPI document the
+      # servers serve (it is skipped without it). Ubuntu's Python refuses
+      # system-wide installs (PEP 668): a Linux job would need a venv.
+      - name: openapi-spec-validator
+        if: runner.os == 'Windows'
+        run: python -m pip install --quiet openapi-spec-validator
       # The unit tests, the examples, and the HTTP fixtures over sockets
       # (`conformance.http`, which needs Python 3).
       - name: Test (unit tests, examples and fixtures)

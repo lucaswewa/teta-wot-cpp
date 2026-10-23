@@ -1,0 +1,122 @@
+{
+  "config": {
+    "things": {
+      "counter": "twins.counter:TestThing"
+    },
+    "server_id": "conformance"
+  },
+  "workdir_files": {
+    "probe.txt": "a file in the working directory",
+    "docs/index.html": "<html>not the docs</html>",
+    "assets/probe.css": "body {}"
+  },
+  "steps": [
+    {
+      "name": "openapi",
+      "method": "GET",
+      "path": "/openapi.json"
+    },
+    {
+      "name": "openapi_head",
+      "method": "HEAD",
+      "path": "/openapi.json"
+    },
+    {
+      "name": "openapi_post",
+      "method": "POST",
+      "path": "/openapi.json"
+    },
+    {
+      "name": "openapi_slash",
+      "method": "GET",
+      "path": "/openapi.json/"
+    },
+    {
+      "name": "docs",
+      "method": "GET",
+      "path": "/docs"
+    },
+    {
+      "name": "docs_head",
+      "method": "HEAD",
+      "path": "/docs"
+    },
+    {
+      "name": "docs_put",
+      "method": "PUT",
+      "path": "/docs"
+    },
+    {
+      "name": "docs_slash",
+      "method": "GET",
+      "path": "/docs/"
+    },
+    {
+      "name": "oauth2_redirect",
+      "method": "GET",
+      "path": "/docs/oauth2-redirect"
+    },
+    {
+      "name": "redoc",
+      "method": "GET",
+      "path": "/redoc"
+    },
+    {
+      "name": "redoc_head",
+      "method": "HEAD",
+      "path": "/redoc"
+    },
+    {
+      "name": "bundle",
+      "method": "GET",
+      "path": "/docs/swagger-ui-bundle.js"
+    },
+    {
+      "name": "redoc_bundle",
+      "method": "GET",
+      "path": "/redoc/redoc.standalone.js"
+    },
+    {
+      "name": "cors",
+      "method": "GET",
+      "path": "/openapi.json",
+      "headers": {
+        "Origin": "http://example.com"
+      }
+    },
+    {
+      "name": "preflight",
+      "method": "OPTIONS",
+      "path": "/docs",
+      "headers": {
+        "Origin": "http://example.com",
+        "Access-Control-Request-Method": "GET"
+      }
+    },
+    {
+      "name": "openapi_query",
+      "method": "GET",
+      "path": "/openapi.json?x=1"
+    },
+    {
+      "name": "workdir_file",
+      "method": "GET",
+      "path": "/probe.txt"
+    },
+    {
+      "name": "workdir_file_put",
+      "method": "PUT",
+      "path": "/probe.txt"
+    },
+    {
+      "name": "workdir_nested_file",
+      "method": "GET",
+      "path": "/assets/probe.css"
+    },
+    {
+      "name": "workdir_index",
+      "method": "GET",
+      "path": "/docs/index.html"
+    }
+  ]
+}

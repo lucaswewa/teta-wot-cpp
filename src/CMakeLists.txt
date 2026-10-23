@@ -76,7 +76,9 @@ target_link_libraries(teta_wot_core
 # teta::wot-http: the transport-neutral HTTP binding (Phase 4, ADR-0004).
 add_library(teta_wot_http
     http/binding.cpp
+    http/docs.cpp
     http/fallback.cpp
+    http/openapi.cpp
     http/output.cpp
     http/path_uuid.cpp
     http/render.cpp
@@ -88,6 +90,18 @@ set_target_properties(teta_wot_http PROPERTIES EXPORT_NAME wot-http)
 target_link_libraries(teta_wot_http
     PUBLIC teta_wot_core
     PRIVATE $<BUILD_INTERFACE:teta_wot_warnings>)
+# Swagger UI's OAuth2 redirect script is inline in its page; with
+# TETA_WOT_DOCS_OFFLINE (teta-wot's `docs-offline` feature), the docs pages'
+# assets are compiled in too.
+set(TETA_WOT_SWAGGER_UI "${PROJECT_SOURCE_DIR}/assets/swagger-ui-5.33.0")
+teta_wot_embed(teta_wot_http "${TETA_WOT_SWAGGER_UI}/oauth2-redirect.js" swagger_oauth2_redirect_js)
+if(TETA_WOT_DOCS_OFFLINE)
+    teta_wot_embed(teta_wot_http "${TETA_WOT_SWAGGER_UI}/swagger-ui-bundle.js" swagger_ui_bundle_js)
+    teta_wot_embed(teta_wot_http "${TETA_WOT_SWAGGER_UI}/swagger-ui.css" swagger_ui_css)
+    teta_wot_embed(teta_wot_http "${TETA_WOT_SWAGGER_UI}/favicon-32x32.png" swagger_favicon_png)
+    teta_wot_embed(teta_wot_http "${PROJECT_SOURCE_DIR}/assets/redoc-2.5.4/redoc.standalone.js" redoc_standalone_js)
+    target_compile_definitions(teta_wot_http PRIVATE TETA_WOT_DOCS_OFFLINE)
+endif()
 
 # teta::wot-drogon: the Drogon transport (Phase 4, ADR-0004).
 add_library(teta_wot_drogon drogon/adapter.cpp)

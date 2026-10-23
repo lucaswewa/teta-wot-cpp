@@ -2,6 +2,7 @@
   "serve": ["--serve"],
   "port": 5000,
   "steps": [
+    {"name": "openapi", "method": "GET", "path": "/openapi.json"},
     {"name": "td", "method": "GET", "path": "/counter/"},
     {"name": "read", "method": "GET", "path": "/counter/counter"},
     {"name": "invoke", "method": "POST", "path": "/counter/increment_counter", "wait": true},
