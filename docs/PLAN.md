@@ -337,7 +337,7 @@ The `wot` wire profile (204s, problem details, `ActionStatus`, synchronous actio
 
 ### Phase 10: Arrays, services, hardening, release (M)
 
-**In progress**, in parts: see the [Phase 10 note](notes/phase-10-release.md). Part 1, arrays, is done.
+**In progress**, in parts: see the [Phase 10 note](notes/phase-10-release.md). Parts 1 (arrays) and 2 (the simulated microscope) are done.
 
 `NdArray`; the Windows service (install/uninstall, stop during a long action) and the systemd unit; fuzz targets (validation, WS parser, request bodies) in CI; the shutdown-under-load test; the soak tool; the simulated microscope and `microscope-service`; the full guide; vcpkg overlay port; v0.1.0.
 

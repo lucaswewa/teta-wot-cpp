@@ -69,7 +69,7 @@ They are ported from the `wot` repository's `conformance/twin-server` to teta-wo
 
 Command-line scenarios (`scenarios/cli/`, run with `--cli`) run the server's command line and record its exit code and output (log lines aside), and, for those that serve, a scripted session: `help`, `unknown-argument`, `missing-value`, `invalid-port`, `repeated-argument`, `no-configuration`, `missing-file`, `both-configurations`, `invalid-json`, `not-an-object`, `invalid-configuration` (every kind of problem at once), `unknown-class`, `invalid-kwargs`, `args-and-kwargs`, `startup-failure`, `startup-failure-fallback` and `configuration-fallback` (the fallback page, its redirects and CORS), `serve`, `serve-json`, `port-in-use` and `port-in-use-fallback`.
 
-Example scenarios (`scenarios/examples/`, run with `--examples`) compare an example served with `--serve` with its Rust original: its OpenAPI document, its TD and a scripted session. Their fixtures (`fixtures/examples/`) are captured from teta-wot v0.1.0's examples, built from its repository (`cargo build --release -p <example>`); CTest checks the C++ examples against them (`conformance.examples`). `openapi-export` doesn't serve: CTest compares the document it writes with the one teta-wot's example writes (`fixtures/examples/openapi-export/openapi.json`, `conformance.openapi-export`).
+Example scenarios (`scenarios/examples/`, run with `--examples`) compare an example served with `--serve` (or, with a `config` instead of `serve`, through its command line with that configuration) with its Rust original: its OpenAPI document, its TD and a scripted session. Their fixtures (`fixtures/examples/`) are captured from teta-wot v0.1.0's examples, built from its repository (`cargo build --release -p <example>`); CTest checks the C++ examples against them (`conformance.examples`). `openapi-export` doesn't serve: CTest compares the document it writes with the one teta-wot's example writes (`fixtures/examples/openapi-export/openapi.json`, `conformance.openapi-export`).
 
 | Example scenario | What it captures |
 |---|---|
@@ -87,6 +87,7 @@ Example scenarios (`scenarios/examples/`, run with `--examples`) compare an exam
 | `node-wot-consumer` | The lamp in the `tetathing` profile, as node-wot uses it: an observed write, the synchronous action, a fade |
 | `discovery` | The well-known TD, the directory and a page of it, both Things' TDs (the advertisement itself: `conformance.mdns`, and the example's demo) |
 | `mjpeg-stream` | The TD, the viewer page, the stream's headers, `fps` and its bounds, a snapshot and its download's headers, `sharpness` (not the JPEGs, nor so their sizes) |
+| `simulated-microscope` | Served from `microscope.json`'s Things: the three TDs and the OpenAPI document; moves (their logs, the `arrived` event), refused inputs and writes, bounds; the sharpness out of focus and in focus, to the last digit; `exposure` saved to its settings file; the autofocus (its 21-point curve, its log with the stage's moves, the `focused` event, `last_focus`); a capture and its download's headers; two preview frames' headers (`ignore_body`: not the JPEGs); the viewer; a cancelled move |
 
 Every scenario runs against the C++ twin server (`conformance.http`).
 
