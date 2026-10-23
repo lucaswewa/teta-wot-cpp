@@ -42,3 +42,27 @@ Status: **in progress**. Plan: [§5, Phase 10](../PLAN.md#phase-10-arrays-servic
 - **The JPEGs differ**, as in Phase 7: this project's encoder isn't `jpeg-encoder`, so the scenario doesn't compare JPEG data, and the demonstration's byte counts differ (2712 and 2796 bytes for the same capture).
 
 **Deviation**: `demo.py`'s comments still name Cargo's commands, since the file is teta-wot's unchanged; the example's README gives the C++ ones.
+
+## Part 3: the Windows service and the systemd unit (done)
+
+| Deliverable | Where |
+|---|---|
+| `tw::service`, a port of teta-wot-server's `service.rs` on the Win32 API: `run_as_service` (the SCM's *stop* and *shutdown* as the stop signal; *start pending*, *running*, *stop pending* with a wait hint, *stopped* with the exit code; `NotAService` outside the SCM), `install` (LocalSystem, on demand or automatic, with a description) and `uninstall` (stops, then deletes); `command_line`, quoting arguments as `CommandLineToArgvW` reads them | `include/teta/wot/service.hpp`, `src/server/service.cpp` |
+| `tw::systemd`, the Linux counterpart teta-wot doesn't have: `notify` (`sd_notify`'s protocol, a datagram to `$NOTIFY_SOCKET`, path or abstract, without libsystemd), `notify_ready`, `unit_file` (`Type=notify`) and `exec_word` (`ExecStart=` quoting); `ThingServer` (and the fallback server) send `READY=1` once listening and `STOPPING=1` when shutting down | `include/teta/wot/systemd.hpp`, `src/server/systemd.cpp`, `src/server/thing_server.cpp` |
+| `tw::cli::arguments`: the process's arguments as UTF-8 (on Windows, from the wide command line), which `serve_from_cli` used internally | `include/teta/wot/cli.hpp` |
+| The `microscope-service` example: `install`, `uninstall`, `run` (what the SCM or systemd starts; a Windows service logs to a file), `console`, and without arguments the stop path demonstrated without the SCM; `service_test.ps1` (teta-wot's, with the C++ executable's path) and `service_test.sh` | `examples/microscope-service/`, `examples/common/http_client.hpp` |
+| CI runs `service_test.ps1` on Windows (the runners are administrators), and `service_test.sh` on `linux-gcc` once the Linux jobs are back | `.github/workflows/ci.yml` |
+| Tests: command lines (and, on Windows, read back with `CommandLineToArgvW`), a process the SCM didn't start, a missing service's uninstall, `ExecStart=` words, unit files, notification addresses; on Linux, notifications received on a path socket and an abstract one (8 tests on Windows, 9 on Linux) | `tests/server/service_test.cpp` |
+
+**The gate's part**: the stop during a long action: the example's demonstration serves the microscope through the command line as the service does, starts a 50-second move, raises the stop signal, and the server stops at once with exit code 0, the move cancelled and logged. `service_test.ps1` does the same through the SCM, checking the exit code and the log, on CI.
+
+**Findings**:
+
+- **Windows takes one service dispatcher per process**, even after an attempt that failed because the SCM didn't start the process: a second `StartServiceCtrlDispatcher` fails with `ERROR_SERVICE_ALREADY_RUNNING`. teta-wot's `AlreadyRunning` covers only a call while another is running; here a second call throws `AlreadyRunning` whatever became of the first.
+- **No library changes for the stop itself**: the SCM's control handler raises a `std::stop_source`, whose callback only wakes the server's stopper thread, so the handler returns at once, as the SCM wants; the shutdown is Phase 5's.
+- **Logging to a file needs no new API**: the console sink writes to standard error, which the service's `run` reopens on the log file. teta-wot installs a file subscriber, and its `logging::init` then fails to install its own, so a teta-wot service records no invocation logs; teta-wot-cpp's does.
+
+**Deviations**:
+
+- The systemd unit, `tw::systemd` and `service_test.sh` are this project's own (plan §7). **They haven't been compiled or run yet**: there is no Linux machine here, and CI runs only `windows-msvc` for now. Only the portable parts (unit files, `ExecStart=` quoting, notification addresses) are tested; the socket code and `service_test.sh` wait for the Linux jobs.
+- There is no `TETA_WOT_WINDOWS_SERVICE` option: like `NdArray`, the service needs nothing beyond the operating system (`advapi32`).
