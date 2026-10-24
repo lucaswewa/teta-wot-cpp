@@ -337,7 +337,7 @@ The `wot` wire profile (204s, problem details, `ActionStatus`, synchronous actio
 
 ### Phase 10: Arrays, services, hardening, release (M)
 
-**In progress**, in parts: see the [Phase 10 note](notes/phase-10-release.md). Parts 1 (arrays), 2 (the simulated microscope), 3 (the Windows service and the systemd unit), 4 (fuzzing, the soak tool and the shutdown-under-load test) and 5 (the guide, the vcpkg port and the release's preparation) are done; the v0.1.0 tag waits for the release build's 24-hour soak.
+**Done** (2026-10-24), in five parts: see the [Phase 10 note](notes/phase-10-release.md). teta-wot-cpp v0.1.0 is released.
 
 `NdArray`; the Windows service (install/uninstall, stop during a long action) and the systemd unit; fuzz targets (validation, WS parser, request bodies) in CI; the shutdown-under-load test; the soak tool; the simulated microscope and `microscope-service`; the full guide; vcpkg overlay port; v0.1.0.
 

@@ -14,4 +14,4 @@ One note per phase: what was built, what was measured, and where the work depart
 | 7 | [Blobs and MJPEG](phase-07-blobs.md) | Done |
 | 8 | [OpenAPI and docs](phase-08-openapi.md) | Done |
 | 9 | [WoT profile, discovery, security](phase-09-discovery.md) | Done |
-| 10 | [Arrays, services, hardening, release](phase-10-release.md) | In progress |
+| 10 | [Arrays, services, hardening, release](phase-10-release.md) | Done |

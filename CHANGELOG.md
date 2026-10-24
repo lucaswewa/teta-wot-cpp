@@ -4,7 +4,7 @@ All notable changes to teta-wot-cpp are recorded here, in the format of [Keep a 
 
 ## [Unreleased]
 
-## [0.1.0] - unreleased
+## [0.1.0] - 2026-10-24
 
 The first release: a C++20 port of [teta-wot](https://github.com/lucaswewa/teta-wot) v0.1.0 that answers as it does on the wire, byte for byte (the [wire contract](docs/wire-contract.md) lists the few documented differences). Everything below is new.
 

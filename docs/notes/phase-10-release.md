@@ -1,6 +1,6 @@
 # Phase 10: Arrays, services, hardening, release
 
-Status: **in progress**. Plan: [§5, Phase 10](../PLAN.md#phase-10-arrays-services-hardening-release-m). The last phase is delivered in parts, each reviewed and merged on its own: arrays; the capstone `simulated-microscope`; the Windows service and the systemd unit, with `microscope-service` (after the microscope, whose library it serves); hardening (fuzz targets, the shutdown-under-load test, the soak tool); the full guide, the vcpkg port and the v0.1.0 release.
+Status: **done** (2026-10-24): teta-wot-cpp v0.1.0. Plan: [§5, Phase 10](../PLAN.md#phase-10-arrays-services-hardening-release-m). The last phase is delivered in parts, each reviewed and merged on its own: arrays; the capstone `simulated-microscope`; the Windows service and the systemd unit, with `microscope-service` (after the microscope, whose library it serves); hardening (fuzz targets, the shutdown-under-load test, the soak tool); the full guide, the vcpkg port and the v0.1.0 release.
 
 ## Part 1: arrays (done)
 
@@ -93,7 +93,7 @@ Status: **in progress**. Plan: [§5, Phase 10](../PLAN.md#phase-10-arrays-servic
 - libFuzzer runs need Clang (Linux CI, which is off for now); the driver runs everywhere, without coverage feedback.
 - The soak tool measures the server with the Win32 API (or `/proc`) rather than PowerShell, and has `--stop-under-load`, which teta-wot's hasn't.
 
-## Part 5: the guide, the vcpkg port, the release (done, but for the tag)
+## Part 5: the guide, the vcpkg port, the release (done)
 
 | Deliverable | Where |
 |---|---|
