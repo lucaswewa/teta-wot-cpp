@@ -138,8 +138,8 @@ bool log_to(const std::string& file) {
     // stream ends the process: it is sent to the null device instead.
     const auto reopen = [path = path_of(file)](FILE* stream) {
 #ifdef _WIN32
-        // Not `_wfreopen_s`, which opens the file without sharing: the
-        // second stream couldn't open it.
+    // Not `_wfreopen_s`, which opens the file without sharing: the
+    // second stream couldn't open it.
 #pragma warning(suppress : 4996)
         if (_wfreopen(path.c_str(), L"a", stream)) {
             return true;
@@ -313,11 +313,12 @@ void demonstrate() {
     if (took >= grace) {
         throw std::runtime_error("the long move was waited for, not cancelled");
     }
+    const auto program = text_of(current_executable().filename());
 #ifdef _WIN32
-    std::cout << "\nAs a service: `example-microscope-service install`, then `Start-Service " << service_name
+    std::cout << "\nAs a service: `" << program << " install`, then `Start-Service " << service_name
               << "` (administrator).\n";
 #else
-    std::cout << "\nAs a service: `sudo example-microscope-service install`, then `sudo systemctl start "
+    std::cout << "\nAs a service: `sudo " << program << " install`, then `sudo systemctl start "
               << service_name << "`.\n";
 #endif
 }

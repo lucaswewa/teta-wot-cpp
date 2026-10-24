@@ -92,3 +92,22 @@ Status: **in progress**. Plan: [§5, Phase 10](../PLAN.md#phase-10-arrays-servic
 
 - libFuzzer runs need Clang (Linux CI, which is off for now); the driver runs everywhere, without coverage feedback.
 - The soak tool measures the server with the Win32 API (or `/proc`) rather than PowerShell, and has `--stop-under-load`, which teta-wot's hasn't.
+
+## Part 5: the guide, the vcpkg port, the release (done, but for the tag)
+
+| Deliverable | Where |
+|---|---|
+| The full guide, in teta-wot's shape: introduction, quickstart, a tutorial (installing, running a server, writing a Thing), writing Things (structure, actions, properties, events, documentation, slots, settings, Blobs and streams, arrays, concurrency, using Things, testing), serving (configuration, wire profiles, discovery, security, services, custom routes and Drogon) and reference (WoT concepts, examples, see also): 26 chapters, every API named checked against the headers | `docs/guide/src/` |
+| The vcpkg overlay port `teta-wot` (features `mdns`, `docs-offline`), which builds the checkout it lives in | `ports/teta-wot/` |
+| Version 0.1.0 (the project, the header, both vcpkg manifests; configuring fails if the header and the project disagree), `CHANGELOG.md`, `THIRD_PARTY_NOTICES.md`, `docs/releasing.md` | the repository's root, `docs/` |
+| The release workflow: on a tag, it checks the version and the changelog, builds the release preset and runs every test and the Windows service test on it, installs the overlay port, packages the microscope's programs with their files and licences, archives the source, writes checksums, and publishes the release; the package's README; `tools/licenses.py`, which gathers the licences of what the programs contain from vcpkg's install tree | `.github/workflows/release.yml`, `tools/release/`, `tools/licenses.py` |
+| The `windows-msvc-release` preset | `CMakePresets.json` |
+
+**The gate's part**: the overlay port installs (in classic mode, as users do, in 4.8 minutes) and `cmake-consumer` builds against it and passes; the release workflow's checks pass on the tree, but for the changelog's date, which the release commit sets; the licence summary of the programs' 16 vcpkg packages: MIT, BSD, Apache-2.0, BSL-1.0, Zlib, CC0. The 24-hour soak of the release build, and the 1-hour soak in the `wot` profile, are running on the release build's programs. The tag waits for both, and for the user.
+
+**Findings**:
+
+- **The guide documents the C++ API, not teta-wot's macros**, but keeps teta-wot's structure and wording where they apply, so that a reader of either finds the same things in the same places; it says where the two differ (actions on threads rather than `async`, `define` rather than attributes, Linux and the systemd unit).
+- **The overlay port builds its own checkout**: a port fetching a release archive needs the archive's SHA-512, which only exists once the tag does. A registry port (or one in vcpkg's catalogue) can fetch `v0.1.0` once it is published.
+
+**Deviations from the plan's gate**: the examples run in CI on Windows only, as the whole of CI does (Linux CI is off, by the user's choice); the 24-hour soak runs on Windows with the release build, not with the CRT debug heap (the debug build's 20-minute soak passed in part 4), and not under ASan on Linux.

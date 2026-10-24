@@ -44,7 +44,7 @@ A service starts in `C:\Windows\System32`, as the LocalSystem account, with no c
 
 ## A systemd unit
 
-teta-wot has no Linux counterpart; teta-wot-cpp's is a `Type=notify` unit. systemd's *stop* is SIGTERM, which already stops a server (`shutdown_signal`), and the server tells systemd how it is doing with the notification protocol (`tw::systemd::notify`, without libsystemd): `READY=1` once it listens, so `systemctl start` returns when the server answers, and `STOPPING=1` when it starts shutting down. Started any other way, the server sends nothing.
+teta-wot has no Linux counterpart; teta-wot-cpp's is a `Type=notify` unit. (In v0.1.0 it is untested: CI builds and runs only on Windows for now, so treat it as a preview.) systemd's *stop* is SIGTERM, which already stops a server (`shutdown_signal`), and the server tells systemd how it is doing with the notification protocol (`tw::systemd::notify`, without libsystemd): `READY=1` once it listens, so `systemctl start` returns when the server answers, and `STOPPING=1` when it starts shutting down. Started any other way, the server sends nothing.
 
 `tw::systemd::unit_file` writes the unit:
 

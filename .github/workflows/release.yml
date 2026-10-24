@@ -1,0 +1,107 @@
+name: Release
+
+# Pushing a tag vX.Y.Z publishes a release: the source, a Windows x86_64
+# package with the simulated microscope's programs and every licence
+# notice, and checksums. Tag only after the checklist in docs/releasing.md.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish (Windows x86_64)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: The tag, the version and the changelog agree
+        id: version
+        shell: bash
+        run: |
+          version=$(sed -n 's/^ *VERSION \([0-9.]*\)$/\1/p' CMakeLists.txt | head -1)
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::the tag ${GITHUB_REF_NAME} isn't v${version}, the project's version"
+            exit 1
+          fi
+          for file in vcpkg.json ports/teta-wot/vcpkg.json; do
+            if ! grep -q "\"version\": \"${version}\"" "$file"; then
+              echo "::error::${file} doesn't say version ${version}"
+              exit 1
+            fi
+          done
+          if ! grep -q "^## \[${version}\] - [0-9]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no dated section for ${version}"
+            exit 1
+          fi
+          awk -v v="## [${version}]" 'index($0, v) == 1 {on = 1; next} /^## \[/ {on = 0} on' CHANGELOG.md > release-notes.md
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+      - name: Developer command prompt
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: vcpkg paths
+        shell: bash
+        run: |
+          echo "VCPKG_ROOT=$RUNNER_TEMP/vcpkg" >> "$GITHUB_ENV"
+          echo "VCPKG_DEFAULT_BINARY_CACHE=$RUNNER_TEMP/vcpkg-cache" >> "$GITHUB_ENV"
+      - name: vcpkg
+        shell: bash
+        run: |
+          baseline=$(python3 -c "import json; print(json.load(open('vcpkg-configuration.json'))['default-registry']['baseline'])")
+          git init "$VCPKG_ROOT"
+          git -C "$VCPKG_ROOT" remote add origin https://github.com/microsoft/vcpkg.git
+          git -C "$VCPKG_ROOT" fetch --depth 1 origin "$baseline"
+          git -C "$VCPKG_ROOT" checkout FETCH_HEAD
+          mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
+          "$VCPKG_ROOT/bootstrap-vcpkg.bat" -disableMetrics
+      # CI's packages: the triplet is the same, whatever the build type.
+      - name: Restore the vcpkg binary cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-windows-latest-windows-msvc-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+          restore-keys: vcpkg-windows-latest-windows-msvc-
+      - name: Configure (release)
+        run: cmake --preset windows-msvc-release
+      - name: Build
+        run: cmake --build --preset windows-msvc-release
+      - name: openapi-spec-validator, zeroconf and labthings-fastapi
+        run: |
+          $cache = Get-Content "build/windows-msvc-release/CMakeCache.txt"
+          $python = ($cache | Select-String '^_?Python3_EXECUTABLE:\w+=(.+)$').Matches[0].Groups[1].Value
+          & $python -m pip install --quiet openapi-spec-validator zeroconf labthings-fastapi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Test (the release build)
+        run: ctest --preset windows-msvc-release
+      - name: The microscope as a Windows service
+        run: powershell -ExecutionPolicy Bypass -File examples/microscope-service/service_test.ps1 -Exe build/windows-msvc-release/examples/microscope-service/example-microscope-service.exe
+      # The overlay port builds this checkout, as users install it.
+      - name: The vcpkg overlay port
+        shell: bash
+        run: |
+          "$VCPKG_ROOT/vcpkg" install teta-wot --overlay-ports=ports --triplet x64-windows-static \
+            --x-install-root="$RUNNER_TEMP/port-installed" --classic
+      - name: Package
+        shell: bash
+        run: |
+          version=${{ steps.version.outputs.version }}
+          name="teta-wot-cpp-${version}-windows-x86_64"
+          mkdir -p "dist/${name}"
+          cp build/windows-msvc-release/examples/simulated-microscope/example-simulated-microscope.exe "dist/${name}/simulated-microscope.exe"
+          cp build/windows-msvc-release/examples/microscope-service/example-microscope-service.exe "dist/${name}/microscope-service.exe"
+          cp examples/simulated-microscope/microscope.json examples/simulated-microscope/demo.py "dist/${name}/"
+          cp CHANGELOG.md LICENSE THIRD_PARTY_NOTICES.md "dist/${name}/"
+          python3 tools/licenses.py build/windows-msvc-release/vcpkg_installed > "dist/${name}/THIRD_PARTY_LICENSES.txt"
+          sed "s/{version}/${version}/" tools/release/README.txt > "dist/${name}/README.txt"
+          (cd dist && 7z a -tzip "${name}.zip" "${name}" > /dev/null && rm -r "${name}")
+          git archive --format=zip --prefix="teta-wot-cpp-${version}/" -o "dist/teta-wot-cpp-${version}-source.zip" "${GITHUB_REF_NAME}"
+          git archive --format=tar.gz --prefix="teta-wot-cpp-${version}/" -o "dist/teta-wot-cpp-${version}-source.tar.gz" "${GITHUB_REF_NAME}"
+          (cd dist && sha256sum * > SHA256SUMS && cat SHA256SUMS)
+      - name: Publish
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" dist/* \
+            --title "teta-wot-cpp ${{ steps.version.outputs.version }}" \
+            --notes-file release-notes.md

@@ -179,8 +179,7 @@ std::string data_schema_text() {
     return tw::json::dump(tw::td::to_json(tw::for_type<T>()));
 }
 
-#define CASE(rust, ...) \
-    { rust, &data_schema_text<__VA_ARGS__> }
+#define CASE(rust, ...) {rust, &data_schema_text<__VA_ARGS__>}
 
 const std::map<std::string, std::function<std::string()>> cases = {
     CASE("bool", bool),
