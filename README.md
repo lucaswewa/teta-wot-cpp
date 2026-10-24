@@ -4,18 +4,43 @@
 
 A C++ library for serving W3C Web of Things *Things* over HTTP, with functional and wire-level parity with [teta-wot](https://github.com/lucaswewa/teta-wot), built on [Drogon](https://github.com/drogonframework/drogon), for Windows and Linux.
 
-- [Goals](docs/goals.md)
-- [Architecture and implementation plan](docs/PLAN.md) (approved)
-- [Documentation index](docs/README.md): decision records, phase notes, the wire contract, the guide
+```cpp
+#include <teta/wot.hpp>
+namespace tw = teta::wot;
 
-**Status:** Phases 0 to 9 are done: the build skeleton, the parity harness against the Rust reference, `teta::wot-json`, `teta::wot-td` (the TD model, DataSchemas from C++ types, W3C validation), `teta::wot-core` (the validator, and the runtime on threads: Things defined with `ThingSpec`, properties, actions and invocations, cancellation, the global lock, invocation logs, events and device actors), the first end-to-end milestone: `teta::wot-http` (the HTTP binding, answering as teta-wot does byte for byte), its Drogon transport, `ThingServer` and the in-process `TestClient`; and composition: settings files interchangeable with teta-wot's, slots and interfaces, services, configuration files, the registry, teta-wot's command line and its fallback server; observation: WebSockets and server-sent events, with backpressure; Blobs and MJPEG streams; the OpenAPI document with Swagger UI and ReDoc; and discovery (the well-known URL, the directory, DNS-SD) and Basic and bearer security. See the [phase notes](docs/notes/README.md).
+class Light {
+  public:
+    tw::Prop<std::int64_t> brightness{100};
+    tw::Prop<bool> is_on{false};
+    void toggle() { is_on.update([](bool& on) { on = !on; }); }
+
+    static void define(tw::ThingSpec<Light>& t) {
+        t.property("brightness", &Light::brightness).ge(0).le(100);
+        t.property("is_on", &Light::is_on).read_only();
+        t.action("toggle", &Light::toggle);
+    }
+};
+
+int main() { tw::ThingServer::builder().thing<Light>("light").build().serve("127.0.0.1", 5000); }
+```
+
+- [The guide](docs/guide/src/SUMMARY.md): the quickstart, a tutorial, and every feature
+- [Examples](examples/README.md): 38 of them, each run by CI and compared with its Rust original
+- [Changelog](CHANGELOG.md) and [releasing](docs/releasing.md)
+- [Goals](docs/goals.md), the [plan](docs/PLAN.md), and the [documentation index](docs/README.md): decision records, phase notes, the wire contract
+
+**Status:** all ten phases of the [plan](docs/PLAN.md) are done, towards v0.1.0: everything teta-wot v0.1.0 has (Things defined with `ThingSpec`, properties, actions and invocations, events, slots, settings, configuration files and teta-wot's command line, WebSockets and server-sent events, Blobs and MJPEG streams, arrays, the OpenAPI document and its docs pages, the `wot` wire profile, discovery and DNS-SD, security, the Windows service), answering as teta-wot does byte for byte; a systemd unit; a vcpkg overlay port; fuzz targets, a shutdown-under-load test and a soak tool. CI builds and tests on Windows (MSVC); the Linux builds aren't run in CI for now. See the [phase notes](docs/notes/README.md).
 
 ## Building
 
 ```text
-cmake --preset linux-gcc        # or windows-msvc, from a developer prompt; needs VCPKG_ROOT
-cmake --build --preset linux-gcc
-ctest --preset linux-gcc
+cmake --preset windows-msvc     # from a developer prompt, or linux-gcc; needs VCPKG_ROOT
+cmake --build --preset windows-msvc
+ctest --preset windows-msvc
 ```
 
-On Windows, `scripts\build.ps1` and `scripts\test.ps1` do the same from any PowerShell window; [scripts/](scripts/README.md) also serves and probes Things for testing by hand. See [Building](docs/guide/src/building.md) for the other presets and for building without vcpkg.
+On Windows, `scripts\build.ps1` and `scripts\test.ps1` do the same from any PowerShell window; [scripts/](scripts/README.md) also serves and probes Things for testing by hand. See [Installing](docs/guide/src/tutorial/installing.md) for the other presets, the vcpkg overlay port, and using the library from your own project.
+
+## Licence
+
+MIT ([`LICENSE`](LICENSE)); the repository also holds work by others under their own licences ([`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)).

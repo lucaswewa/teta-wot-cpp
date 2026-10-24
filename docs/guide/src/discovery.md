@@ -1,44 +1,39 @@
-# Discovery and security
+# Discovery
 
-A client on the lab network can find a server without knowing its address, and a server can require credentials for everything but its descriptions.
+A client that knows nothing about a server can find it, and its Things, as W3C WoT Discovery describes.
 
-## The directory
+## The well-known URL and the directory
 
-Every server is a read-only Thing Description Directory, as W3C WoT Discovery describes:
+Every server is a read-only Thing Description Directory of its own Things:
 
-- `GET /.well-known/wot` is the directory's own TD, at the root whatever the API prefix;
-- `GET {prefix}/directory/things` lists every Thing's TD, sorted by `id`: all of them, or a page with `?offset=…&limit=…` (with `next` and `canonical` links), and with `?format=collection` as a `ThingCollection`;
-- `GET {prefix}/directory/things/{id}` is one TD, by its `id` (percent-encoded in the path).
+| URL | What |
+|---|---|
+| `/.well-known/wot` | The directory's TD (`@type` `ThingDirectory`), as `application/td+json`, at the root whatever the API prefix |
+| `{prefix}/directory/things` | Every served TD, sorted by `id`, as `application/ld+json`; `?offset=` and `?limit=` page it (with `next` and `canonical` links), and `?format=collection` makes it a `ThingCollection` |
+| `{prefix}/directory/things/{id}` | One TD, by its `id` (percent-encoded in the path) |
+
+The directory's TD describes the other two. A generic consumer:
+
+1. reads `/.well-known/wot`;
+2. follows its `things` property's form;
+3. reads the TDs it lists.
 
 Its errors are always problem details, whatever the wire profile.
 
-## Being found
+## DNS-SD
 
-With DNS-SD over mDNS, the server advertises itself as a directory (`_directory._sub._wot._tcp.local.`), under its server ID, with the path of its TD in the TXT record (`td=/.well-known/wot`):
+With `"mdns": true` in the configuration (or `.mdns(true)` on the builder), the server advertises itself on the local network:
+
+- as a `_wot._tcp` service with the `_directory` subtype, named after its server ID;
+- with a TXT record saying where its TD is (`td=/.well-known/wot`), its type (`type=Directory`), and its scheme.
 
 ```cpp
 auto server = tw::ThingServer::builder().server_id("lab-microscope").mdns(true).thing<Stage>("stage").build();
 server.serve("0.0.0.0", 8000);  // every interface: the advertisement names the computer's addresses
 ```
 
-In a configuration file, it is `"mdns": true`. Advertising needs teta-wot-cpp built with `-DTETA_WOT_MDNS=ON` (the repository's presets have it on; `tw::mdns_supported()` says whether it is); without it, the server logs a warning and serves anyway. Any DNS-SD browser finds the server: Python's `zeroconf`, Avahi's `avahi-browse -r _wot._tcp`, or the `discovery` example's own client.
+A browser for `_directory._sub._wot._tcp.local.` finds it: `dns-sd -B _wot._tcp` on Windows, `avahi-browse -r _wot._tcp` on Linux, or Python's `zeroconf`. The advertisement is withdrawn when the server stops. Multicast must be allowed on the network, and Windows may ask whether to let the server listen.
 
-## Security
+Advertising needs teta-wot-cpp built with `TETA_WOT_MDNS` (the repository's presets and the port's `mdns` feature have it; `tw::mdns_supported()` says whether it is). Without it, the server logs a warning and serves anyway.
 
-One of two schemes covers every interaction: reading and writing properties, invoking and following actions, events, streams, Blobs and the WebSocket.
-
-```cpp
-builder.security(tw::http::Security::bearer(token));            // Authorization: Bearer <token>
-builder.security(tw::http::Security::basic("lab", password));   // HTTP Basic
-```
-
-Without the credentials, the answer is 401 with a `WWW-Authenticate` challenge. The descriptions stay public, so that a client can find out what to send: the TDs say it in `securityDefinitions` (`bearer_sc` or `basic_sc`, in the `Authorization` header), the OpenAPI document in `securitySchemes`, and `/things/`, the directory and the docs pages answer anyone.
-
-A configuration file names the environment variable that holds the secret, never the secret:
-
-```json
-{"security": {"scheme": "bearer", "token_env": "WOT_TOKEN"}}
-{"security": {"scheme": "basic", "username": "lab", "password_env": "WOT_PASSWORD"}}
-```
-
-The `bearer-security` and `discovery` examples show both.
+The [`discovery`](https://github.com/lucaswewa/teta-wot-cpp/tree/main/examples/discovery) example advertises two Things, finds them from C++ and from Python, and reads the directory.

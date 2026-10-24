@@ -1,6 +1,44 @@
-# The API document and docs
+# Documentation
 
-Every server describes its HTTP API twice: each Thing's Thing Description, for Web of Things clients, and an OpenAPI 3.1 document, for everything else.
+teta-wot-cpp documents a Thing's API from its code, in two forms: the W3C Thing Description, for Web of Things clients, and an OpenAPI 3.1 document with interactive pages, for everything else.
+
+## Doc strings
+
+- **A Thing's `t.doc(…)`** is its description; its title is the type's name (`t.title` changes it).
+- **An affordance's first paragraph** is its title, and the whole text is its description, as teta-wot reads doc comments:
+
+  ```cpp
+  run.doc("Find the focus.\n\nThe stage sweeps z over `range` steps around where it is, in `steps`\n"
+          "moves; the camera measures the sharpness at each, and the stage\nreturns to the sharpest.");
+  ```
+
+  Here the title is "Find the focus.", and the description is both paragraphs. Keep the line breaks of the Rust doc comment when porting a Thing, and the TD stays the same.
+- **Fields of input and output structs** are described in the struct's `describe`:
+
+  ```cpp
+  struct Position {
+      std::int64_t x = 0;
+      std::int64_t y = 0;
+      static void describe(tw::StructInfo<Position>& s) {
+          s.description("A position of the stage, in steps.");
+          s.field("x").description("Left to right.");
+          s.field("y").description("Front to back.");
+      }
+  };
+  ```
+- **`.title(…)` and `.description(…)`** set either one alone.
+
+## The Thing Description
+
+Each Thing's TD is at `/{thing}/`. It is TD 1.1, valid against the W3C schema, as teta-wot writes it:
+
+- a stable `id`: a UUID from the server ID and the Thing's name;
+- forms for observation and events;
+- top-level forms;
+- forms for querying and cancelling invocations;
+- links to streams.
+
+Units (`.unit("mm")`), semantic types (`.semantic_type("saref:Temperature")`, on a Thing or an affordance) and `@context` prefixes (`t.context("saref", "https://saref.etsi.org/core/")`) annotate it (the [`units-and-semantics`](https://github.com/lucaswewa/teta-wot-cpp/tree/main/examples/units-and-semantics) example). `teta::wot-td-validation` validates a TD against the W3C JSON Schema, and the [`td_builder`](https://github.com/lucaswewa/teta-wot-cpp/tree/main/examples/td_builder) example builds one by hand.
 
 ## The OpenAPI document
 
@@ -16,7 +54,7 @@ A custom endpoint is named after the function that answers it in teta-wot; in C+
 t.endpoint("GET", "readings.csv", &Logger::readings_csv).name("readings_csv").doc("The readings as a CSV file.");
 ```
 
-The document doesn't depend on the request, nor on the Things having started, so it can be written without a server, for a code generator (the `openapi-export` example):
+The document doesn't depend on the request, nor on the Things having started, so it can be written without a server, for a code generator (the [`openapi-export`](https://github.com/lucaswewa/teta-wot-cpp/tree/main/examples/openapi-export) example):
 
 ```cpp
 const auto runtime = tw::Runtime::builder().thing<Stage>("stage").build();  // not started
@@ -29,4 +67,4 @@ std::ofstream("openapi.json") << tw::json::dump_pretty(tw::http::openapi(runtime
 
 ## Swagger UI and ReDoc
 
-`/docs` is Swagger UI, where each route can be tried, and `/redoc` is ReDoc; both read `/openapi.json`. They load Swagger UI 5.33.0 and ReDoc 2.5.4 from jsDelivr. On a network without internet, build teta-wot-cpp with `-DTETA_WOT_DOCS_OFFLINE=ON` (the preset `windows-msvc-docs-offline` does): the assets are compiled in, and the pages load them from the server (the `docs-offline` example).
+`/docs` is Swagger UI, where "Try it out" sends real requests, and `/redoc` is ReDoc; both read `/openapi.json`. They load Swagger UI 5.33.0 and ReDoc 2.5.4 from jsDelivr. On a network without internet, build teta-wot-cpp with `-DTETA_WOT_DOCS_OFFLINE=ON` (the preset `windows-msvc-docs-offline`, or the port's `docs-offline` feature): the assets are compiled in, and the pages load them from the server (the [`docs-offline`](https://github.com/lucaswewa/teta-wot-cpp/tree/main/examples/docs-offline) example).

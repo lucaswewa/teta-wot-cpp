@@ -1,39 +1,31 @@
-# Observing Things
+# Events
 
-Clients needn't poll: a Thing's data properties, its actions' statuses and its events are pushed to them as they change, over server-sent events or over the Thing's WebSocket. Nothing has to be declared for it: every `Prop<T>` is observable, every action's invocations publish their status, and every `Event<T>` reaches its subscribers.
+An event is a notification a Thing sends when something happens: the stage arrived, an image was captured, an interlock tripped, as the Web of Things describes them.
 
-## Server-sent events
-
-```text
-$ curl -N -H "Accept: text/event-stream" http://127.0.0.1:5000/oven/temperature
-data: 30.0
-
-data: 40.0
+```cpp
+tw::Event<Position> arrived;
+// in define:
+t.event("arrived", &Stage::arrived).doc("The stage arrived where it was sent.");
 ```
 
-A property's URL streams its new values when the request accepts `text/event-stream`; an event's URL (`/oven/overheated`) always streams. `{thing}/properties` and `{thing}/events` stream all of them, each event named after its affordance. The TD has the form, with `"subprotocol": "sse"`, so a browser's `EventSource` can find it.
+The Thing emits it with `arrived.emit(position)`. That never waits, and works from any thread, including a driver's: an `Event<T>` can be copied and given to a thread, and the copies are the same event (the [`events`](https://github.com/lucaswewa/teta-wot-cpp/tree/main/examples/events) example does).
 
-## The WebSocket
+`T`'s JSON Schema is the TD's `data` for the event; `Event<std::monostate>` carries no data (Rust's `Event<()>`).
 
-`ws://host/{thing}/ws` speaks the dialect of LabThings and teta-wot:
+## Subscribing
 
-```text
-→ {"messageType": "addPropertyObservation", "data": {"temperature": true}}
-→ {"messageType": "addActionObservation", "data": {"heat_to": true}}
-→ {"messageType": "addEventSubscription", "data": {"overheated": true}}
-← {"messageType": "propertyStatus", "data": {"temperature": 30.0}}
-← {"messageType": "actionStatus", "data": {"action name": "heat_to", "status": "running"}}
-← {"messageType": "event", "data": {"overheated": {"data": …, "timestamp": "…Z"}}}
-```
+- **Server-sent events:** `GET /stage/arrived` streams each event's data as JSON. `curl -N http://127.0.0.1:5000/stage/arrived` shows them.
+- **All of a Thing's events at once:** `GET /stage/events`, each named after its event.
+- **The WebSocket:** `{"messageType": "addEventSubscription", "data": {"arrived": {}}}` on `/stage/ws`. Each event arrives as `{"messageType": "event", "data": {"arrived": {"data": …, "timestamp": "…"}}}`.
+- **In C++:** `arrived.subscribe()` returns a receiver of the events emitted from then on, in-process.
 
-The server acknowledges nothing, but answers a name that can't be observed: 404 if there is none, 403 for a functional property, which is computed when read.
+The TD describes each event, with a `subscribeevent` form for each transport.
 
-## Events
+## Slow subscribers
 
-An event is an `Event<T>` member, declared with `t.event("overheated", &Oven::overheated)`. `emit` never waits, so it can be called from anywhere, a device's thread included; C++ code receives events with `subscribe()`.
+Each subscriber has a buffer of five messages. One that doesn't keep up misses what doesn't fit (the server logs a warning for each) rather than making the server keep everything for it, and catches up once it reads again. A C++ receiver that falls behind misses the oldest events.
 
-## Slow clients
+## Events or observed properties?
 
-Each subscriber has a buffer of five messages. A client that doesn't keep up misses what doesn't fit (the server logs a warning for each) rather than making the server keep everything for it, and catches up with the latest values once it reads again.
-
-In tests, `TestClient::events` and `TestClient::websocket` open both kinds of stream in-process; the examples `observe-websocket`, `sse-observe` and `events` show each.
+- **A property** has a value at any time: observing it gives its changes, and a client that connects late reads the current value.
+- **An event** happens: a client that wasn't subscribed misses it. It suits things that are over when they are reported, and that no property holds.
