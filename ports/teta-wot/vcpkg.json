@@ -1,0 +1,34 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "teta-wot",
+  "version": "0.1.0",
+  "description": "W3C Web of Things Things served over HTTP with Drogon, with wire-level parity with teta-wot.",
+  "homepage": "https://github.com/lucaswewa/teta-wot-cpp",
+  "license": "MIT",
+  "dependencies": [
+    "boost-pfr",
+    {
+      "name": "drogon",
+      "default-features": false
+    },
+    "nlohmann-json",
+    "re2",
+    "tl-expected",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "docs-offline": {
+      "description": "Compile the Swagger UI and ReDoc assets into the server, for networks without internet (TETA_WOT_DOCS_OFFLINE)"
+    },
+    "mdns": {
+      "description": "Let servers advertise themselves with DNS-SD over mDNS (TETA_WOT_MDNS)"
+    }
+  }
+}

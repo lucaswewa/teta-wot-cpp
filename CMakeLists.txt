@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 
 project(teta-wot-cpp
-    VERSION 0.0.0
+    VERSION 0.1.0
     DESCRIPTION "W3C Web of Things Things over HTTP with Drogon, with wire-level parity with teta-wot"
     HOMEPAGE_URL "https://github.com/lucaswewa/teta-wot-cpp"
     LANGUAGES CXX)
@@ -22,6 +22,12 @@ option(TETA_WOT_MDNS "Let servers advertise themselves with DNS-SD over mDNS (W3
 option(TETA_WOT_BUILD_FUZZ "Build the fuzz targets, and run them briefly as tests" ${TETA_WOT_BUILD_TESTS})
 option(TETA_WOT_LIBFUZZER "Link the fuzz targets with libFuzzer (Clang) instead of their driver" OFF)
 option(TETA_WOT_BUILD_TOOLS "Build the soak tool, and run the shutdown-under-load test" ${TETA_WOT_BUILD_EXAMPLES})
+
+# The header says the same version (a release tag is checked against it).
+file(STRINGS include/teta/wot/version.hpp header_version REGEX "inline constexpr const char[*] version = ")
+if(NOT header_version MATCHES "\"${PROJECT_VERSION}\"")
+    message(FATAL_ERROR "include/teta/wot/version.hpp doesn't say version ${PROJECT_VERSION}: ${header_version}")
+endif()
 
 include(GNUInstallDirs)
 

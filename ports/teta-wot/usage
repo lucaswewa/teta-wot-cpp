@@ -1,0 +1,4 @@
+teta-wot provides CMake targets:
+
+    find_package(teta-wot CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE teta::wot)

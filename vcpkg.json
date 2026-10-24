@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "teta-wot-cpp",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "W3C Web of Things Things served over HTTP with Drogon, with wire-level parity with teta-wot.",
   "license": "MIT",
   "dependencies": [

@@ -72,6 +72,12 @@
       "cacheVariables": {"TETA_WOT_DOCS_OFFLINE": "ON"}
     },
     {
+      "name": "windows-msvc-release",
+      "displayName": "Windows, MSVC, a release build (the release package and the soak)",
+      "inherits": "windows-msvc",
+      "cacheVariables": {"CMAKE_BUILD_TYPE": "Release"}
+    },
+    {
       "name": "windows-clang-cl",
       "displayName": "Windows, clang-cl (from a developer command prompt)",
       "inherits": ["vcpkg", "windows"],
@@ -90,6 +96,7 @@
     {"name": "linux-clang-tsan", "configurePreset": "linux-clang-tsan"},
     {"name": "windows-msvc", "configurePreset": "windows-msvc"},
     {"name": "windows-msvc-docs-offline", "configurePreset": "windows-msvc-docs-offline"},
+    {"name": "windows-msvc-release", "configurePreset": "windows-msvc-release"},
     {"name": "windows-clang-cl", "configurePreset": "windows-clang-cl"},
     {"name": "system", "configurePreset": "system"}
   ],
@@ -101,6 +108,7 @@
     {"name": "linux-clang-tsan", "inherits": "test-base", "configurePreset": "linux-clang-tsan"},
     {"name": "windows-msvc", "inherits": "test-base", "configurePreset": "windows-msvc"},
     {"name": "windows-msvc-docs-offline", "inherits": "test-base", "configurePreset": "windows-msvc-docs-offline"},
+    {"name": "windows-msvc-release", "inherits": "test-base", "configurePreset": "windows-msvc-release"},
     {"name": "windows-clang-cl", "inherits": "test-base", "configurePreset": "windows-clang-cl"},
     {"name": "system", "inherits": "test-base", "configurePreset": "system"}
   ]
